@@ -70,6 +70,7 @@ UnaryOperator ::= "!"
 | Operator     | Example          | Description                                      |
 |--------------|------------------|--------------------------------------------------|
 | \>           | A \> B           | Yields `true` if A is greater than B             |
+| <            | A < B            | Yields `true` if A is less than B                |
 | \>=          | A \>= B          | Yields `true` if A is greater than or equal to B |
 | <=           | A <= B           | Yields `true` if A is less than or equal to B    |
 | +            | A + B            | Yields the sum of A and B                        |
