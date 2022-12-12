@@ -1,4 +1,4 @@
-package me.blvckbytes.minimalparser;
+package me.blvckbytes.minimalparser.tokenizer;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

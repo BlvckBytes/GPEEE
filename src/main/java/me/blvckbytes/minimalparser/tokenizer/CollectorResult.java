@@ -1,4 +1,4 @@
-package me.blvckbytes.minimalparser;
+package me.blvckbytes.minimalparser.tokenizer;
 
 public enum CollectorResult {
   // No next required character to read

@@ -1,5 +1,6 @@
-package me.blvckbytes.minimalparser;
+package me.blvckbytes.minimalparser.tokenizer;
 
+import lombok.Getter;
 import me.blvckbytes.minimalparser.error.AParserError;
 import me.blvckbytes.minimalparser.error.UnknownTokenError;
 import org.jetbrains.annotations.Nullable;
@@ -8,11 +9,15 @@ import java.util.Stack;
 
 public class Tokenizer implements ITokenizer {
 
+  @Getter
+  private final String rawText;
+
   private final char[] text;
   private final Stack<TokenizerState> saveStates;
   private TokenizerState state;
 
   public Tokenizer(String text) {
+    this.rawText = text;
     this.text = text.toCharArray();
     this.state = new TokenizerState();
     this.saveStates = new Stack<>();

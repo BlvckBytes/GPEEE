@@ -1,4 +1,4 @@
-package me.blvckbytes.minimalparser;
+package me.blvckbytes.minimalparser.tokenizer;
 
 import me.blvckbytes.minimalparser.error.AParserError;
 import org.jetbrains.annotations.Nullable;
@@ -26,5 +26,7 @@ public interface ITokenizer {
   int getCurrentRow();
 
   int getCurrentCol();
+
+  String getRawText();
 
 }
