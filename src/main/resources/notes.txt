@@ -11,6 +11,7 @@
 # Lookup table access name["key"]
 # Concatenation value + value
 # Comparison >, <, >=, <=, ==
+# Math + - * / % ^
 # Boolean or ||
 # Boolean and &&
 # Boolean not !

@@ -3,4 +3,4 @@
 121# comment after number
 # This is another comment
 myTable["my_key"]
-another_table99["another_key"]
+another_table99["another_key"] & 3^3
