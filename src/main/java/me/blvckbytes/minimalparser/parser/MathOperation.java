@@ -14,6 +14,7 @@ public enum MathOperation {
   MULTIPLICATION(BigDecimal::multiply),
   DIVISION(BigDecimal::divide),
   POWER((a, b) -> a.pow(b.intValue())),
+  MODULO(BigDecimal::remainder),
   ;
 
   private final BiFunction<BigDecimal, BigDecimal, BigDecimal> function;

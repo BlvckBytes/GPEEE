@@ -174,6 +174,7 @@ public enum TokenType {
   SUBTRACTION(TokenCategory.OPERATOR, tokenizer -> tokenizer.nextChar() == '-' ? "-" : null),
   MULTIPLICATION(TokenCategory.OPERATOR, tokenizer -> tokenizer.nextChar() == '*' ? "*" : null),
   DIVISION(TokenCategory.OPERATOR, tokenizer -> tokenizer.nextChar() == '/' ? "/" : null),
+  MODULO(TokenCategory.OPERATOR, tokenizer -> tokenizer.nextChar() == '%' ? "%" : null),
 
   BOOL_OR(TokenCategory.OPERATOR, tokenizer -> collectSequenceOrNullStr(tokenizer, '|', '|')),
   BOOL_NOT(TokenCategory.OPERATOR, tokenizer -> tokenizer.nextChar() == '!' ? "!" : null),
