@@ -26,6 +26,12 @@
             <artifactId>annotations</artifactId>
             <version>23.1.0</version>
         </dependency>
+
+        <dependency>
+            <groupId>com.google.guava</groupId>
+            <artifactId>guava-primitives</artifactId>
+            <version>r03</version>
+        </dependency>
     </dependencies>
 
 </project>

@@ -4,25 +4,25 @@ import lombok.AllArgsConstructor;
 import me.blvckbytes.minimalparser.IEvaluationContext;
 import me.blvckbytes.minimalparser.IValueInterpreter;
 import me.blvckbytes.minimalparser.error.AParserError;
-import me.blvckbytes.minimalparser.parser.NumberCompare;
+import me.blvckbytes.minimalparser.parser.MathOperation;
 
 @AllArgsConstructor
-public class ComparisonExpression extends AExpression {
+public class MathOperationExpression extends AExpression {
 
-  private final NumberCompare mode;
+  private final MathOperation operation;
   private final Object numberA, numberB;
 
   @Override
   public Object evaluate(IEvaluationContext context, IValueInterpreter valueInterpreter) throws AParserError {
     Object valueA = evaluateExpression(numberA, context, valueInterpreter);
     Object valueB = evaluateExpression(numberB, context, valueInterpreter);
-    return mode.apply(valueA, valueB, valueInterpreter);
+    return operation.apply(valueA, valueB, valueInterpreter);
   }
 
   @Override
   public String toString() {
-    return "ComparisonExpression (\n" +
-      "mode=" + mode + ",\n" +
+    return "MathOperationExpression (\n" +
+      "operation=" + operation + ",\n" +
       "numberA=" + numberA + ",\n" +
       "numberB=" + numberB + "\n" +
     ')';

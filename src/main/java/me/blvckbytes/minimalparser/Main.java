@@ -1,5 +1,6 @@
 package me.blvckbytes.minimalparser;
 
+import com.google.common.primitives.Primitives;
 import me.blvckbytes.minimalparser.functions.AExpressionFunction;
 import me.blvckbytes.minimalparser.functions.AddExpressionFunction;
 import me.blvckbytes.minimalparser.functions.IfExpressionFunction;
@@ -13,6 +14,8 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.lang.reflect.Constructor;
+import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -106,31 +109,45 @@ public class Main {
           }
 
           return tryParseNumber(input)
-            .filter(n -> NumberCompare.GREATER_THAN.apply(n, 0))
+            .filter(n -> NumberCompare.GREATER_THAN.apply(n, 0, this))
             .isPresent();
         }
 
         /**
-         * Tries to parse a number (internally always a double) from an object by
+         * Tries to parse a number (internally always a BigDecimal) from an object by
          * either converting it or parsing the number from a string representation
          * @param input Input value
-         * @return Parsed double, available if possible
+         * @return Parsed BigDecimal, available if possible
          */
         @Override
-        public Optional<Object> tryParseNumber(@Nullable Object input) {
+        public Optional<BigDecimal> tryParseNumber(@Nullable Object input) {
+          // Null should fall back to zero
           if (input == null)
-            return Optional.empty();
+            input = 0;
 
-          if (input instanceof Double || input instanceof Float || input instanceof Long || input instanceof Integer)
-            return Optional.of(input);
+          BigDecimal number = null;
 
-          if (input instanceof String) {
-            if (LONG_PATTERN.matcher((String) input).matches())
-              return Optional.of(Long.parseLong((String) input));
+          // Try to find a matching constructor
+          try {
+            Constructor<?>[] constructors = BigDecimal.class.getConstructors();
 
-            if (FLOAT_PATTERN.matcher((String) input).matches())
-              return Optional.of(Double.parseDouble((String) input));
+            for (Constructor<?> constructor : constructors) {
+              // Constructor can take it's type, instantiate
+              if (constructor.getParameterCount() == 1 && constructor.getParameterTypes()[0] == Primitives.unwrap(input.getClass()))
+                number = (BigDecimal) constructor.newInstance(input);
+            }
+          } catch (Exception e) {
+            e.printStackTrace();
           }
+
+          // Try to parse from it's string representation if the constructor selection failed
+          try {
+            if (number == null)
+              number = new BigDecimal(String.valueOf(input));
+          }
+
+          // Cannot parse
+          catch (NumberFormatException ignored) {}
 
           return Optional.empty();
         }

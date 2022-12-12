@@ -8,18 +8,16 @@ import java.math.BigDecimal;
 import java.util.function.BiFunction;
 
 @AllArgsConstructor
-public enum NumberCompare {
-
-  GREATER_THAN((a, b) -> a.compareTo(b) > 0),
-  GREATER_THAN_OR_EQUAL((a, b) -> a.compareTo(b) >= 0),
-  LESS_THAN((a, b) -> a.compareTo(b) < 0),
-  LESS_THAN_OR_EQUAL((a, b) -> a.compareTo(b) <= 0),
-  EQUAL((a, b) -> a.compareTo(b) == 0)
+public enum MathOperation {
+  ADDITION(BigDecimal::add),
+  SUBTRACTION(BigDecimal::subtract),
+  MULTIPLICATION(BigDecimal::multiply),
+  DIVISION(BigDecimal::divide),
   ;
 
-  private final BiFunction<BigDecimal, BigDecimal, Boolean> function;
+  private final BiFunction<BigDecimal, BigDecimal, BigDecimal> function;
 
-  public boolean apply(@Nullable Object a, @Nullable Object b, IValueInterpreter interpreter) {
+  public BigDecimal apply(@Nullable Object a, @Nullable Object b, IValueInterpreter interpreter) {
     BigDecimal numberA = interpreter.tryParseNumber(a).orElse(null);
     BigDecimal numberB = interpreter.tryParseNumber(b).orElse(null);
 
