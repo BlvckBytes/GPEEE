@@ -162,7 +162,21 @@ public enum TokenType {
   BOOL_OR(TokenCategory.OPERATOR, tokenizer -> collectSequenceOrNullStr(tokenizer, '|', '|')),
   BOOL_NOT(TokenCategory.OPERATOR, tokenizer -> tokenizer.nextChar() == '!' ? "!" : null),
   BOOL_AND(TokenCategory.OPERATOR, tokenizer -> collectSequenceOrNullStr(tokenizer, '&', '&')),
-  VALUE_EQUALS(TokenCategory.OPERATOR, tokenizer -> collectSequenceOrNullStr(tokenizer, '=', '=')),
+
+  VALUE_EQUALS(TokenCategory.OPERATOR, tokenizer -> {
+    String sequence = collectSequenceOrNullStr(tokenizer, '=', '=');
+
+    if (sequence == null)
+      return null;
+
+    // Would be a triple equals
+    if (tokenizer.peekNextChar() == '=')
+      return null;
+
+    return sequence;
+  }),
+
+  VALUE_EQUALS_EXACT(TokenCategory.OPERATOR, tokenizer -> collectSequenceOrNullStr(tokenizer, '=', '=', '=')),
 
   //=========================================================================//
   //                                 Symbols                                 //
