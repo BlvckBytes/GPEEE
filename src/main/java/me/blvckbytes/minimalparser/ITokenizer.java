@@ -1,5 +1,6 @@
 package me.blvckbytes.minimalparser;
 
+import me.blvckbytes.minimalparser.error.AParserError;
 import org.jetbrains.annotations.Nullable;
 
 public interface ITokenizer {
@@ -19,5 +20,11 @@ public interface ITokenizer {
   void saveState();
 
   void restoreState();
+
+  @Nullable Token nextToken() throws AParserError;
+
+  int getCurrentRow();
+
+  int getCurrentCol();
 
 }

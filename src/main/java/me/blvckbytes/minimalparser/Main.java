@@ -1,5 +1,7 @@
 package me.blvckbytes.minimalparser;
 
+import me.blvckbytes.minimalparser.error.AParserError;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -20,12 +22,17 @@ public class Main {
       Tokenizer tk = new Tokenizer(input);
 
       while (true) {
-        Token curr = tk.nextToken();
+        try {
+          Token curr = tk.nextToken();
 
-        if (curr == null)
+          if (curr == null)
+            break;
+
+          System.out.println(curr);
+        } catch (AParserError err) {
+          System.err.println(err.generateWarning(input));
           break;
-
-        System.out.println(curr);
+        }
       }
 
       System.out.println("Done!");

@@ -1,5 +1,7 @@
 package me.blvckbytes.minimalparser;
 
+import me.blvckbytes.minimalparser.error.AParserError;
+import me.blvckbytes.minimalparser.error.UnknownTokenError;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Stack;
@@ -78,7 +80,7 @@ public class Tokenizer implements ITokenizer {
       nextChar();
   }
 
-  public @Nullable Token nextToken() {
+  public @Nullable Token nextToken() throws AParserError {
     eatWhitespace();
 
     if (!hasNextChar())
@@ -107,8 +109,16 @@ public class Tokenizer implements ITokenizer {
     }
 
     // No tokenizer matched
-    // TODO: Throw an error!
-    System.err.println("Nothing matched!");
-    return null;
+    throw new UnknownTokenError(state.row, state.col);
+  }
+
+  @Override
+  public int getCurrentRow() {
+    return state.row;
+  }
+
+  @Override
+  public int getCurrentCol() {
+    return state.col;
   }
 }

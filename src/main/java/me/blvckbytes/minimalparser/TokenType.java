@@ -2,6 +2,7 @@ package me.blvckbytes.minimalparser;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import me.blvckbytes.minimalparser.error.UnterminatedStringError;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Arrays;
@@ -60,6 +61,8 @@ public enum TokenType {
   }),
 
   LITERAL_STRING(TokenCategory.VALUE, tokenizer -> {
+    int startRow = tokenizer.getCurrentRow(), startCol = tokenizer.getCurrentCol();
+
     // String start marker not found
     if (tokenizer.nextChar() != '"')
       return null;
@@ -87,10 +90,8 @@ public enum TokenType {
     }
 
     // Strings need to be terminated
-    if (!isTerminated) {
-      // TODO: Throw descriptive error
-      return null;
-    }
+    if (!isTerminated)
+      throw new UnterminatedStringError(startRow, startCol);
 
     return result.toString();
   }),
