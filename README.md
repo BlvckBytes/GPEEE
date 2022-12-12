@@ -59,7 +59,7 @@ In order to not have to call functions for simple operations and to improve on r
 some of the most used operators have been implemented:
 
 ```ebnf
-BinaryOperator ::= ">" | "<" | ">=" | "<=" | "&" | "&&" | "||" | "==" | "===" | "+" | "-" | "*" | "/" | "^"
+BinaryOperator ::= ">" | "<" | ">=" | "<=" | "&" | "&&" | "||" | "==" | "===" | "+" | "-" | "*" | "/" | "^" | "%"
 UnaryOperator ::= "!"
 ```
 
@@ -67,23 +67,28 @@ UnaryOperator ::= "!"
 
 ![operator](readme_images/railroad_unary_operator.png)
 
-| Operator     | Example          | Description                                      |
-|--------------|------------------|--------------------------------------------------|
-| \>           | A \> B           | Yields `true` if A is greater than B             |
-| <            | A < B            | Yields `true` if A is less than B                |
-| \>=          | A \>= B          | Yields `true` if A is greater than or equal to B |
-| <=           | A <= B           | Yields `true` if A is less than or equal to B    |
-| +            | A + B            | Yields the sum of A and B                        |
-| -            | A - B            | Yields the difference of A and B                 |
-| *            | A * B            | Yields the product of A and B                    |
-| /            | A / B            | Yields the quotient of A and B                   |
-| ^            | A ^ B            | Yields A to the power of B                       |
-| &            | A & B            | Concatenates the contents of A and B             |
-| &&           | A && B           | Yields `true` if both A and B yield `true`       |
-| &#124;&#124; | A &#124;&#124; B | Yields `true` if either A or B yields `true`     |
-| !            | !A               | Yields the inverse of A                          |
-| ==           | A == B           | Yields `true` if A and B equal ignoring casing   |
-| ===          | A == B           | Yields `true` if A and B equal exactly           |
+The following operator list is sorted by precedence ascending, meaning the first operator
+has highest and the last lowest precedence. Expressions in parenthesis of course remain
+having the highest available precedence to enforce order of evaluation.
+
+| Operator     | Example          | Description                                      | Precedence |
+|--------------|------------------|--------------------------------------------------|------------|
+| ^            | A ^ B            | Yields A to the power of B                       | 1          |
+| *            | A * B            | Yields the product of A and B                    | 2          |
+| /            | A / B            | Yields the quotient of A and B                   | 2          |
+| %            | A % B            | Yields the remainder of dividing A by B          | 2          |
+| +            | A + B            | Yields the sum of A and B                        | 3          |
+| -            | A - B            | Yields the difference of A and B                 | 3          |
+| \>           | A \> B           | Yields `true` if A is greater than B             | 4          |
+| <            | A < B            | Yields `true` if A is less than B                | 4          |
+| \>=          | A \>= B          | Yields `true` if A is greater than or equal to B | 4          |
+| <=           | A <= B           | Yields `true` if A is less than or equal to B    | 4          |
+| ==           | A == B           | Yields `true` if A and B equal ignoring casing   | 4          |
+| ===          | A == B           | Yields `true` if A and B equal exactly           | 4          |
+| !            | !A               | Yields the inverse of A                          | 5          |
+| &&           | A && B           | Yields `true` if both A and B yield `true`       | 6          |
+| &#124;&#124; | A &#124;&#124; B | Yields `true` if either A or B yields `true`     | 7          |
+| &            | A & B            | Concatenates the contents of A and B             | 8          |
 
 A binary operator expects a left- as well as a right-hand side expression, while a unary operator
 just operates on a single right-hand expression.
