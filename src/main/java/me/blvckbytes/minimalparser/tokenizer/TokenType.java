@@ -102,6 +102,17 @@ public enum TokenType {
         break;
       }
 
+      if (c == 's') {
+        Character previous = tokenizer.previousChar();
+
+        // Escaped s character, substitute for single quote
+        if (previous != null && previous == '\\') {
+          result.deleteCharAt(result.length() - 1);
+          result.append('\'');
+          continue;
+        }
+      }
+
       result.append(c);
     }
 
