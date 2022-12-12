@@ -13,6 +13,7 @@ public enum MathOperation {
   SUBTRACTION(BigDecimal::subtract),
   MULTIPLICATION(BigDecimal::multiply),
   DIVISION(BigDecimal::divide),
+  POWER((a, b) -> a.pow(b.intValue())),
   ;
 
   private final BiFunction<BigDecimal, BigDecimal, BigDecimal> function;
