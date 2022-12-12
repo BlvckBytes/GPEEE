@@ -133,6 +133,8 @@ public enum TokenType {
 
   OP_BOOL_OR(TokenCategory.OPERATOR, tokenizer -> collectSequenceOrNullStr(tokenizer, '|', '|')),
 
+  OP_BOOL_NOT(TokenCategory.OPERATOR, tokenizer -> tokenizer.nextChar() == '!' ? "!" : null),
+
   OP_BOOL_AND(TokenCategory.OPERATOR, tokenizer -> collectSequenceOrNullStr(tokenizer, '&', '&')),
 
   OP_EQUALS(TokenCategory.OPERATOR, tokenizer -> collectSequenceOrNullStr(tokenizer, '=', '=')),
@@ -144,6 +146,22 @@ public enum TokenType {
   SYM_PAREN_OPEN(TokenCategory.SYMBOL, tokenizer -> tokenizer.nextChar() == '(' ? "(" : null),
   SYM_PAREN_CLOSE(TokenCategory.SYMBOL, tokenizer -> tokenizer.nextChar() == ')' ? ")" : null),
   SYM_COMMA(TokenCategory.SYMBOL, tokenizer -> tokenizer.nextChar() == ',' ? "," : null),
+
+  //=========================================================================//
+  //                                Invisible                                //
+  //=========================================================================//
+
+  COMMENT(TokenCategory.INVISIBLE, tokenizer -> {
+    StringBuilder result = new StringBuilder();
+
+    if (tokenizer.nextChar() != '#')
+      return null;
+
+    while (tokenizer.hasNextChar() && tokenizer.peekNextChar() != '\n')
+      result.append(tokenizer.nextChar());
+
+    return result.toString();
+  }),
   ;
 
   private final TokenCategory category;

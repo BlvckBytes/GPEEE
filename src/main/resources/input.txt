@@ -1,1 +1,4 @@
-<>123456<= >= -1212 )=="Hello, world!"+ >=&&4141.12( 33,+ >|| -45.29<, "I am \" &&ESCAPED!!!"(),++||==
+# This is a comment
+<>123456<= >= -1212 )==!"Hello, world!"!+ >=&&4141.12( 33,+ >|| !-45.29<, "I am \" &&ESCAPED!!!"(),++||==
+121# comment after number
+# This is another comment

@@ -7,8 +7,8 @@ import java.util.Stack;
 public class Tokenizer implements ITokenizer {
 
   private final char[] text;
+  private final Stack<TokenizerState> saveStates;
   private TokenizerState state;
-  private Stack<TokenizerState> saveStates;
 
   public Tokenizer(String text) {
     this.text = text.toCharArray();
@@ -74,7 +74,7 @@ public class Tokenizer implements ITokenizer {
   }
 
   private void eatWhitespace() {
-    while (hasNextChar() && isConsideredWhitespace(peekNextChar()))
+    while (hasNextChar() && (isConsideredWhitespace(peekNextChar()) || peekNextChar() == '\n'))
       nextChar();
   }
 
@@ -92,7 +92,6 @@ public class Tokenizer implements ITokenizer {
         continue;
 
       // Save tokenizer state
-      TokenizerState previousState = this.state;
       saveState();
 
       String result = reader.apply(this);
@@ -103,6 +102,7 @@ public class Tokenizer implements ITokenizer {
         continue;
       }
 
+      TokenizerState previousState = saveStates.pop();
       return new Token(tryType, previousState.row, previousState.col, result);
     }
 

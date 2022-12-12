@@ -12,7 +12,8 @@
 # Comparison >, <, >=, <=, ==
 # Boolean or ||
 # Boolean and &&
+# Boolean not !
 
-Function calls and variables make up the whole control flow, there will be NO keywords
+# Function calls and variables make up the whole control flow, there will be NO keywords
 
 # if(amount > 4 || amount < 2, "GREEN", "RED")
