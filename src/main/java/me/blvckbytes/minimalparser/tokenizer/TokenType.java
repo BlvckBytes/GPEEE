@@ -27,7 +27,7 @@ public enum TokenType {
     result.append(firstChar);
 
     // Collect until no more identifier chars remain
-    while (isIdentifierChar(tokenizer.peekNextChar(), false))
+    while (tokenizer.hasNextChar() && isIdentifierChar(tokenizer.peekNextChar(), false))
       result.append(tokenizer.nextChar());
 
     return result.toString();
@@ -37,7 +37,7 @@ public enum TokenType {
   INT(TokenCategory.VALUE, tokenizer -> {
     StringBuilder result = new StringBuilder();
 
-    if (collectInteger(tokenizer, result, false) != CollectorResult.READ_OKAY)
+    if (collectDigits(tokenizer, result, false) != CollectorResult.READ_OKAY)
       return null;
 
     return result.toString();
@@ -60,7 +60,7 @@ public enum TokenType {
     }
 
     // A float starts out like an integer
-    if (collectInteger(tokenizer, result, true) != CollectorResult.READ_OKAY)
+    if (collectDigits(tokenizer, result, true) != CollectorResult.READ_OKAY)
       return null;
 
     // Missing decimal point
@@ -127,13 +127,24 @@ public enum TokenType {
   //                                Operators                                //
   //=========================================================================//
 
-  CONCATENATE(TokenCategory.OPERATOR, tokenizer -> tokenizer.nextChar() == '+' ? "+" : null),
+  CONCATENATE(TokenCategory.OPERATOR, tokenizer -> {
+    if (tokenizer.nextChar() == '&') {
+
+      // Would be the double amp operator
+      if (tokenizer.hasNextChar() && tokenizer.peekNextChar() == '&')
+        return null;
+
+      return "&";
+    }
+
+    return null;
+  }),
 
   GREATER_THAN(TokenCategory.OPERATOR, tokenizer -> {
     if (tokenizer.nextChar() == '>') {
 
       // Would be less than or equal
-      if (tokenizer.peekNextChar() == '=')
+      if (tokenizer.hasNextChar() && tokenizer.peekNextChar() == '=')
         return null;
 
       return ">";
@@ -148,7 +159,7 @@ public enum TokenType {
     if (tokenizer.nextChar() == '<') {
 
       // Would be less than or equal
-      if (tokenizer.peekNextChar() == '=')
+      if (tokenizer.hasNextChar() && tokenizer.peekNextChar() == '=')
         return null;
 
       return "<";
@@ -158,6 +169,11 @@ public enum TokenType {
   }),
 
   LESS_THAN_OR_EQUAL(TokenCategory.OPERATOR, tokenizer -> collectSequenceOrNullStr(tokenizer, '<', '=')),
+
+  ADDITION(TokenCategory.OPERATOR, tokenizer -> tokenizer.nextChar() == '+' ? "+" : null),
+  SUBTRACTION(TokenCategory.OPERATOR, tokenizer -> tokenizer.nextChar() == '-' ? "-" : null),
+  MULTIPLICATION(TokenCategory.OPERATOR, tokenizer -> tokenizer.nextChar() == '*' ? "*" : null),
+  DIVISION(TokenCategory.OPERATOR, tokenizer -> tokenizer.nextChar() == '/' ? "/" : null),
 
   BOOL_OR(TokenCategory.OPERATOR, tokenizer -> collectSequenceOrNullStr(tokenizer, '|', '|')),
   BOOL_NOT(TokenCategory.OPERATOR, tokenizer -> tokenizer.nextChar() == '!' ? "!" : null),
@@ -170,7 +186,7 @@ public enum TokenType {
       return null;
 
     // Would be a triple equals
-    if (tokenizer.peekNextChar() == '=')
+    if (tokenizer.hasNextChar() && tokenizer.peekNextChar() == '=')
       return null;
 
     return sequence;
@@ -213,38 +229,15 @@ public enum TokenType {
 
   static {
     values = values();
-    nonValueTypes = Arrays.stream(values()).filter(type -> type.getCategory() != TokenCategory.VALUE).toArray(TokenType[]::new);
-  }
-
-  private static CollectorResult collectInteger(ITokenizer tokenizer, StringBuilder result, boolean stopAtDot) {
-    if (!tokenizer.hasNextChar())
-      return CollectorResult.NO_NEXT_CHAR;
-
-    char firstChar = tokenizer.nextChar();
-
-    // May start with any digit or a minus sign (negative number)
-    if ((firstChar >= '0' && firstChar <= '9') || firstChar == '-')
-      result.append(firstChar);
-    else {
-      tokenizer.undoNextChar();
-      return CollectorResult.CHAR_MISMATCH;
-    }
-
-    CollectorResult digitResult = collectDigits(tokenizer, result, stopAtDot);
-
-    if (digitResult == CollectorResult.CHAR_MISMATCH)
-      return CollectorResult.CHAR_MISMATCH;
-
-    // Negative number started but no digits available
-    if (digitResult == CollectorResult.NO_NEXT_CHAR && firstChar == '-')
-      return CollectorResult.NO_NEXT_CHAR;
-
-    return CollectorResult.READ_OKAY;
+    nonValueTypes = Arrays.stream(values())
+      .filter(type -> type.getCategory() != TokenCategory.VALUE).toArray(TokenType[]::new);
   }
 
   private static CollectorResult collectDigits(ITokenizer tokenizer, StringBuilder result, boolean stopBeforeDot) {
     if (!tokenizer.hasNextChar())
       return CollectorResult.NO_NEXT_CHAR;
+
+    int initialLength = result.length();
 
     while (tokenizer.hasNextChar()) {
       char c = tokenizer.nextChar();
@@ -265,7 +258,7 @@ public enum TokenType {
       else {
         tokenizer.undoNextChar();
 
-        if (wouldFollow(tokenizer, nonValueTypes))
+        if (result.length() - initialLength > 0 && wouldFollow(tokenizer, nonValueTypes))
           return CollectorResult.READ_OKAY;
 
         return CollectorResult.CHAR_MISMATCH;

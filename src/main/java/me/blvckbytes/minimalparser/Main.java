@@ -2,7 +2,6 @@ package me.blvckbytes.minimalparser;
 
 import me.blvckbytes.minimalparser.functions.AExpressionFunction;
 import me.blvckbytes.minimalparser.functions.AddExpressionFunction;
-import me.blvckbytes.minimalparser.functions.EqualsExpressionFunction;
 import me.blvckbytes.minimalparser.functions.IfExpressionFunction;
 import me.blvckbytes.minimalparser.parser.ExpressionParser;
 import me.blvckbytes.minimalparser.parser.NumberCompare;
@@ -40,7 +39,6 @@ public class Main {
           Map<String, AExpressionFunction> map = new HashMap<>();
 
           map.put("if", new IfExpressionFunction());
-          map.put("equals", new EqualsExpressionFunction());
           map.put("add", new AddExpressionFunction());
 
           return map;

@@ -59,7 +59,7 @@ In order to not have to call functions for simple operations and to improve on r
 some of the most used operators have been implemented:
 
 ```ebnf
-BinaryOperator ::= ">" | "<" | ">=" | "<=" | "+" | "&&" | "||" | "==" | "==="
+BinaryOperator ::= ">" | "<" | ">=" | "<=" | "&" | "&&" | "||" | "==" | "===" | "+" | "-" | "*" | "/" | "^"
 UnaryOperator ::= "!"
 ```
 
@@ -72,7 +72,12 @@ UnaryOperator ::= "!"
 | \>           | A \> B           | Yields `true` if A is greater than B             |
 | \>=          | A \>= B          | Yields `true` if A is greater than or equal to B |
 | <=           | A <= B           | Yields `true` if A is less than or equal to B    |
-| +            | A + B            | Concatenates the contents of A and B             |
+| +            | A + B            | Yields the sum of A and B                        |
+| -            | A - B            | Yields the difference of A and B                 |
+| *            | A * B            | Yields the product of A and B                    |
+| /            | A / B            | Yields the quotient of A and B                   |
+| ^            | A ^ B            | Yields A to the power of B                       |
+| &            | A & B            | Concatenates the contents of A and B             |
 | &&           | A && B           | Yields `true` if both A and B yield `true`       |
 | &#124;&#124; | A &#124;&#124; B | Yields `true` if either A or B yields `true`     |
 | !            | !A               | Yields the inverse of A                          |
