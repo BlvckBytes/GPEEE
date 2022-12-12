@@ -15,10 +15,26 @@ public enum TokenType {
   //                                  Values                                 //
   //=========================================================================//
 
-  IDENTIFIER(TokenCategory.VALUE, null),
+  IDENTIFIER(TokenCategory.VALUE, tokenizer -> {
+    StringBuilder result = new StringBuilder();
+
+    char firstChar = tokenizer.nextChar();
+
+    // Identifiers always start with letters
+    if (!isIdentifierChar(firstChar, true))
+      return null;
+
+    result.append(firstChar);
+
+    // Collect until no more identifier chars remain
+    while (isIdentifierChar(tokenizer.peekNextChar(), false))
+      result.append(tokenizer.nextChar());
+
+    return result.toString();
+  }),
 
   // -?[0-9]+
-  LITERAL_INT(TokenCategory.VALUE, tokenizer -> {
+  INT(TokenCategory.VALUE, tokenizer -> {
     StringBuilder result = new StringBuilder();
 
     if (collectInteger(tokenizer, result, false) != CollectorResult.READ_OKAY)
@@ -28,7 +44,7 @@ public enum TokenType {
   }),
 
   // -?[0-9]*.?[0-9]+
-  LITERAL_FLOAT(TokenCategory.VALUE, tokenizer -> {
+  FLOAT(TokenCategory.VALUE, tokenizer -> {
     StringBuilder result = new StringBuilder();
 
     // Shorthand 0.x notation
@@ -60,7 +76,7 @@ public enum TokenType {
     return result.toString();
   }),
 
-  LITERAL_STRING(TokenCategory.VALUE, tokenizer -> {
+  STRING(TokenCategory.VALUE, tokenizer -> {
     int startRow = tokenizer.getCurrentRow(), startCol = tokenizer.getCurrentCol();
 
     // String start marker not found
@@ -100,9 +116,9 @@ public enum TokenType {
   //                                Operators                                //
   //=========================================================================//
 
-  OP_CONCATENATE(TokenCategory.OPERATOR, tokenizer -> tokenizer.nextChar() == '+' ? "+" : null),
+  CONCATENATE(TokenCategory.OPERATOR, tokenizer -> tokenizer.nextChar() == '+' ? "+" : null),
 
-  OP_GREATER_THAN(TokenCategory.OPERATOR, tokenizer -> {
+  GREATER_THAN(TokenCategory.OPERATOR, tokenizer -> {
     if (tokenizer.nextChar() == '>') {
 
       // Would be less than or equal
@@ -115,9 +131,9 @@ public enum TokenType {
     return null;
   }),
 
-  OP_GREATER_THAN_OR_EQUAL(TokenCategory.OPERATOR, tokenizer -> collectSequenceOrNullStr(tokenizer, '>', '=')),
+  GREATER_THAN_OR_EQUAL(TokenCategory.OPERATOR, tokenizer -> collectSequenceOrNullStr(tokenizer, '>', '=')),
 
-  OP_LESS_THAN(TokenCategory.OPERATOR, tokenizer -> {
+  LESS_THAN(TokenCategory.OPERATOR, tokenizer -> {
     if (tokenizer.nextChar() == '<') {
 
       // Would be less than or equal
@@ -130,23 +146,22 @@ public enum TokenType {
     return null;
   }),
 
-  OP_LESS_THAN_OR_EQUAL(TokenCategory.OPERATOR, tokenizer -> collectSequenceOrNullStr(tokenizer, '<', '=')),
+  LESS_THAN_OR_EQUAL(TokenCategory.OPERATOR, tokenizer -> collectSequenceOrNullStr(tokenizer, '<', '=')),
 
-  OP_BOOL_OR(TokenCategory.OPERATOR, tokenizer -> collectSequenceOrNullStr(tokenizer, '|', '|')),
-
-  OP_BOOL_NOT(TokenCategory.OPERATOR, tokenizer -> tokenizer.nextChar() == '!' ? "!" : null),
-
-  OP_BOOL_AND(TokenCategory.OPERATOR, tokenizer -> collectSequenceOrNullStr(tokenizer, '&', '&')),
-
-  OP_EQUALS(TokenCategory.OPERATOR, tokenizer -> collectSequenceOrNullStr(tokenizer, '=', '=')),
+  BOOL_OR(TokenCategory.OPERATOR, tokenizer -> collectSequenceOrNullStr(tokenizer, '|', '|')),
+  BOOL_NOT(TokenCategory.OPERATOR, tokenizer -> tokenizer.nextChar() == '!' ? "!" : null),
+  BOOL_AND(TokenCategory.OPERATOR, tokenizer -> collectSequenceOrNullStr(tokenizer, '&', '&')),
+  VALUE_EQUALS(TokenCategory.OPERATOR, tokenizer -> collectSequenceOrNullStr(tokenizer, '=', '=')),
 
   //=========================================================================//
   //                                 Symbols                                 //
   //=========================================================================//
 
-  SYM_PAREN_OPEN(TokenCategory.SYMBOL, tokenizer -> tokenizer.nextChar() == '(' ? "(" : null),
-  SYM_PAREN_CLOSE(TokenCategory.SYMBOL, tokenizer -> tokenizer.nextChar() == ')' ? ")" : null),
-  SYM_COMMA(TokenCategory.SYMBOL, tokenizer -> tokenizer.nextChar() == ',' ? "," : null),
+  PARENTHESIS_OPEN(TokenCategory.SYMBOL, tokenizer -> tokenizer.nextChar() == '(' ? "(" : null),
+  PARENTHESIS_CLOSE(TokenCategory.SYMBOL, tokenizer -> tokenizer.nextChar() == ')' ? ")" : null),
+  BRACKET_OPEN(TokenCategory.SYMBOL, tokenizer -> tokenizer.nextChar() == ']' ? "]" : null),
+  BRACKET_CLOSE(TokenCategory.SYMBOL, tokenizer -> tokenizer.nextChar() == '[' ? "[" : null),
+  COMMA(TokenCategory.SYMBOL, tokenizer -> tokenizer.nextChar() == ',' ? "," : null),
 
   //=========================================================================//
   //                                Invisible                                //
@@ -279,5 +294,13 @@ public enum TokenType {
 
     // None matched
     return false;
+  }
+
+  private static boolean isIdentifierChar(char c, boolean isFirst) {
+    return (
+      (c >= 'a' && c <= 'z') ||
+      (c >= 'A' && c <= 'Z') ||
+      (!isFirst && (c == '_' || c >= '0' && c <= '9'))
+    );
   }
 }

@@ -14,7 +14,7 @@ public class Token {
   @Override
   public String toString() {
     return "Token{" +
-      "type=" + type +
+      "type=" + type + " (" + type.getCategory() + ")" +
       ", row=" + row +
       ", col=" + col +
       ", value='" + value + '\'' +

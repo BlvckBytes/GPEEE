@@ -8,12 +8,13 @@
 # Variable request {identifier}
 # Value integer|float|string|identifier
 # Function call identifier(value)
+# Lookup table access name["key"]
 # Concatenation value + value
 # Comparison >, <, >=, <=, ==
 # Boolean or ||
 # Boolean and &&
 # Boolean not !
 
-# Function calls and variables make up the whole control flow, there will be NO keywords
+# Function calls and variables/LUTs make up the whole control flow, there will be NO keywords
 
 # if(amount > 4 || amount < 2, "GREEN", "RED")
