@@ -1,0 +1,19 @@
+# These are comments
+
+# What do I need?
+# Integer literals -?[0-9]+
+# Float literals -?[0-9]*\.?[0-9]+
+# String literals "[^"]*" with \" as a means to escape and \\ to escape \
+# Identifier [A-Za-z][A-Za-z0-9]*
+# Variable request {identifier}
+# Value integer|float|string|identifier
+# Function call identifier(value)
+# Concatenation value + value
+# Comparison >, <, >=, <=, ==
+# Boolean or ||
+# Boolean and &&
+
+# If (amount > 4 || amount < 2) GREEN else RED
+
+# if(or(gt(amount, 4), gt(amount, 4)), "GREEN", "RED")
+# if(amount > 4 || amount < 2, "GREEN", "RED")
