@@ -6,6 +6,8 @@ import me.blvckbytes.minimalparser.error.UnterminatedStringError;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Arrays;
+import java.util.Comparator;
+import java.util.stream.Stream;
 
 @Getter
 @AllArgsConstructor
@@ -151,11 +153,11 @@ public enum TokenType {
   VALUE_EQUALS_EXACT(TokenCategory.OPERATOR, 4, tokenizer -> tryCollectSequenceWithNextCheck(tokenizer, null, '=', '=', '=')),
   VALUE_NOT_EQUALS_EXACT(TokenCategory.OPERATOR, 4, tokenizer -> tryCollectSequenceWithNextCheck(tokenizer, null, '!', '=', '=')),
 
-  CONCATENATE(TokenCategory.OPERATOR, 8, tokenizer -> tryCollectSequenceWithNextCheck(tokenizer, '&', '&')),
+  CONCATENATE(TokenCategory.OPERATOR, 8, tokenizer -> tryCollectSequenceWithNextCheck(tokenizer, null, '&')),
 
-  BOOL_NOT(TokenCategory.OPERATOR, 5, tokenizer -> tryCollectSequenceWithNextCheck(tokenizer, '=', '!')),
-  BOOL_AND(TokenCategory.OPERATOR, 6, tokenizer -> tryCollectSequenceWithNextCheck(tokenizer, null, '&', '&')),
-  BOOL_OR(TokenCategory.OPERATOR, 7, tokenizer -> tryCollectSequenceWithNextCheck(tokenizer, null, '|', '|')),
+  BOOL_NOT(TokenCategory.KEYWORD, 5, tokenizer -> tryCollectSequenceWithNextCheck(tokenizer, null, "not".toCharArray())),
+  BOOL_AND(TokenCategory.KEYWORD, 6, tokenizer -> tryCollectSequenceWithNextCheck(tokenizer, null, "and".toCharArray())),
+  BOOL_OR(TokenCategory.KEYWORD, 7, tokenizer -> tryCollectSequenceWithNextCheck(tokenizer, null, "or".toCharArray())),
 
   //=========================================================================//
   //                                 Symbols                                 //
@@ -188,12 +190,15 @@ public enum TokenType {
   private final @Nullable Integer precedence;
   private final @Nullable FTokenReader tokenReader;
 
-  public static final TokenType[] values;
+  public static final TokenType[] valuesInTrialOrder;
   public static final TokenType[] nonValueTypes;
   public static final TokenType[] valueTypes;
 
   static {
-    values = values();
+    valuesInTrialOrder =
+      Arrays.stream(values())
+      .sorted(Comparator.comparingInt(tt -> tt.getCategory().ordinal()))
+      .toArray(TokenType[]::new);
 
     nonValueTypes = Arrays.stream(values())
       .filter(type -> type.getCategory() != TokenCategory.VALUE)

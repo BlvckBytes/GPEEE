@@ -120,7 +120,7 @@ public class Tokenizer implements ITokenizer {
     if (!hasNextChar())
       return null;
 
-    for (TokenType tryType : TokenType.values) {
+    for (TokenType tryType : TokenType.valuesInTrialOrder) {
       FTokenReader reader = tryType.getTokenReader();
 
       // Token not yet implemented
