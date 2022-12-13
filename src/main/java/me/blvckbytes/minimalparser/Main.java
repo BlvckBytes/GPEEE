@@ -5,7 +5,6 @@ import me.blvckbytes.minimalparser.error.AParserError;
 import me.blvckbytes.minimalparser.functions.AExpressionFunction;
 import me.blvckbytes.minimalparser.functions.IfExpressionFunction;
 import me.blvckbytes.minimalparser.parser.ExpressionParser;
-import me.blvckbytes.minimalparser.parser.NumberCompare;
 import me.blvckbytes.minimalparser.parser.expression.AExpression;
 import me.blvckbytes.minimalparser.tokenizer.Tokenizer;
 import org.jetbrains.annotations.Nullable;
@@ -107,9 +106,11 @@ public class Main {
             );
           }
 
-          return tryParseNumber(input)
-            .filter(n -> NumberCompare.GREATER_THAN.apply(n, 0, this))
-            .isPresent();
+//          return tryParseNumber(input)
+//            .filter(n -> NumberCompare.GREATER_THAN.apply(n, 0, this))
+//            .isPresent();
+          // FIXME
+          return false;
         }
 
         /**
@@ -154,7 +155,7 @@ public class Main {
 
 //      String test = "10 + 8.1 * myVar / 2 - 4 * \\\"Hello, world!\\\" ";
 
-      Tokenizer tk = new Tokenizer("10 + 2 * 2^2 - 1");
+      Tokenizer tk = new Tokenizer("10 + 2 * 2^2 - 1 >= 5*5 - 3 + 2^1 < 3 != 5");
       ExpressionParser parser = new ExpressionParser(tk);
 
       AExpression expression;
