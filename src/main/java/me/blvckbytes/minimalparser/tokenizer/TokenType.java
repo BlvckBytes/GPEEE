@@ -134,20 +134,20 @@ public enum TokenType {
   ADDITION(TokenCategory.OPERATOR, 3, tokenizer -> tokenizer.nextChar() == '+' ? "+" : null),
   SUBTRACTION(TokenCategory.OPERATOR, 3, tokenizer -> tokenizer.nextChar() == '-' ? "-" : null),
 
-  GREATER_THAN(TokenCategory.OPERATOR, 4, tokenizer -> collectSequenceOrNullStr(tokenizer, '=', '>')),
-  GREATER_THAN_OR_EQUAL(TokenCategory.OPERATOR, 4, tokenizer -> collectSequenceOrNullStr(tokenizer, null, '>', '=')),
-  LESS_THAN(TokenCategory.OPERATOR, 4, tokenizer -> collectSequenceOrNullStr(tokenizer, '=', '<')),
-  LESS_THAN_OR_EQUAL(TokenCategory.OPERATOR, 4, tokenizer -> collectSequenceOrNullStr(tokenizer, null, '<', '=')),
-  VALUE_EQUALS(TokenCategory.OPERATOR, 4, tokenizer -> collectSequenceOrNullStr(tokenizer, '=', '=', '=')),
-  VALUE_NOT_EQUALS(TokenCategory.OPERATOR, 4, tokenizer -> collectSequenceOrNullStr(tokenizer, '=', '!', '=')),
-  VALUE_EQUALS_EXACT(TokenCategory.OPERATOR, 4, tokenizer -> collectSequenceOrNullStr(tokenizer, null, '=', '=', '=')),
-  VALUE_NOT_EQUALS_EXACT(TokenCategory.OPERATOR, 4, tokenizer -> collectSequenceOrNullStr(tokenizer, null, '!', '=', '=')),
+  GREATER_THAN(TokenCategory.OPERATOR, 4, tokenizer -> tryCollectSequenceWithNextCheck(tokenizer, '=', '>')),
+  GREATER_THAN_OR_EQUAL(TokenCategory.OPERATOR, 4, tokenizer -> tryCollectSequenceWithNextCheck(tokenizer, null, '>', '=')),
+  LESS_THAN(TokenCategory.OPERATOR, 4, tokenizer -> tryCollectSequenceWithNextCheck(tokenizer, '=', '<')),
+  LESS_THAN_OR_EQUAL(TokenCategory.OPERATOR, 4, tokenizer -> tryCollectSequenceWithNextCheck(tokenizer, null, '<', '=')),
+  VALUE_EQUALS(TokenCategory.OPERATOR, 4, tokenizer -> tryCollectSequenceWithNextCheck(tokenizer, '=', '=', '=')),
+  VALUE_NOT_EQUALS(TokenCategory.OPERATOR, 4, tokenizer -> tryCollectSequenceWithNextCheck(tokenizer, '=', '!', '=')),
+  VALUE_EQUALS_EXACT(TokenCategory.OPERATOR, 4, tokenizer -> tryCollectSequenceWithNextCheck(tokenizer, null, '=', '=', '=')),
+  VALUE_NOT_EQUALS_EXACT(TokenCategory.OPERATOR, 4, tokenizer -> tryCollectSequenceWithNextCheck(tokenizer, null, '!', '=', '=')),
 
-  CONCATENATE(TokenCategory.OPERATOR, 8, tokenizer -> collectSequenceOrNullStr(tokenizer, '&', '&')),
+  CONCATENATE(TokenCategory.OPERATOR, 8, tokenizer -> tryCollectSequenceWithNextCheck(tokenizer, '&', '&')),
 
-  BOOL_NOT(TokenCategory.OPERATOR, 5, tokenizer -> collectSequenceOrNullStr(tokenizer, '=', '!')),
-  BOOL_AND(TokenCategory.OPERATOR, 6, tokenizer -> collectSequenceOrNullStr(tokenizer, null, '&', '&')),
-  BOOL_OR(TokenCategory.OPERATOR, 7, tokenizer -> collectSequenceOrNullStr(tokenizer, null, '|', '|')),
+  BOOL_NOT(TokenCategory.OPERATOR, 5, tokenizer -> tryCollectSequenceWithNextCheck(tokenizer, '=', '!')),
+  BOOL_AND(TokenCategory.OPERATOR, 6, tokenizer -> tryCollectSequenceWithNextCheck(tokenizer, null, '&', '&')),
+  BOOL_OR(TokenCategory.OPERATOR, 7, tokenizer -> tryCollectSequenceWithNextCheck(tokenizer, null, '|', '|')),
 
   //=========================================================================//
   //                                 Symbols                                 //
@@ -231,7 +231,7 @@ public enum TokenType {
     return CollectorResult.READ_OKAY;
   }
 
-  private static @Nullable String collectSequenceOrNullStr(ITokenizer tokenizer, @Nullable Character notNext, char... sequence) {
+  private static @Nullable String tryCollectSequenceWithNextCheck(ITokenizer tokenizer, @Nullable Character notNext, char... sequence) {
     StringBuilder result = new StringBuilder();
 
     if (collectSequence(tokenizer, result, sequence) != CollectorResult.READ_OKAY)
