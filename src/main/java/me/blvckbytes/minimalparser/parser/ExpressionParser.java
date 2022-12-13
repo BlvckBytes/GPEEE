@@ -19,7 +19,8 @@ public class ExpressionParser {
     MultiplicativeOperator ::= "*" | "/" | "%"
 
     PrimaryExpression ::= Int | Float | String | Identifier
-    MultiplicativeExpression ::= PrimaryExpression (MultiplicativeOperator PrimaryExpression)*
+    ExponentiationExpression ::= PrimaryExpression (MultiplicativeOperator PrimaryExpression)*
+    MultiplicativeExpression ::= ExponentiationExpression (MultiplicativeOperator ExponentiationExpression)*
     AdditiveExpression ::= MultiplicativeExpression (AdditiveOperator MultiplicativeExpression)*
    */
 
@@ -50,6 +51,8 @@ public class ExpressionParser {
       if (tk.getType() == TokenType.SUBTRACTION)
         operator = MathOperation.SUBTRACTION;
 
+      // Put the previously parsed expression into the left hand side of the new addition
+      // and try to parse another same-precedence expression for the right hand side
       lhs = new BinaryExpression(lhs, parseMultiplicativeExpression(), operator);
     }
 
@@ -57,12 +60,12 @@ public class ExpressionParser {
   }
 
   /**
-   * Parses an expression made up of multiplicative expressions with primary expression
+   * Parses an expression made up of multiplicative expressions with exponentiation expression
    * operands and keeps on collecting as many same-precedence expressions as available.
-   * If there's no multiplicative operator available, this path will yield a primary expression.
+   * If there's no multiplicative operator available, this path will yield a exponentiation expression.
    */
   private AExpression parseMultiplicativeExpression() throws AParserError {
-    AExpression lhs = parsePrimaryExpression();
+    AExpression lhs = parseExponentiationExpression();
     Token tk;
 
     while (
@@ -79,7 +82,32 @@ public class ExpressionParser {
       else if (tk.getType() == TokenType.MODULO)
         operator = MathOperation.MODULO;
 
-      lhs = new BinaryExpression(lhs, parsePrimaryExpression(), operator);
+      // Put the previously parsed expression into the left hand side of the new multiplication
+      // and try to parse another same-precedence expression for the right hand side
+      lhs = new BinaryExpression(lhs, parseExponentiationExpression(), operator);
+    }
+
+    return lhs;
+  }
+
+  /**
+   * Parses an expression made up of exponential expressions with primary expression
+   * operands and keeps on collecting as many same-precedence expressions as available.
+   * If there's no exponentiation operator available, this path will yield a primary expression.
+   */
+  private AExpression parseExponentiationExpression() throws AParserError {
+    AExpression lhs = parsePrimaryExpression();
+    Token tk;
+
+    while (
+      (tk = tokenizer.peekToken()) != null &&
+      tk.getType() == TokenType.EXPONENT
+    ) {
+      tokenizer.consumeToken();
+
+      // Put the previously parsed expression into the left hand side of the new exponentiation
+      // and try to parse another same-precedence expression for the right hand side
+      lhs = new BinaryExpression(lhs, parsePrimaryExpression(), MathOperation.POWER);
     }
 
     return lhs;

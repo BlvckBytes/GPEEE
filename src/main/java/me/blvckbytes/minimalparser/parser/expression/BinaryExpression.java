@@ -37,6 +37,9 @@ public class BinaryExpression extends AExpression {
       case MODULO:
         return lhsV % rhsV;
 
+      case POWER:
+        return (int) Math.pow(lhsV, rhsV);
+
       default:
         return 0;
     }
