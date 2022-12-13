@@ -8,19 +8,12 @@ import me.blvckbytes.minimalparser.error.AParserError;
 
 @Getter
 @AllArgsConstructor
-public class StringEqualsExpression extends AExpression {
+public class StringExpression extends AExpression {
 
-  private final Object valueA, valueB;
-  private final boolean exact;
+  private final String value;
 
   @Override
   public Object evaluate(IEvaluationContext context, IValueInterpreter valueInterpreter) throws AParserError {
-    String stringA = evaluateExpression(valueA, context, valueInterpreter).toString();
-    String stringB = evaluateExpression(valueB, context, valueInterpreter).toString();
-
-    if (exact)
-      return stringA.equals(stringB);
-
-    return stringA.equalsIgnoreCase(stringB);
+    return value;
   }
 }

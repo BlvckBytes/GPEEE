@@ -134,67 +134,20 @@ public enum TokenType {
   ADDITION(TokenCategory.OPERATOR, 3, tokenizer -> tokenizer.nextChar() == '+' ? "+" : null),
   SUBTRACTION(TokenCategory.OPERATOR, 3, tokenizer -> tokenizer.nextChar() == '-' ? "-" : null),
 
-  GREATER_THAN(TokenCategory.OPERATOR, 4, tokenizer -> {
-    if (tokenizer.nextChar() == '>') {
+  GREATER_THAN(TokenCategory.OPERATOR, 4, tokenizer -> collectSequenceOrNullStr(tokenizer, '=', '>')),
+  GREATER_THAN_OR_EQUAL(TokenCategory.OPERATOR, 4, tokenizer -> collectSequenceOrNullStr(tokenizer, null, '>', '=')),
+  LESS_THAN(TokenCategory.OPERATOR, 4, tokenizer -> collectSequenceOrNullStr(tokenizer, '=', '<')),
+  LESS_THAN_OR_EQUAL(TokenCategory.OPERATOR, 4, tokenizer -> collectSequenceOrNullStr(tokenizer, null, '<', '=')),
+  VALUE_EQUALS(TokenCategory.OPERATOR, 4, tokenizer -> collectSequenceOrNullStr(tokenizer, '=', '=', '=')),
+  VALUE_NOT_EQUALS(TokenCategory.OPERATOR, 4, tokenizer -> collectSequenceOrNullStr(tokenizer, '=', '!', '=')),
+  VALUE_EQUALS_EXACT(TokenCategory.OPERATOR, 4, tokenizer -> collectSequenceOrNullStr(tokenizer, null, '=', '=', '=')),
+  VALUE_NOT_EQUALS_EXACT(TokenCategory.OPERATOR, 4, tokenizer -> collectSequenceOrNullStr(tokenizer, null, '!', '=', '=')),
 
-      // Would be less than or equal
-      if (tokenizer.hasNextChar() && tokenizer.peekNextChar() == '=')
-        return null;
+  CONCATENATE(TokenCategory.OPERATOR, 8, tokenizer -> collectSequenceOrNullStr(tokenizer, '&', '&')),
 
-      return ">";
-    }
-
-    return null;
-  }),
-
-  GREATER_THAN_OR_EQUAL(TokenCategory.OPERATOR, 4, tokenizer -> collectSequenceOrNullStr(tokenizer, '>', '=')),
-
-  LESS_THAN(TokenCategory.OPERATOR, 4, tokenizer -> {
-    if (tokenizer.nextChar() == '<') {
-
-      // Would be less than or equal
-      if (tokenizer.hasNextChar() && tokenizer.peekNextChar() == '=')
-        return null;
-
-      return "<";
-    }
-
-    return null;
-  }),
-
-  LESS_THAN_OR_EQUAL(TokenCategory.OPERATOR, 4, tokenizer -> collectSequenceOrNullStr(tokenizer, '<', '=')),
-
-  VALUE_EQUALS(TokenCategory.OPERATOR, 4, tokenizer -> {
-    String sequence = collectSequenceOrNullStr(tokenizer, '=', '=');
-
-    if (sequence == null)
-      return null;
-
-    // Would be a triple equals
-    if (tokenizer.hasNextChar() && tokenizer.peekNextChar() == '=')
-      return null;
-
-    return sequence;
-  }),
-
-  VALUE_EQUALS_EXACT(TokenCategory.OPERATOR, 4, tokenizer -> collectSequenceOrNullStr(tokenizer, '=', '=', '=')),
-
-  CONCATENATE(TokenCategory.OPERATOR, 8, tokenizer -> {
-    if (tokenizer.nextChar() == '&') {
-
-      // Would be the double amp operator
-      if (tokenizer.hasNextChar() && tokenizer.peekNextChar() == '&')
-        return null;
-
-      return "&";
-    }
-
-    return null;
-  }),
-
-  BOOL_NOT(TokenCategory.OPERATOR, 5, tokenizer -> tokenizer.nextChar() == '!' ? "!" : null),
-  BOOL_AND(TokenCategory.OPERATOR, 6, tokenizer -> collectSequenceOrNullStr(tokenizer, '&', '&')),
-  BOOL_OR(TokenCategory.OPERATOR, 7, tokenizer -> collectSequenceOrNullStr(tokenizer, '|', '|')),
+  BOOL_NOT(TokenCategory.OPERATOR, 5, tokenizer -> collectSequenceOrNullStr(tokenizer, '=', '!')),
+  BOOL_AND(TokenCategory.OPERATOR, 6, tokenizer -> collectSequenceOrNullStr(tokenizer, null, '&', '&')),
+  BOOL_OR(TokenCategory.OPERATOR, 7, tokenizer -> collectSequenceOrNullStr(tokenizer, null, '|', '|')),
 
   //=========================================================================//
   //                                 Symbols                                 //
@@ -229,11 +182,18 @@ public enum TokenType {
 
   public static final TokenType[] values;
   public static final TokenType[] nonValueTypes;
+  public static final TokenType[] valueTypes;
 
   static {
     values = values();
+
     nonValueTypes = Arrays.stream(values())
-      .filter(type -> type.getCategory() != TokenCategory.VALUE).toArray(TokenType[]::new);
+      .filter(type -> type.getCategory() != TokenCategory.VALUE)
+      .toArray(TokenType[]::new);
+
+    valueTypes = Arrays.stream(values())
+      .filter(type -> type.getCategory() == TokenCategory.VALUE)
+      .toArray(TokenType[]::new);
   }
 
   private static CollectorResult collectDigits(ITokenizer tokenizer, StringBuilder result, boolean stopBeforeDot) {
@@ -271,10 +231,13 @@ public enum TokenType {
     return CollectorResult.READ_OKAY;
   }
 
-  private static String collectSequenceOrNullStr(ITokenizer tokenizer, char... sequence) {
+  private static @Nullable String collectSequenceOrNullStr(ITokenizer tokenizer, @Nullable Character notNext, char... sequence) {
     StringBuilder result = new StringBuilder();
 
     if (collectSequence(tokenizer, result, sequence) != CollectorResult.READ_OKAY)
+      return null;
+
+    if (notNext != null && tokenizer.hasNextChar() && tokenizer.peekNextChar() == notNext)
       return null;
 
     return result.toString();
@@ -317,10 +280,18 @@ public enum TokenType {
     return false;
   }
 
+  /**
+   * Checks whether a given character is within the range of allowed
+   * characters to make up an identifier token
+   * @param c Character in question
+   * @param isFirst Whether it's the first char of the token (special rules apply)
+   * @return True if allowed, false otherwise
+   */
   private static boolean isIdentifierChar(char c, boolean isFirst) {
     return (
       (c >= 'a' && c <= 'z') ||
       (c >= 'A' && c <= 'Z') ||
+      // Underscores as well as numbers aren't allowed as the first character
       (!isFirst && (c == '_' || c >= '0' && c <= '9'))
     );
   }

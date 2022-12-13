@@ -15,6 +15,7 @@ public class Tokenizer implements ITokenizer {
   private final char[] text;
   private final Stack<TokenizerState> saveStates;
   private TokenizerState state;
+  private Token currentToken;
 
   public Tokenizer(String text) {
     this.rawText = text;
@@ -85,7 +86,35 @@ public class Tokenizer implements ITokenizer {
       nextChar();
   }
 
-  public @Nullable Token nextToken() throws AParserError {
+  @Override
+  public @Nullable Token peekToken() throws AParserError {
+    if (currentToken == null)
+      currentToken = readNextToken();
+
+    return currentToken;
+  }
+
+  public @Nullable Token consumeToken() throws AParserError {
+    if (currentToken == null)
+      currentToken = readNextToken();
+
+    Token result = currentToken;
+    currentToken = readNextToken();
+
+    return result;
+  }
+
+  @Override
+  public int getCurrentRow() {
+    return state.row;
+  }
+
+  @Override
+  public int getCurrentCol() {
+    return state.col;
+  }
+
+  private @Nullable Token readNextToken() throws AParserError {
     eatWhitespace();
 
     if (!hasNextChar())
@@ -98,7 +127,6 @@ public class Tokenizer implements ITokenizer {
       if (reader == null)
         continue;
 
-      // Save tokenizer state
       saveState();
 
       String result = reader.apply(this);
@@ -115,15 +143,5 @@ public class Tokenizer implements ITokenizer {
 
     // No tokenizer matched
     throw new UnknownTokenError(state.row, state.col);
-  }
-
-  @Override
-  public int getCurrentRow() {
-    return state.row;
-  }
-
-  @Override
-  public int getCurrentCol() {
-    return state.col;
   }
 }

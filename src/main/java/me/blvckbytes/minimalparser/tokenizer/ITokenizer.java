@@ -21,7 +21,8 @@ public interface ITokenizer {
 
   void restoreState();
 
-  @Nullable Token nextToken() throws AParserError;
+  @Nullable Token peekToken() throws AParserError;
+  @Nullable Token consumeToken() throws AParserError;
 
   int getCurrentRow();
 

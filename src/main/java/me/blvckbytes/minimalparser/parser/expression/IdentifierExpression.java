@@ -8,19 +8,12 @@ import me.blvckbytes.minimalparser.error.AParserError;
 
 @Getter
 @AllArgsConstructor
-public class BooleanNotExpression extends AExpression {
+public class IdentifierExpression extends AExpression {
 
-  private final Object value;
+  private final String symbol;
 
   @Override
   public Object evaluate(IEvaluationContext context, IValueInterpreter valueInterpreter) throws AParserError {
-    return !valueInterpreter.isTruthy(evaluateExpression(value, context, valueInterpreter));
-  }
-
-  @Override
-  public String toString() {
-    return "BooleanNotExpression (\n" +
-      "value=" + value + ",\n" +
-    ')';
+    return symbol;
   }
 }

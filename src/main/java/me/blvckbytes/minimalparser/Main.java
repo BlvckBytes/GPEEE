@@ -1,6 +1,7 @@
 package me.blvckbytes.minimalparser;
 
 import com.google.common.primitives.Primitives;
+import me.blvckbytes.minimalparser.error.AParserError;
 import me.blvckbytes.minimalparser.functions.AExpressionFunction;
 import me.blvckbytes.minimalparser.functions.IfExpressionFunction;
 import me.blvckbytes.minimalparser.parser.ExpressionParser;
@@ -151,13 +152,22 @@ public class Main {
         }
       };
 
-      Tokenizer tk = new Tokenizer(input);
+//      String test = "10 + 8.1 * myVar / 2 - 4 * \\\"Hello, world!\\\" ";
+
+      Tokenizer tk = new Tokenizer("10 % 3 + 5 * 2 / 4 - 1");
       ExpressionParser parser = new ExpressionParser(tk);
-      AExpression expression = parser.parse();
+
+      AExpression expression;
+      try {
+        expression = parser.parse();
+      } catch (AParserError err) {
+        System.err.println(err.generateWarning(tk.getRawText()));
+        throw new IllegalStateException();
+      }
 
       if (expression != null) {
-        System.out.println(expression);
-        System.out.println("RESULT: " + expression.evaluate(dummyContext, valueInterpreter));
+        System.out.println(expression.stringify("  ", 0));
+        System.out.println(expression.evaluate(dummyContext, valueInterpreter));
       }
 
       System.out.println("Done!");

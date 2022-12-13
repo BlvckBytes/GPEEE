@@ -10,7 +10,7 @@
 # Function call identifier(value)
 # Lookup table access name["key"]
 # Concatenation value + value
-# Comparison >, <, >=, <=, ==
+# Comparison >, <, >=, <=, ==, ===, !=, !==
 # Math + - * / % ^
 # Boolean or ||
 # Boolean and &&
