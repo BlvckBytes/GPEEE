@@ -40,6 +40,17 @@ String ::= '"' ('\"' | [^"] | "\s")* '"'
 
 ![string](readme_images/railroad_string.png)
 
+
+### Literals
+
+A literal is a fixed value represented by a human-readable word. These words are reserved and cannot be used as identifiers.
+
+```ebnf
+Literal ::= "true" | "false" | "null"
+```
+
+![literal](readme_images/railroad_literal.png)
+
 ### Identifiers
 
 An identifier is either a function name, a variable name or a lookup table name. These names are provided by the
