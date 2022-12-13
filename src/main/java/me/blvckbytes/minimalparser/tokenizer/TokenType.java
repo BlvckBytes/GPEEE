@@ -131,8 +131,8 @@ public enum TokenType {
   MULTIPLICATION(TokenCategory.OPERATOR, 2, tokenizer -> tokenizer.nextChar() == '*' ? "*" : null),
   DIVISION(TokenCategory.OPERATOR, 2, tokenizer -> tokenizer.nextChar() == '/' ? "/" : null),
   MODULO(TokenCategory.OPERATOR, 2, tokenizer -> tokenizer.nextChar() == '%' ? "%" : null),
-  ADDITION(TokenCategory.OPERATOR, 3, tokenizer -> tokenizer.nextChar() == '+' ? "+" : null),
-  SUBTRACTION(TokenCategory.OPERATOR, 3, tokenizer -> tokenizer.nextChar() == '-' ? "-" : null),
+  PLUS(TokenCategory.OPERATOR, 3, tokenizer -> tokenizer.nextChar() == '+' ? "+" : null),
+  MINUS(TokenCategory.OPERATOR, 3, tokenizer -> tokenizer.nextChar() == '-' ? "-" : null),
 
   GREATER_THAN(TokenCategory.OPERATOR, 4, tokenizer -> tryCollectSequenceWithNextCheck(tokenizer, '=', '>')),
   GREATER_THAN_OR_EQUAL(TokenCategory.OPERATOR, 4, tokenizer -> tryCollectSequenceWithNextCheck(tokenizer, null, '>', '=')),

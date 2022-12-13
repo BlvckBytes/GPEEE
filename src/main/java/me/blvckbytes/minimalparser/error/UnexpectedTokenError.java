@@ -1,5 +1,7 @@
 package me.blvckbytes.minimalparser.error;
 
+import me.blvckbytes.minimalparser.tokenizer.ITokenizer;
+import me.blvckbytes.minimalparser.tokenizer.Token;
 import me.blvckbytes.minimalparser.tokenizer.TokenType;
 import org.jetbrains.annotations.Nullable;
 
@@ -8,10 +10,11 @@ import java.util.stream.Collectors;
 
 public class UnexpectedTokenError extends AParserError {
 
-  public UnexpectedTokenError(int row, int col, @Nullable TokenType actual, TokenType... expected) {
+  public UnexpectedTokenError(ITokenizer tokenizer, @Nullable Token actual, TokenType... expected) {
     super(
-      row, col,
-      "Expected token " + formatTokenNames(expected) + ", found " + (actual == null ? "nothing" : actual.name()));
+      actual == null ? tokenizer.getCurrentRow() : actual.getRow(),
+      actual == null ? tokenizer.getCurrentCol() : actual.getCol(),
+      "Expected token " + formatTokenNames(expected) + ", found " + (actual == null ? "nothing" : actual.getType().name()));
   }
 
   private static String formatTokenNames(TokenType[] tokens) {

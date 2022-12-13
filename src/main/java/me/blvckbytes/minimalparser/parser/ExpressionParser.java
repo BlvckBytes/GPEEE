@@ -15,6 +15,14 @@ public class ExpressionParser {
   private final ITokenizer tokenizer;
 
   /*
+    Digit ::= [0-9]
+    Letter ::= [A-Za-z]
+
+    Int ::= "-"? Digit+
+    Float ::= "-"? Digit* "." Digit+
+    String ::= '"' ('\"' | [^"] | "\s")* '"'
+    Identifier ::= Letter (Digit | Letter | '_')*
+
     AdditiveOperator ::= "+" | "-"
     MultiplicativeOperator ::= "*" | "/" | "%"
     EqualityOperator ::= ">" | "<" | ">=" | "<=" | "==" | "!=" | "===" | "!=="
@@ -114,13 +122,13 @@ public class ExpressionParser {
 
     while (
       (tk = tokenizer.peekToken()) != null &&
-      (tk.getType() == TokenType.ADDITION || tk.getType() == TokenType.SUBTRACTION)
+      (tk.getType() == TokenType.PLUS || tk.getType() == TokenType.MINUS)
     ) {
       tokenizer.consumeToken();
 
       MathOperation operator = MathOperation.ADDITION;
 
-      if (tk.getType() == TokenType.SUBTRACTION)
+      if (tk.getType() == TokenType.MINUS)
         operator = MathOperation.SUBTRACTION;
 
       // Put the previously parsed expression into the left hand side of the new addition
@@ -194,23 +202,37 @@ public class ExpressionParser {
     Token tk = tokenizer.consumeToken();
 
     if (tk == null)
-      throw new UnexpectedTokenError(tokenizer.getCurrentRow(), tokenizer.getCurrentCol(), null, TokenType.valueTypes);
+      throw new UnexpectedTokenError(tokenizer, null, TokenType.valueTypes);
+
+    // Whether the primary expression has been marked as negative
+    boolean isNegative = false;
+
+    // Notation of a negative number
+    if (tk.getType() == TokenType.MINUS) {
+      tk = tokenizer.consumeToken();
+
+      // Either no token left or it's not a number, a float or an identifier
+      if (tk == null || !(tk.getType() == TokenType.INT || tk.getType() == TokenType.FLOAT || tk.getType() == TokenType.IDENTIFIER))
+        throw new UnexpectedTokenError(tokenizer, tk, TokenType.INT, TokenType.FLOAT, TokenType.IDENTIFIER);
+
+      isNegative = true;
+    }
 
     switch (tk.getType()) {
       case INT:
-        return new IntExpression(Integer.parseInt(tk.getValue()));
+        return new IntExpression((isNegative ? -1 : 1) * Integer.parseInt(tk.getValue()));
 
       case FLOAT:
-        return new FloatExpression(Float.parseFloat(tk.getValue()));
+        return new FloatExpression((isNegative ? -1 : 1) * Float.parseFloat(tk.getValue()));
 
       case STRING:
         return new StringExpression(tk.getValue());
 
       case IDENTIFIER:
-        return new IdentifierExpression(tk.getValue());
+        return new IdentifierExpression(tk.getValue(), isNegative);
 
       default:
-        throw new UnexpectedTokenError(tk.getRow(), tk.getCol(), tk.getType(), TokenType.valueTypes);
+        throw new UnexpectedTokenError(tokenizer, tk, TokenType.valueTypes);
     }
   }
 
@@ -226,7 +248,7 @@ public class ExpressionParser {
     // wasn't closed in itself and has thus to be malformed, as this parser is only
     // intended for mono-expression "programs"
     if (tk != null)
-      throw new UnexpectedTokenError(tk.getRow(), tk.getCol(), tk.getType());
+      throw new UnexpectedTokenError(tokenizer, tk);
 
     return result;
   }

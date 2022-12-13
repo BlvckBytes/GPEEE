@@ -11,6 +11,7 @@ import me.blvckbytes.minimalparser.error.AParserError;
 public class IdentifierExpression extends AExpression {
 
   private final String symbol;
+  private final boolean flipSign;
 
   @Override
   public Object evaluate(IEvaluationContext context, IValueInterpreter valueInterpreter) throws AParserError {

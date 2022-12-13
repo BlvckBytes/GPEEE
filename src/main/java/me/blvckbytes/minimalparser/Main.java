@@ -155,7 +155,7 @@ public class Main {
 
 //      String test = "10 + 8.1 * myVar / 2 - 4 * \\\"Hello, world!\\\" ";
 
-      Tokenizer tk = new Tokenizer("10 + 2 * 2^2 - 1 >= 5*5 - 3 + 2^1 < 3 != 5");
+      Tokenizer tk = new Tokenizer("5 - -3");
       ExpressionParser parser = new ExpressionParser(tk);
 
       AExpression expression;
