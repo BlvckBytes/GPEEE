@@ -17,9 +17,11 @@ public interface ITokenizer {
 
   boolean isConsideredWhitespace(char c);
 
-  void saveState();
+  void saveState(boolean debugLog);
 
-  void restoreState();
+  void restoreState(boolean debugLog);
+
+  TokenizerState discardState(boolean debugLog);
 
   @Nullable Token peekToken() throws AParserError;
   @Nullable Token consumeToken() throws AParserError;

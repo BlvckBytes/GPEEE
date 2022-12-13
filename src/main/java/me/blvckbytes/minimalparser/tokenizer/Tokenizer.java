@@ -1,6 +1,7 @@
 package me.blvckbytes.minimalparser.tokenizer;
 
 import lombok.Getter;
+import me.blvckbytes.minimalparser.ILogger;
 import me.blvckbytes.minimalparser.error.AParserError;
 import me.blvckbytes.minimalparser.error.UnknownTokenError;
 import org.jetbrains.annotations.Nullable;
@@ -12,13 +13,14 @@ public class Tokenizer implements ITokenizer {
   @Getter
   private final String rawText;
 
+  private final ILogger logger;
   private final char[] text;
   private final Stack<TokenizerState> saveStates;
   private TokenizerState state;
-  private Token currentToken;
 
-  public Tokenizer(String text) {
+  public Tokenizer(ILogger logger, String text) {
     this.rawText = text;
+    this.logger = logger;
     this.text = text.toCharArray();
     this.state = new TokenizerState();
     this.saveStates = new Stack<>();
@@ -34,13 +36,31 @@ public class Tokenizer implements ITokenizer {
   }
 
   @Override
-  public void saveState() {
+  public void saveState(boolean debugLog) {
     this.saveStates.push(this.state.copy());
+
+    if (debugLog)
+      logger.logDebug("Saved state " + this.saveStates.size() + " (charIndex=" + state.charIndex + ")");
   }
 
   @Override
-  public void restoreState() {
+  public void restoreState(boolean debugLog) {
+    int sizeBefore = this.saveStates.size();
     this.state = this.saveStates.pop();
+
+    if (debugLog)
+      logger.logDebug("Restored state " + sizeBefore + " (charIndex=" + state.charIndex + ")");
+  }
+
+  @Override
+  public TokenizerState discardState(boolean debugLog) {
+    int sizeBefore = this.saveStates.size();
+    TokenizerState state = this.saveStates.pop();
+
+    if (debugLog)
+      logger.logDebug("Discarded state " + sizeBefore + " (charIndex=" + state.charIndex + ")");
+
+    return state;
   }
 
   public char nextChar() {
@@ -88,19 +108,21 @@ public class Tokenizer implements ITokenizer {
 
   @Override
   public @Nullable Token peekToken() throws AParserError {
-    if (currentToken == null)
-      currentToken = readNextToken();
+    if (state.currentToken == null)
+      readNextToken();
 
-    return currentToken;
+    logger.logDebug("Peeked token " + state.currentToken);
+    return state.currentToken;
   }
 
   public @Nullable Token consumeToken() throws AParserError {
-    if (currentToken == null)
-      currentToken = readNextToken();
+    if (state.currentToken == null)
+      readNextToken();
 
-    Token result = currentToken;
-    currentToken = readNextToken();
+    Token result = state.currentToken;
+    readNextToken();
 
+    logger.logDebug("Consumed token " + result);
     return result;
   }
 
@@ -114,11 +136,16 @@ public class Tokenizer implements ITokenizer {
     return state.col;
   }
 
-  private @Nullable Token readNextToken() throws AParserError {
+  /**
+   * Reads the next token or null if nothing is available into the local state
+   */
+  private void readNextToken() throws AParserError {
     eatWhitespace();
 
-    if (!hasNextChar())
-      return null;
+    if (!hasNextChar()) {
+      state.currentToken = null;
+      return;
+    }
 
     for (TokenType tryType : TokenType.valuesInTrialOrder) {
       FTokenReader reader = tryType.getTokenReader();
@@ -127,18 +154,20 @@ public class Tokenizer implements ITokenizer {
       if (reader == null)
         continue;
 
-      saveState();
+      saveState(false);
 
       String result = reader.apply(this);
 
       // This reader wasn't successful, restore and try the next in line
       if (result == null) {
-        restoreState();
+        restoreState(false);
         continue;
       }
 
-      TokenizerState previousState = saveStates.pop();
-      return new Token(tryType, previousState.row, previousState.col, result);
+      // Discard the saved state (to move forwards) but use it as the token's row/col supplier
+      TokenizerState previousState = discardState(false);
+      state.currentToken = new Token(tryType, previousState.row, previousState.col, result);
+      return;
     }
 
     // No tokenizer matched

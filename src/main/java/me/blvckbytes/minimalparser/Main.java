@@ -141,8 +141,21 @@ public class Main {
         }
       };
 
-      Tokenizer tk = new Tokenizer("4^-(1/2)");
-      ExpressionParser parser = new ExpressionParser(tk);
+      ILogger logger = new ILogger() {
+
+        @Override
+        public void logDebug(String message) {
+          System.out.println("[DEBUG]: " + message);
+        }
+
+        @Override
+        public void logError(String message) {
+          System.err.println(message);
+        }
+      };
+
+      Tokenizer tk = new Tokenizer(logger, "2^(-1/2)");
+      ExpressionParser parser = new ExpressionParser(logger, tk);
 
       AExpression expression;
       try {

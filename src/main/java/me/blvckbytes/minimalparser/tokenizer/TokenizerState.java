@@ -6,6 +6,7 @@ public class TokenizerState {
 
   public int row, col, charIndex;
   public Stack<Integer> colStack;
+  public Token currentToken;
 
   public TokenizerState() {
     this.colStack = new Stack<>();
@@ -18,6 +19,7 @@ public class TokenizerState {
     copy.col = this.col;
     copy.charIndex = this.charIndex;
     copy.colStack = this.colStack;
+    copy.currentToken = this.currentToken;
 
     return copy;
   }
