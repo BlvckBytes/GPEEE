@@ -1,7 +1,0 @@
-# This is a comment
-<>123456<= %>= -1212 )==!"Hello, world!"! "hi" & "bye" + >=&&4141.12( 33,+ >|| === !-45.29<, "I am \" &&ESCAPED\s\s!!!"(),++||== *-+/
-121# comment after number
-# This is another comment
-myTable["my_key"]
-another_table99["another_key"] & 3^3
-5 != 3 && 2 !== 4
