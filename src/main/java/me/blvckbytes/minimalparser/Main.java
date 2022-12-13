@@ -155,7 +155,7 @@ public class Main {
 
 //      String test = "10 + 8.1 * myVar / 2 - 4 * \\\"Hello, world!\\\" ";
 
-      Tokenizer tk = new Tokenizer("5 - -3 == true + 2 * nUll - faLsE");
+      Tokenizer tk = new Tokenizer("((5 + 2)) * 5 - 2^(2 + 1)");
       ExpressionParser parser = new ExpressionParser(tk);
 
       AExpression expression;
@@ -168,7 +168,7 @@ public class Main {
 
       if (expression != null) {
         System.out.println(expression.stringify("  ", 0));
-        System.out.println(expression.evaluate(dummyContext, valueInterpreter));
+        System.out.println("result=" + expression.evaluate(dummyContext, valueInterpreter));
       }
 
       System.out.println("Done!");

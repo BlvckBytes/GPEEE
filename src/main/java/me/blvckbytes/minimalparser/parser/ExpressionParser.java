@@ -29,13 +29,15 @@ public class ExpressionParser {
     EqualityOperator ::= ">" | "<" | ">=" | "<=" | "==" | "!=" | "===" | "!=="
 
     PrimaryExpression ::= Int | Float | String | Identifier | Literal
+
     ExponentiationExpression ::= PrimaryExpression (MultiplicativeOperator PrimaryExpression)*
     MultiplicativeExpression ::= ExponentiationExpression (MultiplicativeOperator ExponentiationExpression)*
     AdditiveExpression ::= MultiplicativeExpression (AdditiveOperator MultiplicativeExpression)*
 
     MathExpression ::= AdditiveExpression | MultiplicativeExpression | ExponentiationExpression
-
     EqualityExpression ::= AdditiveExpression (EqualityOperator AdditiveExpression)*
+
+    Expression ::= EqualityExpression | MathExpression | "(" Expression ")" | PrimaryExpression
    */
 
   /**
@@ -172,12 +174,39 @@ public class ExpressionParser {
   }
 
   /**
+   * If there's no opening parenthesis this function will respond with just a parsed
+   * primary expression, otherwise the opening parenthesis will be consumed, an expression
+   * will be parsed and a closing parenthesis will be expected and also consumed.
+   */
+  private AExpression parseParenthesisExpression() throws AParserError {
+    Token tk = tokenizer.peekToken();
+
+    // Not a parenthesis expression, return primary as is
+    if (tk == null || tk.getType() != TokenType.PARENTHESIS_OPEN)
+      return parsePrimaryExpression();
+
+    // Consume the opening parenthesis
+    tokenizer.consumeToken();
+
+    // Parse the expression within the parentheses
+    AExpression expression = parseExpression();
+
+    tk = tokenizer.consumeToken();
+
+    // A previously opened parenthesis has to be closed again
+    if (tk == null || tk.getType() != TokenType.PARENTHESIS_CLOSE)
+      throw new UnexpectedTokenError(tokenizer, tk, TokenType.PARENTHESIS_CLOSE);
+
+    return expression;
+  }
+
+  /**
    * Parses an expression made up of exponential expressions with primary expression
    * operands and keeps on collecting as many same-precedence expressions as available.
    * If there's no exponentiation operator available, this path will yield a primary expression.
    */
   private AExpression parseExponentiationExpression() throws AParserError {
-    AExpression lhs = parsePrimaryExpression();
+    AExpression lhs = parseParenthesisExpression();
     Token tk;
 
     while (
@@ -188,7 +217,7 @@ public class ExpressionParser {
 
       // Put the previously parsed expression into the left hand side of the new exponentiation
       // and try to parse another same-precedence expression for the right hand side
-      lhs = new MathExpression(lhs, parsePrimaryExpression(), MathOperation.POWER);
+      lhs = new MathExpression(lhs, parseParenthesisExpression(), MathOperation.POWER);
     }
 
     return lhs;

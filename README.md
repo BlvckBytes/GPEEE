@@ -97,3 +97,9 @@ some of the most used operators have been implemented:
 | &#124;&#124;                | A &#124;&#124; B | Yields `true` if either A or B yields `true`         | 7          |
 | **Concatenation Operator**  |
 | &                           | A & B            | Concatenates the contents of A and B                 | 8          |
+
+### Parentheses
+
+To enforce a desired order of operations, expressions may be wrapped in parentheses. There is no limit for how many
+parentheses the input can contain, they just need to be balanced (every opening parenthesis has to be closed later
+down the expression again). While `5 + 2 * 5` would produce 15, `(5 + 2) * 5` will yield 35.
