@@ -1,6 +1,7 @@
 package me.blvckbytes.minimalparser.parser;
 
 import lombok.AllArgsConstructor;
+import me.blvckbytes.minimalparser.ILogger;
 import me.blvckbytes.minimalparser.error.AParserError;
 import me.blvckbytes.minimalparser.error.UnexpectedTokenError;
 import me.blvckbytes.minimalparser.parser.expression.*;
@@ -19,6 +20,7 @@ import org.jetbrains.annotations.Nullable;
 @AllArgsConstructor
 public class ExpressionParser {
 
+  private final ILogger logger;
   private final ITokenizer tokenizer;
 
   /*
@@ -44,22 +46,45 @@ public class ExpressionParser {
     MathExpression ::= AdditiveExpression | MultiplicativeExpression | ExponentiationExpression
     EqualityExpression ::= AdditiveExpression (EqualityOperator AdditiveExpression)*
 
-    Expression ::= EqualityExpression | MathExpression | ("-" | "!")? "(" Expression ")" | PrimaryExpression
+    NegationExpression ::= "not" EqualityExpression
+
+    Expression ::= EqualityExpression | MathExpression | ("-" | "not")? "(" Expression ")" | PrimaryExpression
    */
 
   /**
    * Main entry point when parsing an expression
    */
   private @Nullable AExpression parseExpression() throws AParserError {
+    logger.logDebug("At the main entrypoint of parsing an expression");
     return parseEqualityExpression();
   }
 
-  /**
-   * Parses an expression made up of equality expressions with additive expression
-   * operands and keeps on collecting as many same-precedence expressions as available.
-   * If there's no equality operator available, this path will yield a additive expression.
-   */
-  private AExpression parseEqualityExpression() {
+  private AExpression parseNegationExpression() {
+    logger.logDebug("Trying to parse a negotiation expression");
+
+    Token tk = tokenizer.peekToken();
+
+    // There's no not operator as the next token, hand over to the next higher precedence parser
+    if (tk == null || tk.getType() != TokenType.BOOL_NOT) {
+      logger.logDebug("Not a negotiation expression");
+      return parseParenthesisExpression();
+    }
+
+    // Consume the not operator
+    tokenizer.consumeToken();
+
+    // Parse the following expression
+    logger.logDebug("Trying to parse the expression to negate");
+    AExpression expression = parseParenthesisExpression();
+
+    // Return a wrapper on that expression which will negate it
+    logger.logDebug("Wrapping the parsed expression in order to negate it");
+    return new InvertExpression(expression);
+  }
+
+  private AExpression parseComparisonExpression() {
+    logger.logDebug("Trying to parse a comparison expression");
+
     AExpression lhs = parseAdditiveExpression();
     Token tk;
 
@@ -67,9 +92,7 @@ public class ExpressionParser {
       (tk = tokenizer.peekToken()) != null &&
         (
           tk.getType() == TokenType.GREATER_THAN || tk.getType() == TokenType.GREATER_THAN_OR_EQUAL ||
-          tk.getType() == TokenType.LESS_THAN || tk.getType() == TokenType.LESS_THAN_OR_EQUAL ||
-          tk.getType() == TokenType.VALUE_EQUALS || tk.getType() == TokenType.VALUE_NOT_EQUALS ||
-          tk.getType() == TokenType.VALUE_EQUALS_EXACT || tk.getType() == TokenType.VALUE_NOT_EQUALS_EXACT
+          tk.getType() == TokenType.LESS_THAN || tk.getType() == TokenType.LESS_THAN_OR_EQUAL
         )
     ) {
       tokenizer.consumeToken();
@@ -93,20 +116,51 @@ public class ExpressionParser {
           operator = ComparisonOperation.LESS_THAN_OR_EQUAL;
           break;
 
-        case VALUE_EQUALS:
-          operator = ComparisonOperation.EQUAL;
-          break;
+        default:
+          throw new IllegalStateException();
+      }
 
-        case VALUE_EQUALS_EXACT:
-          operator = ComparisonOperation.EQUAL_EXACT;
+      // Put the previously parsed expression into the left hand side of the new equality
+      // and try to parse another same-precedence expression for the right hand side
+      logger.logDebug("Trying to parse a rhs for this comparison expression");
+      lhs = new ComparisonExpression(lhs, parseAdditiveExpression(), operator);
+    }
+
+    return lhs;
+  }
+
+  private AExpression parseEqualityExpression() {
+    logger.logDebug("Trying to parse a equality expression");
+
+    AExpression lhs = parseComparisonExpression();
+    Token tk;
+
+    while (
+      (tk = tokenizer.peekToken()) != null &&
+        (
+          tk.getType() == TokenType.VALUE_EQUALS || tk.getType() == TokenType.VALUE_NOT_EQUALS ||
+          tk.getType() == TokenType.VALUE_EQUALS_EXACT || tk.getType() == TokenType.VALUE_NOT_EQUALS_EXACT
+        )
+    ) {
+      tokenizer.consumeToken();
+
+      EqualityOperation operator;
+
+      switch (tk.getType()) {
+        case VALUE_EQUALS:
+          operator = EqualityOperation.EQUAL;
           break;
 
         case VALUE_NOT_EQUALS:
-          operator = ComparisonOperation.NOT_EQUAL;
+          operator = EqualityOperation.NOT_EQUAL;
+          break;
+
+        case VALUE_EQUALS_EXACT:
+          operator = EqualityOperation.EQUAL_EXACT;
           break;
 
         case VALUE_NOT_EQUALS_EXACT:
-          operator = ComparisonOperation.NOT_EQUAL_EXACT;
+          operator = EqualityOperation.NOT_EQUAL_EXACT;
           break;
 
         default:
@@ -115,18 +169,16 @@ public class ExpressionParser {
 
       // Put the previously parsed expression into the left hand side of the new equality
       // and try to parse another same-precedence expression for the right hand side
-      lhs = new ComparisonExpression(lhs, parseAdditiveExpression(), operator);
+      logger.logDebug("Trying to parse a rhs for this equality expression");
+      lhs = new EqualityExpression(lhs, parseComparisonExpression(), operator);
     }
 
     return lhs;
   }
 
-  /**
-   * Parses an expression made up of additive expressions with multiplicative expression
-   * operands and keeps on collecting as many same-precedence expressions as available.
-   * If there's no additive operator available, this path will yield a multiplicative expression.
-   */
   private AExpression parseAdditiveExpression() {
+    logger.logDebug("Trying to parse a additive expression");
+
     AExpression lhs = parseMultiplicativeExpression();
     Token tk;
 
@@ -143,18 +195,16 @@ public class ExpressionParser {
 
       // Put the previously parsed expression into the left hand side of the new addition
       // and try to parse another same-precedence expression for the right hand side
+      logger.logDebug("Trying to parse a rhs for this additive operation");
       lhs = new MathExpression(lhs, parseMultiplicativeExpression(), operator);
     }
 
     return lhs;
   }
 
-  /**
-   * Parses an expression made up of multiplicative expressions with exponentiation expression
-   * operands and keeps on collecting as many same-precedence expressions as available.
-   * If there's no multiplicative operator available, this path will yield a exponentiation expression.
-   */
   private AExpression parseMultiplicativeExpression() throws AParserError {
+    logger.logDebug("Trying to parse a multiplicative expression");
+
     AExpression lhs = parseExponentiationExpression();
     Token tk;
 
@@ -174,18 +224,16 @@ public class ExpressionParser {
 
       // Put the previously parsed expression into the left hand side of the new multiplication
       // and try to parse another same-precedence expression for the right hand side
+      logger.logDebug("Trying to parse a rhs for this multiplicative operation");
       lhs = new MathExpression(lhs, parseExponentiationExpression(), operator);
     }
 
     return lhs;
   }
 
-  /**
-   * If there's no opening parenthesis this function will respond with just a parsed
-   * primary expression, otherwise the opening parenthesis will be consumed, an expression
-   * will be parsed and a closing parenthesis will be expected and also consumed.
-   */
   private AExpression parseParenthesisExpression() throws AParserError {
+    logger.logDebug("Trying to parse a parenthesis expression");
+
     Token tk = tokenizer.peekToken();
 
     // End reached, let the default routine handle this case
@@ -198,10 +246,12 @@ public class ExpressionParser {
     // The notation -() will flip the resulting number's sign
     // The notation !() will negate the resulting boolean
     if (tk.getType() == TokenType.MINUS || tk.getType() == TokenType.BOOL_NOT) {
-      tokenizer.saveState();
+      tokenizer.saveState(true);
 
       tokenizer.consumeToken();
       consumedFirstToken = true;
+
+      logger.logDebug("Found and consumed a parentheses modifier token");
 
       tk = tokenizer.peekToken();
     }
@@ -210,14 +260,23 @@ public class ExpressionParser {
     if (tk == null || tk.getType() != TokenType.PARENTHESIS_OPEN) {
 
       // Put back the consumed token which would have had an effect on these parentheses
-      if (consumedFirstToken)
-        tokenizer.restoreState();
+      if (consumedFirstToken) {
+        logger.logDebug("Putting the modifier token back");
+        tokenizer.restoreState(true);
+      }
 
+      logger.logDebug("Not a parenthesis expression");
       return parsePrimaryExpression();
     }
 
+    // Don't need to return anymore as we're now inside parentheses
+    if (consumedFirstToken)
+      tokenizer.discardState(true);
+
     // Consume the opening parenthesis
     tokenizer.consumeToken();
+
+    logger.logDebug("Trying to parse the inner expression");
 
     // Parse the expression within the parentheses
     AExpression expression = parseExpression();
@@ -228,13 +287,17 @@ public class ExpressionParser {
     if (tk == null || tk.getType() != TokenType.PARENTHESIS_CLOSE)
       throw new UnexpectedTokenError(tokenizer, tk, TokenType.PARENTHESIS_CLOSE);
 
+    logger.logDebug("Validated the closing parenthesis");
+
     // Wrap the expression within a unary expression based on the first token's type
     switch (firstTokenType) {
       case MINUS:
+        logger.logDebug("Wrapping expression in order to flip it's sign");
         expression = new FlipSignExpression(expression);
         break;
 
       case BOOL_NOT:
+        logger.logDebug("Wrapping expression in order to invert it");
         expression = new InvertExpression(expression);
         break;
     }
@@ -242,13 +305,10 @@ public class ExpressionParser {
     return expression;
   }
 
-  /**
-   * Parses an expression made up of exponential expressions with primary expression
-   * operands and keeps on collecting as many same-precedence expressions as available.
-   * If there's no exponentiation operator available, this path will yield a primary expression.
-   */
   private AExpression parseExponentiationExpression() throws AParserError {
-    AExpression lhs = parseParenthesisExpression();
+    logger.logDebug("Trying to parse a exponentiation expression");
+
+    AExpression lhs = parseNegationExpression();
     Token tk;
 
     while (
@@ -259,18 +319,16 @@ public class ExpressionParser {
 
       // Put the previously parsed expression into the left hand side of the new exponentiation
       // and try to parse another same-precedence expression for the right hand side
-      lhs = new MathExpression(lhs, parseParenthesisExpression(), MathOperation.POWER);
+      logger.logDebug("Trying to parse a rhs for this exponentiation operation");
+      lhs = new MathExpression(lhs, parseNegationExpression(), MathOperation.POWER);
     }
 
     return lhs;
   }
 
-  /**
-   * Parses a primary expression - the smallest still meaningful expression possible which
-   * then can be intertwined with all other available expressions
-   * @throws AParserError No token available to consume or the token type mismatched
-   */
   private AExpression parsePrimaryExpression() throws AParserError {
+    logger.logDebug("Trying to parse a primary expression");
+
     Token tk = tokenizer.consumeToken();
 
     if (tk == null)
@@ -292,24 +350,31 @@ public class ExpressionParser {
 
     switch (tk.getType()) {
       case INT:
+        logger.logDebug("Found an integer");
         return new IntExpression((isNegative ? -1 : 1) * Integer.parseInt(tk.getValue()));
 
       case FLOAT:
+        logger.logDebug("Found an float");
         return new FloatExpression((isNegative ? -1 : 1) * Float.parseFloat(tk.getValue()));
 
       case STRING:
+        logger.logDebug("Found an string");
         return new StringExpression(tk.getValue());
 
       case IDENTIFIER:
-        return new IdentifierExpression(tk.getValue(), isNegative);
+        logger.logDebug("Found an identifier");
+        return new FlipSignExpression(new IdentifierExpression(tk.getValue()));
 
       case TRUE:
+        logger.logDebug("Found the true literal");
         return new LiteralExpression(LiteralType.TRUE);
 
       case FALSE:
+        logger.logDebug("Found the false literal");
       return new LiteralExpression(LiteralType.FALSE);
 
       case NULL:
+        logger.logDebug("Found the null literal");
       return new LiteralExpression(LiteralType.NULL);
 
       default:
