@@ -1,5 +1,14 @@
 # MinimalParser
 
+## Table of Contents
+- [Grammar](#grammar)
+  - [Numbers](#numbers)
+  - [Strings](#strings)
+  - [Literals](#literals)
+  - [Identifiers](#identifiers)
+  - [Operators](#operators)
+  - [Parentheses](#parentheses)
+
 ## Grammar
 
 ### Numbers
