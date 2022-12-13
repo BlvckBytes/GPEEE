@@ -9,6 +9,13 @@ import me.blvckbytes.minimalparser.tokenizer.Token;
 import me.blvckbytes.minimalparser.tokenizer.TokenType;
 import org.jetbrains.annotations.Nullable;
 
+/**
+ * This parser uses the compact and flexible algorithm called "precedence climbing" / "top down
+ * recursive decent", which of course is not highly efficient. The main purpose of this project is
+ * to parse expressions within configuration files once and then just evaluate the AST within the
+ * desired evaluation context at runtime over and over again. Due to the ahead-of-time nature of
+ * this intended use-case, efficiency at the level of the parser is sacrificed for understandability.
+ */
 @AllArgsConstructor
 public class ExpressionParser {
 
@@ -37,7 +44,7 @@ public class ExpressionParser {
     MathExpression ::= AdditiveExpression | MultiplicativeExpression | ExponentiationExpression
     EqualityExpression ::= AdditiveExpression (EqualityOperator AdditiveExpression)*
 
-    Expression ::= EqualityExpression | MathExpression | "(" Expression ")" | PrimaryExpression
+    Expression ::= EqualityExpression | MathExpression | ("-" | "!")? "(" Expression ")" | PrimaryExpression
    */
 
   /**
@@ -181,9 +188,33 @@ public class ExpressionParser {
   private AExpression parseParenthesisExpression() throws AParserError {
     Token tk = tokenizer.peekToken();
 
-    // Not a parenthesis expression, return primary as is
-    if (tk == null || tk.getType() != TokenType.PARENTHESIS_OPEN)
+    // End reached, let the default routine handle this case
+    if (tk == null)
       return parsePrimaryExpression();
+
+    TokenType firstTokenType = tk.getType();
+    boolean consumedFirstToken = false;
+
+    // The notation -() will flip the resulting number's sign
+    // The notation !() will negate the resulting boolean
+    if (tk.getType() == TokenType.MINUS || tk.getType() == TokenType.BOOL_NOT) {
+      tokenizer.saveState();
+
+      tokenizer.consumeToken();
+      consumedFirstToken = true;
+
+      tk = tokenizer.peekToken();
+    }
+
+    // Not a parenthesis expression, let the default routine handle this case
+    if (tk == null || tk.getType() != TokenType.PARENTHESIS_OPEN) {
+
+      // Put back the consumed token which would have had an effect on these parentheses
+      if (consumedFirstToken)
+        tokenizer.restoreState();
+
+      return parsePrimaryExpression();
+    }
 
     // Consume the opening parenthesis
     tokenizer.consumeToken();
@@ -196,6 +227,17 @@ public class ExpressionParser {
     // A previously opened parenthesis has to be closed again
     if (tk == null || tk.getType() != TokenType.PARENTHESIS_CLOSE)
       throw new UnexpectedTokenError(tokenizer, tk, TokenType.PARENTHESIS_CLOSE);
+
+    // Wrap the expression within a unary expression based on the first token's type
+    switch (firstTokenType) {
+      case MINUS:
+        expression = new FlipSignExpression(expression);
+        break;
+
+      case BOOL_NOT:
+        expression = new InvertExpression(expression);
+        break;
+    }
 
     return expression;
   }

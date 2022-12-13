@@ -103,3 +103,13 @@ some of the most used operators have been implemented:
 To enforce a desired order of operations, expressions may be wrapped in parentheses. There is no limit for how many
 parentheses the input can contain, they just need to be balanced (every opening parenthesis has to be closed later
 down the expression again). While `5 + 2 * 5` would produce 15, `(5 + 2) * 5` will yield 35.
+
+The expression within parentheses can be modified by prepending an operator right before it. The following operators
+are available as parenthesis modifiers:
+
+| Operator | Example     | Description                                         |
+|----------|-------------|-----------------------------------------------------|
+| -        | -(1 + 2)    | Flips the sign of the parentheses expression result |
+| !        | !(a && b)   | Inverts the boolean parentheses expression result   |
+
+![parentheses](readme_images/railroad_parentheses.png)

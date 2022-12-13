@@ -1,9 +1,13 @@
 package me.blvckbytes.minimalparser.parser.expression;
 
+import ch.obermuhlner.math.big.BigDecimalMath;
 import me.blvckbytes.minimalparser.IEvaluationContext;
 import me.blvckbytes.minimalparser.IValueInterpreter;
 import me.blvckbytes.minimalparser.error.AParserError;
 import me.blvckbytes.minimalparser.parser.MathOperation;
+
+import java.math.BigDecimal;
+import java.math.MathContext;
 
 public class MathExpression extends BinaryExpression {
 
@@ -19,27 +23,27 @@ public class MathExpression extends BinaryExpression {
 
     // TODO: Add proper support for float values
     // TODO: Think ahead about what types external numbers might have...
-    Integer lhsV = (Integer) evaluateExpression(lhs, context, valueInterpreter);
-    Integer rhsV = (Integer) evaluateExpression(rhs, context, valueInterpreter);
+    BigDecimal lhsV = new BigDecimal(evaluateExpression(lhs, context, valueInterpreter).toString());
+    BigDecimal rhsV = new BigDecimal(evaluateExpression(rhs, context, valueInterpreter).toString());
 
     switch (operation) {
       case ADDITION:
-        return lhsV + rhsV;
+        return lhsV.add(rhsV);
 
       case SUBTRACTION:
-        return lhsV - rhsV;
+        return lhsV.subtract(rhsV);
 
       case MULTIPLICATION:
-        return lhsV * rhsV;
+        return lhsV.multiply(rhsV);
 
       case DIVISION:
-        return lhsV / rhsV;
+        return lhsV.divide(rhsV);
 
       case MODULO:
-        return lhsV % rhsV;
+        return lhsV.remainder(rhsV);
 
       case POWER:
-        return (int) Math.pow(lhsV, rhsV);
+        return BigDecimalMath.pow(lhsV, rhsV, MathContext.DECIMAL64);
 
       default:
         return 0;
