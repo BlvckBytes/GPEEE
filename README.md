@@ -76,36 +76,38 @@ Identifier ::= Letter (Digit | Letter | '_')*
 ### Operators
 
 In order to not have to call functions for simple operations and to improve on readability,
-some of the most used operators have been implemented:
+some of the most used operators have been implemented. Operators are listed top to bottom, in descending precedence.
 
 | Operator                    | Example | Description                                          | Precedence |
 |-----------------------------|---------|------------------------------------------------------|------------|
-| **Exponentiation Operator** |
-| ^                           | A ^ B   | Yields A to the power of B                           | 1          |
-| **Multiplicative Operator** |
-| *                           | A * B   | Yields the product of A and B                        | 2          |
-| /                           | A / B   | Yields the quotient of A and B                       | 2          |
-| %                           | A % B   | Yields the remainder of dividing A by B              | 2          |
-| **Additive Operator**       |
-| +                           | A + B   | Yields the sum of A and B                            | 3          |
-| -                           | A - B   | Yields the difference of A and B                     | 3          |
-| **Equality Operator**       |
-| \>                          | A \> B  | Yields `true` if A is greater than B                 | 4          |
-| <                           | A < B   | Yields `true` if A is less than B                    | 4          |
-| \>=                         | A \>= B | Yields `true` if A is greater than or equal to B     | 4          |
-| <=                          | A <= B  | Yields `true` if A is less than or equal to B        | 4          |
-| ==                          | A == B  | Yields `true` if A and B equal ignoring casing       | 4          |
-| ===                         | A === B | Yields `true` if A and B equal exactly               | 4          |
-| !=                          | A != B  | Yields `true` if A and B don't equal ignoring casing | 4          |
-| !==                         | A !== B | Yields `true` if A and B don't equal exactly         | 4          |
+| (...)                       | (5 + 3) | Parentheses have the highest possible precedence     | 0          |
 | **Negation Operator**       |
-| not                         | not A   | Yields the inverse of A                              | 5          |
+| not                         | not A   | Yields the inverse of A                              | 1          |
+| **Exponentiation Operator** |
+| ^                           | A ^ B   | Yields A to the power of B                           | 2          |
+| **Multiplicative Operator** |
+| *                           | A * B   | Yields the product of A and B                        | 3          |
+| /                           | A / B   | Yields the quotient of A and B                       | 3          |
+| %                           | A % B   | Yields the remainder of dividing A by B              | 3          |
+| **Additive Operator**       |
+| +                           | A + B   | Yields the sum of A and B                            | 4          |
+| -                           | A - B   | Yields the difference of A and B                     | 4          |
+| **Comparison Operator**     |
+| \>                          | A \> B  | Yields `true` if A is greater than B                 | 5          |
+| <                           | A < B   | Yields `true` if A is less than B                    | 5          |
+| \>=                         | A \>= B | Yields `true` if A is greater than or equal to B     | 5          |
+| <=                          | A <= B  | Yields `true` if A is less than or equal to B        | 5          |
+| **Equality Operator**       |
+| ==                          | A == B  | Yields `true` if A and B equal ignoring casing       | 6          |
+| ===                         | A === B | Yields `true` if A and B equal exactly               | 6          |
+| !=                          | A != B  | Yields `true` if A and B don't equal ignoring casing | 6          |
+| !==                         | A !== B | Yields `true` if A and B don't equal exactly         | 6          |
 | **Conjunction Operator**    |
-| and                         | A and B | Yields `true` if both A and B yield `true`           | 6          |
+| and                         | A and B | Yields `true` if both A and B yield `true`           | 7          |
 | **Disjunction Operator**    |
-| or                          | A or B  | Yields `true` if either A or B yields `true`         | 7          |
+| or                          | A or B  | Yields `true` if either A or B yields `true`         | 8          |
 | **Concatenation Operator**  |
-| &                           | A & B   | Concatenates the contents of A and B                 | 8          |
+| &                           | A & B   | Concatenates the contents of A and B                 | 9          |
 
 ### Parentheses
 
