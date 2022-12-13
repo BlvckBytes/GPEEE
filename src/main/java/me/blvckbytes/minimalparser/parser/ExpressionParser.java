@@ -22,12 +22,13 @@ public class ExpressionParser {
     Float ::= "-"? Digit* "." Digit+
     String ::= '"' ('\"' | [^"] | "\s")* '"'
     Identifier ::= Letter (Digit | Letter | '_')*
+    Literal ::= "true" | "false" | "null"
 
     AdditiveOperator ::= "+" | "-"
     MultiplicativeOperator ::= "*" | "/" | "%"
     EqualityOperator ::= ">" | "<" | ">=" | "<=" | "==" | "!=" | "===" | "!=="
 
-    PrimaryExpression ::= Int | Float | String | Identifier
+    PrimaryExpression ::= Int | Float | String | Identifier | Literal
     ExponentiationExpression ::= PrimaryExpression (MultiplicativeOperator PrimaryExpression)*
     MultiplicativeExpression ::= ExponentiationExpression (MultiplicativeOperator ExponentiationExpression)*
     AdditiveExpression ::= MultiplicativeExpression (AdditiveOperator MultiplicativeExpression)*
@@ -230,6 +231,15 @@ public class ExpressionParser {
 
       case IDENTIFIER:
         return new IdentifierExpression(tk.getValue(), isNegative);
+
+      case TRUE:
+        return new LiteralExpression(LiteralType.TRUE);
+
+      case FALSE:
+      return new LiteralExpression(LiteralType.FALSE);
+
+      case NULL:
+      return new LiteralExpression(LiteralType.NULL);
 
       default:
         throw new UnexpectedTokenError(tokenizer, tk, TokenType.valueTypes);

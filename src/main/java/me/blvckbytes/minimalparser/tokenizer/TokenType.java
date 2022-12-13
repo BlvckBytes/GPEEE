@@ -12,6 +12,14 @@ import java.util.Arrays;
 public enum TokenType {
 
   //=========================================================================//
+  //                                 Literals                                //
+  //=========================================================================//
+
+  TRUE(TokenCategory.LITERAL, null, tokenizer -> tryCollectSequenceWithNextCheck(tokenizer, null, "true".toCharArray())),
+  FALSE(TokenCategory.LITERAL, null, tokenizer -> tryCollectSequenceWithNextCheck(tokenizer, null, "false".toCharArray())),
+  NULL(TokenCategory.LITERAL, null, tokenizer -> tryCollectSequenceWithNextCheck(tokenizer, null, "null".toCharArray())),
+
+  //=========================================================================//
   //                                  Values                                 //
   //=========================================================================//
 
@@ -243,12 +251,19 @@ public enum TokenType {
     return result.toString();
   }
 
+  private static char charToLowerCase(char input) {
+    // Upper case character, convert to lowercase by shifting over 32 places
+    if (input >= 'A' && input <= 'Z')
+      input += 32;
+    return input;
+  }
+
   private static CollectorResult collectSequence(ITokenizer tokenizer, StringBuilder result, char... sequence) {
     for (char c : sequence) {
       if (!tokenizer.hasNextChar())
         return CollectorResult.NO_NEXT_CHAR;
 
-      if (tokenizer.nextChar() == c) {
+      if (charToLowerCase(tokenizer.nextChar()) == charToLowerCase(c)) {
         result.append(c);
         continue;
       }
