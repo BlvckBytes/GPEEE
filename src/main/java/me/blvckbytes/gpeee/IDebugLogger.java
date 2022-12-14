@@ -1,6 +1,7 @@
 package me.blvckbytes.gpeee;
 
-public interface ILogger {
+@FunctionalInterface
+public interface IDebugLogger {
 
   void logDebug(String message);
 

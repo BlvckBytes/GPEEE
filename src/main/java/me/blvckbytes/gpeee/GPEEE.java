@@ -8,15 +8,16 @@ import me.blvckbytes.gpeee.interpreter.Interpreter;
 import me.blvckbytes.gpeee.parser.Parser;
 import me.blvckbytes.gpeee.parser.expression.AExpression;
 import me.blvckbytes.gpeee.tokenizer.Tokenizer;
+import org.jetbrains.annotations.Nullable;
 
 public class GPEEE implements IExpressionEvaluator {
 
   private final Parser parser;
   private final Interpreter interpreter;
-  private final ILogger logger;
+  private final IDebugLogger logger;
 
-  public GPEEE(ILogger logger) {
-    this.logger = logger;
+  public GPEEE(@Nullable IDebugLogger logger) {
+    this.logger = logger == null ? m -> {} : logger;
     this.parser = new Parser(logger);
     this.interpreter = new Interpreter(logger);
   }

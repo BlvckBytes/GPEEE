@@ -12,7 +12,7 @@ public class Main {
 
   public static void main(String[] args) {
     try {
-      ILogger logger = message -> System.out.println("[DEBUG]: " + message);
+      IDebugLogger logger = message -> System.out.println("[DEBUG]: " + message);
       GPEEE evaluator = new GPEEE(logger);
 
       String input = "foreach(items, (index) -> \"index=\" & index, \"\\n\")";

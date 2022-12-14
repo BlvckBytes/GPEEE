@@ -1,6 +1,6 @@
 package me.blvckbytes.gpeee.parser;
 
-import me.blvckbytes.gpeee.ILogger;
+import me.blvckbytes.gpeee.IDebugLogger;
 import me.blvckbytes.gpeee.error.AParserError;
 import me.blvckbytes.gpeee.error.UnexpectedTokenError;
 import me.blvckbytes.gpeee.parser.expression.*;
@@ -20,10 +20,10 @@ import java.util.List;
  */
 public class Parser {
 
-  private final ILogger logger;
+  private final IDebugLogger logger;
   private final FExpressionParser[] precedenceLadder;
 
-  public Parser(ILogger logger) {
+  public Parser(IDebugLogger logger) {
     this.logger = logger;
 
     this.precedenceLadder = new FExpressionParser[] {
@@ -564,11 +564,11 @@ public class Parser {
         return new IntExpression((isNegative ? -1 : 1) * Integer.parseInt(tk.getValue()));
 
       case FLOAT:
-        logger.logDebug("Found an float");
+        logger.logDebug("Found a float");
         return new FloatExpression((isNegative ? -1 : 1) * Float.parseFloat(tk.getValue()));
 
       case STRING:
-        logger.logDebug("Found an string");
+        logger.logDebug("Found a string");
         return new StringExpression(tk.getValue());
 
       case IDENTIFIER: {

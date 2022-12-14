@@ -1,15 +1,15 @@
 package me.blvckbytes.gpeee.interpreter;
 
-import me.blvckbytes.gpeee.ILogger;
+import me.blvckbytes.gpeee.IDebugLogger;
 import me.blvckbytes.gpeee.parser.expression.AExpression;
 import me.blvckbytes.gpeee.parser.expression.BinaryExpression;
 import me.blvckbytes.gpeee.parser.expression.UnaryExpression;
 
 public class Interpreter {
 
-  private final ILogger logger;
+  private final IDebugLogger logger;
 
-  public Interpreter(ILogger logger) {
+  public Interpreter(IDebugLogger logger) {
     this.logger = logger;
   }
 

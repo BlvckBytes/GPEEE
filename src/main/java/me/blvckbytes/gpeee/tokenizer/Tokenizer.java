@@ -1,6 +1,6 @@
 package me.blvckbytes.gpeee.tokenizer;
 
-import me.blvckbytes.gpeee.ILogger;
+import me.blvckbytes.gpeee.IDebugLogger;
 import me.blvckbytes.gpeee.error.AParserError;
 import me.blvckbytes.gpeee.error.UnknownTokenError;
 import org.jetbrains.annotations.Nullable;
@@ -10,12 +10,12 @@ import java.util.Stack;
 public class Tokenizer implements ITokenizer {
 
   private final String rawText;
-  private final ILogger logger;
+  private final IDebugLogger logger;
   private final char[] text;
   private final Stack<TokenizerState> saveStates;
   private TokenizerState state;
 
-  public Tokenizer(ILogger logger, String text) {
+  public Tokenizer(IDebugLogger logger, String text) {
     this.rawText = text;
     this.logger = logger;
     this.text = text.toCharArray();
