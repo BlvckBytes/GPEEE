@@ -2,6 +2,7 @@ package me.blvckbytes.gpeee.parser.expression;
 
 import lombok.Getter;
 import me.blvckbytes.gpeee.parser.EqualityOperation;
+import me.blvckbytes.gpeee.tokenizer.Token;
 import me.blvckbytes.gpeee.tokenizer.TokenType;
 import org.jetbrains.annotations.Nullable;
 
@@ -10,8 +11,9 @@ public class EqualityExpression extends BinaryExpression {
 
   private final EqualityOperation operation;
 
-  public EqualityExpression(AExpression lhs, AExpression rhs, EqualityOperation operation) {
-    super(lhs, rhs);
+  public EqualityExpression(AExpression lhs, AExpression rhs, EqualityOperation operation, Token head, Token tail, String fullContainingExpression) {
+    super(lhs, rhs, head, tail, fullContainingExpression);
+
     this.operation = operation;
   }
 

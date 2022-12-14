@@ -95,7 +95,7 @@ public class Parser {
     tokenizer.saveState(true);
 
     // Consume the opening parenthesis
-    tokenizer.consumeToken();
+    Token head = tokenizer.consumeToken();
 
     List<IdentifierExpression> signature = new ArrayList<>();
 
@@ -137,7 +137,7 @@ public class Parser {
     // Parse the callback body expression (start climbing the ladder all over again)
     AExpression body = precedenceLadder[0].apply(tokenizer, precedenceLadder, 0);
 
-    return new CallbackExpression(signature, body);
+    return new CallbackExpression(signature, body, head, body.getTail(), tokenizer.getRawText());
   }
 
   private AExpression parseFunctionInvocationExpression(ITokenizer tokenizer, FExpressionParser[] precedenceLadder, int precedenceSelf) throws AEvaluatorError {
@@ -152,6 +152,7 @@ public class Parser {
     }
 
     boolean flipResult = false;
+    Token tokenMinus = null;
 
     // The function return value's sign should be flipped
     if (tk.getType() == TokenType.MINUS) {
@@ -159,7 +160,7 @@ public class Parser {
 
       // Store before consuming the minus
       tokenizer.saveState(true);
-      tokenizer.consumeToken();
+      tokenMinus = tokenizer.consumeToken();
 
       tk = tokenizer.peekToken();
 
@@ -178,7 +179,7 @@ public class Parser {
     tokenizer.saveState(true);
 
     // Consume the identifier
-    Token identifier = tk;
+    Token tokenIdentifier = tk;
     tokenizer.consumeToken();
 
     tk = tokenizer.peekToken();
@@ -227,8 +228,19 @@ public class Parser {
     if (tk == null || tk.getType() != TokenType.PARENTHESIS_CLOSE)
       throw new UnexpectedTokenError(tokenizer, tk, TokenType.PARENTHESIS_CLOSE);
 
-    FunctionInvocationExpression functionExpression = new FunctionInvocationExpression(new IdentifierExpression(identifier.getValue()), arguments);
-    return flipResult ? new FlipSignExpression(functionExpression) : functionExpression;
+    IdentifierExpression identifierExpression = new IdentifierExpression(
+      tokenIdentifier.getValue(), tokenIdentifier, tokenIdentifier, tokenizer.getRawText()
+    );
+
+    FunctionInvocationExpression functionExpression = new FunctionInvocationExpression(
+      identifierExpression, arguments, tokenMinus == null ? tokenIdentifier : tokenMinus, tk, tokenizer.getRawText()
+    );
+
+    // Wrap the function in a sign flipping expression
+    if (flipResult)
+      return new FlipSignExpression(functionExpression, tokenMinus, functionExpression.getTail(), tokenizer.getRawText());
+
+    return functionExpression;
   }
 
   private AExpression parseNegationExpression(ITokenizer tokenizer, FExpressionParser[] precedenceLadder, int precedenceSelf) throws AEvaluatorError {
@@ -243,7 +255,7 @@ public class Parser {
     }
 
     // Consume the not operator
-    tokenizer.consumeToken();
+    Token notOperator = tokenizer.consumeToken();
 
     // Parse the following expression
     debugLogger.accept("Trying to parse the expression to negate");
@@ -251,14 +263,14 @@ public class Parser {
 
     // Return a wrapper on that expression which will negate it
     debugLogger.accept("Wrapping the parsed expression in order to negate it");
-    return new InvertExpression(expression);
+    return new InvertExpression(expression, notOperator, expression.getTail(), tokenizer.getRawText());
   }
 
   private AExpression parseComparisonExpression(ITokenizer tokenizer, FExpressionParser[] precedenceLadder, int precedenceSelf) throws AEvaluatorError {
     debugLogger.accept("Trying to parse a comparison expression");
 
     AExpression lhs = invokeNextPrecedenceParser(tokenizer, precedenceLadder, precedenceSelf);
-    Token tk;
+    Token tk, head = lhs.getHead();
 
     while (
       (tk = tokenizer.peekToken()) != null &&
@@ -267,8 +279,6 @@ public class Parser {
           tk.getType() == TokenType.LESS_THAN || tk.getType() == TokenType.LESS_THAN_OR_EQUAL
         )
     ) {
-      tokenizer.consumeToken();
-
       ComparisonOperation operator;
 
       switch (tk.getType()) {
@@ -293,7 +303,8 @@ public class Parser {
       }
 
       debugLogger.accept("Trying to parse a rhs for this comparison expression");
-      lhs = new ComparisonExpression(lhs, invokeNextPrecedenceParser(tokenizer, precedenceLadder, precedenceSelf), operator);
+      AExpression rhs = invokeNextPrecedenceParser(tokenizer, precedenceLadder, precedenceSelf);
+      lhs = new ComparisonExpression(lhs, rhs, operator, head, rhs.getTail(), tokenizer.getRawText());
     }
 
     return lhs;
@@ -303,13 +314,14 @@ public class Parser {
     debugLogger.accept("Trying to parse a concatenation expression");
 
     AExpression lhs = invokeNextPrecedenceParser(tokenizer, precedenceLadder, precedenceSelf);
-    Token tk;
+    Token tk, head = lhs.getHead();
 
     while ((tk = tokenizer.peekToken()) != null && tk.getType() == TokenType.CONCATENATE) {
       tokenizer.consumeToken();
 
       debugLogger.accept("Trying to parse a rhs for this concatenation expression");
-      lhs = new ConcatenationExpression(lhs, invokeNextPrecedenceParser(tokenizer, precedenceLadder, precedenceSelf));
+      AExpression rhs = invokeNextPrecedenceParser(tokenizer, precedenceLadder, precedenceSelf);
+      lhs = new ConcatenationExpression(lhs, rhs, head, rhs.getTail(), tokenizer.getRawText());
     }
 
     return lhs;
@@ -319,13 +331,14 @@ public class Parser {
     debugLogger.accept("Trying to parse a disjunction expression");
 
     AExpression lhs = invokeNextPrecedenceParser(tokenizer, precedenceLadder, precedenceSelf);
-    Token tk;
+    Token tk, head = lhs.getHead();
 
     while ((tk = tokenizer.peekToken()) != null && tk.getType() == TokenType.BOOL_OR) {
       tokenizer.consumeToken();
 
       debugLogger.accept("Trying to parse a rhs for this disjunction expression");
-      lhs = new DisjunctionExpression(lhs, invokeNextPrecedenceParser(tokenizer, precedenceLadder, precedenceSelf));
+      AExpression rhs = invokeNextPrecedenceParser(tokenizer, precedenceLadder, precedenceSelf);
+      lhs = new DisjunctionExpression(lhs, rhs, head, rhs.getTail(), tokenizer.getRawText());
     }
 
     return lhs;
@@ -335,13 +348,14 @@ public class Parser {
     debugLogger.accept("Trying to parse a conjunction expression");
 
     AExpression lhs = invokeNextPrecedenceParser(tokenizer,  precedenceLadder, precedenceSelf);
-    Token tk;
+    Token tk, head = lhs.getHead();
 
     while ((tk = tokenizer.peekToken()) != null && tk.getType() == TokenType.BOOL_AND) {
       tokenizer.consumeToken();
 
       debugLogger.accept("Trying to parse a rhs for this conjunction expression");
-      lhs = new ConjunctionExpression(lhs, invokeNextPrecedenceParser(tokenizer,  precedenceLadder, precedenceSelf));
+      AExpression rhs = invokeNextPrecedenceParser(tokenizer,  precedenceLadder, precedenceSelf);
+      lhs = new ConjunctionExpression(lhs, rhs, head, rhs.getTail(), tokenizer.getRawText());
     }
 
     return lhs;
@@ -351,7 +365,7 @@ public class Parser {
     debugLogger.accept("Trying to parse a equality expression");
 
     AExpression lhs = invokeNextPrecedenceParser(tokenizer, precedenceLadder, precedenceSelf);
-    Token tk;
+    Token tk, head = lhs.getHead();
 
     while (
       (tk = tokenizer.peekToken()) != null &&
@@ -386,7 +400,8 @@ public class Parser {
       }
 
       debugLogger.accept("Trying to parse a rhs for this equality expression");
-      lhs = new EqualityExpression(lhs, invokeNextPrecedenceParser(tokenizer, precedenceLadder, precedenceSelf), operator);
+      AExpression rhs = invokeNextPrecedenceParser(tokenizer, precedenceLadder, precedenceSelf);
+      lhs = new EqualityExpression(lhs, rhs, operator, head, rhs.getTail(), tokenizer.getRawText());
     }
 
     return lhs;
@@ -396,7 +411,7 @@ public class Parser {
     debugLogger.accept("Trying to parse a additive expression");
 
     AExpression lhs = invokeNextPrecedenceParser(tokenizer, precedenceLadder, precedenceSelf);
-    Token tk;
+    Token tk, head = lhs.getHead();
 
     while (
       (tk = tokenizer.peekToken()) != null &&
@@ -410,7 +425,8 @@ public class Parser {
         operator = MathOperation.SUBTRACTION;
 
       debugLogger.accept("Trying to parse a rhs for this additive operation");
-      lhs = new MathExpression(lhs, invokeNextPrecedenceParser(tokenizer, precedenceLadder, precedenceSelf), operator);
+      AExpression rhs = invokeNextPrecedenceParser(tokenizer, precedenceLadder, precedenceSelf);
+      lhs = new MathExpression(lhs, rhs, operator, head, rhs.getTail(), tokenizer.getRawText());
     }
 
     return lhs;
@@ -420,7 +436,7 @@ public class Parser {
     debugLogger.accept("Trying to parse a multiplicative expression");
 
     AExpression lhs = invokeNextPrecedenceParser(tokenizer, precedenceLadder, precedenceSelf);
-    Token tk;
+    Token tk, head = lhs.getHead();
 
     while (
       (tk = tokenizer.peekToken()) != null &&
@@ -437,7 +453,8 @@ public class Parser {
         operator = MathOperation.MODULO;
 
       debugLogger.accept("Trying to parse a rhs for this multiplicative operation");
-      lhs = new MathExpression(lhs, invokeNextPrecedenceParser(tokenizer, precedenceLadder, precedenceSelf), operator);
+      AExpression rhs = invokeNextPrecedenceParser(tokenizer, precedenceLadder, precedenceSelf);
+      lhs = new MathExpression(lhs, rhs, operator, head, rhs.getTail(), tokenizer.getRawText());
     }
 
     return lhs;
@@ -452,7 +469,7 @@ public class Parser {
     if (tk == null)
       return invokeNextPrecedenceParser(tokenizer, precedenceLadder, precedenceSelf);
 
-    TokenType firstTokenType = tk.getType();
+    Token firstToken = tk;
     boolean consumedFirstToken = false;
 
     // The notation -() will flip the resulting number's sign
@@ -502,15 +519,15 @@ public class Parser {
     debugLogger.accept("Validated the closing parenthesis");
 
     // Wrap the expression within a unary expression based on the first token's type
-    switch (firstTokenType) {
+    switch (firstToken.getType()) {
       case MINUS:
         debugLogger.accept("Wrapping expression in order to flip it's sign");
-        expression = new FlipSignExpression(expression);
+        expression = new FlipSignExpression(expression, firstToken, expression.getTail(), tokenizer.getRawText());
         break;
 
       case BOOL_NOT:
         debugLogger.accept("Wrapping expression in order to invert it");
-        expression = new InvertExpression(expression);
+        expression = new InvertExpression(expression, firstToken, expression.getTail(), tokenizer.getRawText());
         break;
     }
 
@@ -521,7 +538,7 @@ public class Parser {
     debugLogger.accept("Trying to parse a exponentiation expression");
 
     AExpression lhs = invokeNextPrecedenceParser(tokenizer, precedenceLadder, precedenceSelf);
-    Token tk;
+    Token tk, head = lhs.getHead();
 
     while (
       (tk = tokenizer.peekToken()) != null &&
@@ -530,7 +547,8 @@ public class Parser {
       tokenizer.consumeToken();
 
       debugLogger.accept("Trying to parse a rhs for this exponentiation operation");
-      lhs = new MathExpression(lhs, invokeNextPrecedenceParser(tokenizer, precedenceLadder, precedenceSelf), MathOperation.POWER);
+      AExpression rhs = invokeNextPrecedenceParser(tokenizer, precedenceLadder, precedenceSelf);
+      lhs = new MathExpression(lhs, rhs, MathOperation.POWER, head, rhs.getTail(), tokenizer.getRawText());
     }
 
     return lhs;
@@ -546,6 +564,7 @@ public class Parser {
 
     // Whether the primary expression has been marked as negative
     boolean isNegative = false;
+    Token negativeToken = null;
 
     // Notation of a negative number
     if (tk.getType() == TokenType.MINUS) {
@@ -555,39 +574,42 @@ public class Parser {
       if (tk == null || !(tk.getType() == TokenType.INT || tk.getType() == TokenType.FLOAT || tk.getType() == TokenType.IDENTIFIER))
         throw new UnexpectedTokenError(tokenizer, tk, TokenType.INT, TokenType.FLOAT, TokenType.IDENTIFIER);
 
+      negativeToken = tk;
       isNegative = true;
     }
+
+    Token head = negativeToken == null ? tk : negativeToken;
 
     switch (tk.getType()) {
       case INT:
         debugLogger.accept("Found an integer");
-        return new IntExpression((isNegative ? -1 : 1) * Integer.parseInt(tk.getValue()));
+        return new IntExpression((isNegative ? -1 : 1) * Integer.parseInt(tk.getValue()), head, tk, tokenizer.getRawText());
 
       case FLOAT:
         debugLogger.accept("Found a float");
-        return new FloatExpression((isNegative ? -1 : 1) * Float.parseFloat(tk.getValue()));
+        return new FloatExpression((isNegative ? -1 : 1) * Float.parseFloat(tk.getValue()), head, tk, tokenizer.getRawText());
 
       case STRING:
         debugLogger.accept("Found a string");
-        return new StringExpression(tk.getValue());
+        return new StringExpression(tk.getValue(), head, tk, tokenizer.getRawText());
 
       case IDENTIFIER: {
         debugLogger.accept("Found an identifier");
-        IdentifierExpression identifier = new IdentifierExpression(tk.getValue());
-        return isNegative ? new FlipSignExpression(identifier) : identifier;
+        IdentifierExpression identifier = new IdentifierExpression(tk.getValue(), tk, tk, tokenizer.getRawText());
+        return isNegative ? new FlipSignExpression(identifier, head, tk, tokenizer.getRawText()) : identifier;
       }
 
       case TRUE:
         debugLogger.accept("Found the true literal");
-        return new LiteralExpression(LiteralType.TRUE);
+        return new LiteralExpression(LiteralType.TRUE, tk, tk, tokenizer.getRawText());
 
       case FALSE:
         debugLogger.accept("Found the false literal");
-      return new LiteralExpression(LiteralType.FALSE);
+      return new LiteralExpression(LiteralType.FALSE, tk, tk, tokenizer.getRawText());
 
       case NULL:
         debugLogger.accept("Found the null literal");
-      return new LiteralExpression(LiteralType.NULL);
+      return new LiteralExpression(LiteralType.NULL, tk, tk, tokenizer.getRawText());
 
       default:
         throw new UnexpectedTokenError(tokenizer, tk, TokenType.valueTypes);

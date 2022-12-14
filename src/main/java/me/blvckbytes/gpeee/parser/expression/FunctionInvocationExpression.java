@@ -1,17 +1,23 @@
 package me.blvckbytes.gpeee.parser.expression;
 
-import lombok.AllArgsConstructor;
 import lombok.Getter;
+import me.blvckbytes.gpeee.tokenizer.Token;
 import me.blvckbytes.gpeee.tokenizer.TokenType;
 
 import java.util.List;
 
 @Getter
-@AllArgsConstructor
 public class FunctionInvocationExpression extends AExpression {
 
-  private IdentifierExpression name;
-  private List<AExpression> arguments;
+  private final IdentifierExpression name;
+  private final List<AExpression> arguments;
+
+  public FunctionInvocationExpression(IdentifierExpression name, List<AExpression> arguments, Token head, Token tail, String fullContainingExpression) {
+    super(head, tail, fullContainingExpression);
+
+    this.name = name;
+    this.arguments = arguments;
+  }
 
   @Override
   public String expressionify() {

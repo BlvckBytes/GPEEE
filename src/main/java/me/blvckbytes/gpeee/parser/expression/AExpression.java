@@ -1,10 +1,19 @@
 package me.blvckbytes.gpeee.parser.expression;
 
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import me.blvckbytes.gpeee.tokenizer.Token;
+
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.List;
 
+@Getter
+@AllArgsConstructor
 public abstract class AExpression {
+
+  private final Token head, tail;
+  private final String fullContainingExpression;
 
   public abstract String expressionify();
 

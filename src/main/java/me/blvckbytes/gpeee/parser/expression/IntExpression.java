@@ -1,13 +1,18 @@
 package me.blvckbytes.gpeee.parser.expression;
 
-import lombok.AllArgsConstructor;
 import lombok.Getter;
+import me.blvckbytes.gpeee.tokenizer.Token;
 
 @Getter
-@AllArgsConstructor
 public class IntExpression extends AExpression {
 
   private final Integer number;
+
+  public IntExpression(Integer number, Token head, Token tail, String fullContainingExpression) {
+    super(head, tail, fullContainingExpression);
+
+    this.number = number;
+  }
 
   @Override
   public String expressionify() {

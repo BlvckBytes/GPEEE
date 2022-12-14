@@ -1,16 +1,22 @@
 package me.blvckbytes.gpeee.parser.expression;
 
-import lombok.AllArgsConstructor;
 import lombok.Getter;
+import me.blvckbytes.gpeee.tokenizer.Token;
 import me.blvckbytes.gpeee.tokenizer.TokenType;
 import org.jetbrains.annotations.Nullable;
 
 @Getter
-@AllArgsConstructor
 public abstract class BinaryExpression extends AExpression {
 
   protected final AExpression lhs;
   protected final AExpression rhs;
+
+  public BinaryExpression(AExpression lhs, AExpression rhs, Token head, Token tail, String fullContainingExpression) {
+    super(head, tail, fullContainingExpression);
+
+    this.lhs = lhs;
+    this.rhs = rhs;
+  }
 
   @Override
   public String expressionify() {
