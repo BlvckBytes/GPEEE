@@ -1,6 +1,6 @@
 package me.blvckbytes.gpeee;
 
-import me.blvckbytes.gpeee.error.AParserError;
+import me.blvckbytes.gpeee.error.AEvaluatorError;
 import me.blvckbytes.gpeee.functions.IExpressionFunction;
 import me.blvckbytes.gpeee.interpreter.IEvaluationEnvironment;
 import me.blvckbytes.gpeee.parser.expression.AExpression;
@@ -45,8 +45,8 @@ public class Main {
       System.out.println("result=" + evaluator.evaluateExpression(expression, env));
 
       System.out.println("Done!");
-    } catch (AParserError err) {
-      System.err.println(err.generateWarning());
+    } catch (AEvaluatorError err) {
+      System.out.println(err.getMessage());
       throw new IllegalStateException();
     } catch (Exception e) {
       e.printStackTrace();

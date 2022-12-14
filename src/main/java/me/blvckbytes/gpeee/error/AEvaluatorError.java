@@ -1,17 +1,15 @@
 package me.blvckbytes.gpeee.error;
 
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 @Getter
-@AllArgsConstructor
-public abstract class AParserError extends RuntimeException {
+public abstract class AEvaluatorError extends RuntimeException {
 
-  private final int row, col;
-  private final String text;
-  private final String rawInput;
+  public AEvaluatorError(int row, int col, String rawInput, String text) {
+    super(generateWarning(row, col, rawInput, text));
+  }
 
-  public String generateWarning() {
+  private static String generateWarning(int row, int col, String rawInput, String text) {
     StringBuilder result = new StringBuilder();
     String targetLine = rawInput.split("\n")[row];
 

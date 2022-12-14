@@ -1,6 +1,6 @@
 package me.blvckbytes.gpeee.tokenizer;
 
-import me.blvckbytes.gpeee.error.AParserError;
+import me.blvckbytes.gpeee.error.AEvaluatorError;
 import me.blvckbytes.gpeee.error.UnknownTokenError;
 import org.jetbrains.annotations.Nullable;
 
@@ -111,7 +111,7 @@ public class Tokenizer implements ITokenizer {
   }
 
   @Override
-  public @Nullable Token peekToken() throws AParserError {
+  public @Nullable Token peekToken() throws AEvaluatorError {
     if (state.currentToken == null)
       readNextToken();
 
@@ -120,7 +120,7 @@ public class Tokenizer implements ITokenizer {
   }
 
   @Override
-  public @Nullable Token consumeToken() throws AParserError {
+  public @Nullable Token consumeToken() throws AEvaluatorError {
     if (state.currentToken == null)
       readNextToken();
 
@@ -153,7 +153,7 @@ public class Tokenizer implements ITokenizer {
   /**
    * Reads the next token or null if nothing is available into the local state
    */
-  private void readNextToken() throws AParserError {
+  private void readNextToken() throws AEvaluatorError {
     eatWhitespace();
 
     if (!hasNextChar()) {

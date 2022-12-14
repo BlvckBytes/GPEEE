@@ -1,6 +1,6 @@
 package me.blvckbytes.gpeee.tokenizer;
 
-import me.blvckbytes.gpeee.error.AParserError;
+import me.blvckbytes.gpeee.error.AEvaluatorError;
 import org.jetbrains.annotations.Nullable;
 
 public interface ITokenizer {
@@ -23,8 +23,8 @@ public interface ITokenizer {
 
   TokenizerState discardState(boolean debugLog);
 
-  @Nullable Token peekToken() throws AParserError;
-  @Nullable Token consumeToken() throws AParserError;
+  @Nullable Token peekToken() throws AEvaluatorError;
+  @Nullable Token consumeToken() throws AEvaluatorError;
 
   int getCurrentRow();
 

@@ -1,7 +1,6 @@
 package me.blvckbytes.gpeee;
 
-import me.blvckbytes.gpeee.error.AParserError;
-import me.blvckbytes.gpeee.interpreter.AInterpreterError;
+import me.blvckbytes.gpeee.error.AEvaluatorError;
 import me.blvckbytes.gpeee.interpreter.ExpressionValue;
 import me.blvckbytes.gpeee.interpreter.IEvaluationEnvironment;
 import me.blvckbytes.gpeee.interpreter.Interpreter;
@@ -25,12 +24,12 @@ public class GPEEE implements IExpressionEvaluator {
   }
 
   @Override
-  public AExpression parseString(String input) throws AParserError {
+  public AExpression parseString(String input) throws AEvaluatorError {
     return parser.parse(new Tokenizer(debugLogger, input));
   }
 
   @Override
-  public ExpressionValue evaluateExpression(AExpression expression, IEvaluationEnvironment environment) throws AInterpreterError {
+  public ExpressionValue evaluateExpression(AExpression expression, IEvaluationEnvironment environment) throws AEvaluatorError {
     return interpreter.evaluateExpression(expression, environment);
   }
 }

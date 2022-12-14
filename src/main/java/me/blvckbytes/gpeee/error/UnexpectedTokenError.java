@@ -8,7 +8,7 @@ import org.jetbrains.annotations.Nullable;
 import java.util.Arrays;
 import java.util.stream.Collectors;
 
-public class UnexpectedTokenError extends AParserError {
+public class UnexpectedTokenError extends AEvaluatorError {
 
   public UnexpectedTokenError(ITokenizer tokenizer, @Nullable Token actual, TokenType... expected) {
     super(

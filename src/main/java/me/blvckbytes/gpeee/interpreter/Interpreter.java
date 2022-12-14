@@ -1,5 +1,6 @@
 package me.blvckbytes.gpeee.interpreter;
 
+import me.blvckbytes.gpeee.error.AEvaluatorError;
 import me.blvckbytes.gpeee.parser.expression.AExpression;
 import me.blvckbytes.gpeee.parser.expression.BinaryExpression;
 import me.blvckbytes.gpeee.parser.expression.UnaryExpression;
@@ -14,7 +15,7 @@ public class Interpreter {
     this.debugLogger = debugLogger;
   }
 
-  public ExpressionValue evaluateExpression(AExpression expression, IEvaluationEnvironment environment) throws AInterpreterError {
+  public ExpressionValue evaluateExpression(AExpression expression, IEvaluationEnvironment environment) throws AEvaluatorError {
     if (expression == null)
       return null;
 
