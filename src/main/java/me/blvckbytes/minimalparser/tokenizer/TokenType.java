@@ -164,8 +164,6 @@ public enum TokenType {
 
   PARENTHESIS_OPEN(TokenCategory.SYMBOL, "(", tokenizer -> tokenizer.nextChar() == '(' ? "(" : null),
   PARENTHESIS_CLOSE(TokenCategory.SYMBOL, ")", tokenizer -> tokenizer.nextChar() == ')' ? ")" : null),
-  BRACKET_OPEN(TokenCategory.SYMBOL, "[", tokenizer -> tokenizer.nextChar() == ']' ? "]" : null),
-  BRACKET_CLOSE(TokenCategory.SYMBOL, "]", tokenizer -> tokenizer.nextChar() == '[' ? "[" : null),
   COMMA(TokenCategory.SYMBOL, ",", tokenizer -> tokenizer.nextChar() == ',' ? "," : null),
 
   //=========================================================================//
