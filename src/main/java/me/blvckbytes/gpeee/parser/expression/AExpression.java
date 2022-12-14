@@ -12,7 +12,10 @@ import java.util.List;
 @AllArgsConstructor
 public abstract class AExpression {
 
+  @StringifyExclude
   private final Token head, tail;
+
+  @StringifyExclude
   private final String fullContainingExpression;
 
   public abstract String expressionify();
@@ -26,7 +29,7 @@ public abstract class AExpression {
 
     while (currentClass != Object.class) {
       for (Field f : currentClass.getDeclaredFields()) {
-        if (Modifier.isStatic(f.getModifiers()))
+        if (Modifier.isStatic(f.getModifiers()) || f.isAnnotationPresent(StringifyExclude.class))
           continue;
 
         if (!f.trySetAccessible())
