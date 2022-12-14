@@ -154,7 +154,7 @@ public class Main {
         }
       };
 
-      Tokenizer tk = new Tokenizer(logger, "2^(-1/2)");
+      Tokenizer tk = new Tokenizer(logger, "21 > 55 and 22 < 3 or 3 - 2 == 1");
       ExpressionParser parser = new ExpressionParser(logger, tk);
 
       AExpression expression;
@@ -168,7 +168,7 @@ public class Main {
       if (expression != null) {
         System.out.println(expression.stringify("  ", 0));
         System.out.println("expression=" + expression.expressionify());
-        System.out.println("result=" + expression.evaluate(dummyContext, valueInterpreter));
+//        System.out.println("result=" + expression.evaluate(dummyContext, valueInterpreter));
       }
 
       System.out.println("Done!");

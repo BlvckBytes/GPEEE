@@ -46,9 +46,13 @@ public class ExpressionParser {
     MathExpression ::= AdditiveExpression | MultiplicativeExpression | ExponentiationExpression
     EqualityExpression ::= AdditiveExpression (EqualityOperator AdditiveExpression)*
 
-    NegationExpression ::= "not" EqualityExpression
+    ConjunctionExpression ::= EqualityExpression ("and" EqualityExpression)*
+    DisjunctionExpression ::= ConjunctionExpression ("or" ConjunctionExpression)*
+    ConcatenationExpression ::= DisjunctionExpression ("&" DisjunctionExpression)*
 
     Expression ::= EqualityExpression | MathExpression | ("-" | "not")? "(" Expression ")" | PrimaryExpression
+
+    NegationExpression ::= "not" Expression
    */
 
   /**
@@ -56,7 +60,7 @@ public class ExpressionParser {
    */
   private @Nullable AExpression parseExpression() throws AParserError {
     logger.logDebug("At the main entrypoint of parsing an expression");
-    return parseEqualityExpression();
+    return parseConcatenationExpression();
   }
 
   private AExpression parseNegationExpression() {
@@ -124,6 +128,60 @@ public class ExpressionParser {
       // and try to parse another same-precedence expression for the right hand side
       logger.logDebug("Trying to parse a rhs for this comparison expression");
       lhs = new ComparisonExpression(lhs, parseAdditiveExpression(), operator);
+    }
+
+    return lhs;
+  }
+
+  private AExpression parseConcatenationExpression() {
+    logger.logDebug("Trying to parse a concatenation expression");
+
+    AExpression lhs = parseDisjunctionExpression();
+    Token tk;
+
+    while ((tk = tokenizer.peekToken()) != null && tk.getType() == TokenType.CONCATENATE) {
+      tokenizer.consumeToken();
+
+      // Put the previously parsed expression into the left hand side of the new concatenation
+      // and try to parse another same-precedence expression for the right hand side
+      logger.logDebug("Trying to parse a rhs for this disjunction expression");
+      lhs = new ConcatenationExpression(lhs, parseDisjunctionExpression());
+    }
+
+    return lhs;
+  }
+
+  private AExpression parseDisjunctionExpression() {
+    logger.logDebug("Trying to parse a disjunction expression");
+
+    AExpression lhs = parseConjunctionExpression();
+    Token tk;
+
+    while ((tk = tokenizer.peekToken()) != null && tk.getType() == TokenType.BOOL_OR) {
+      tokenizer.consumeToken();
+
+      // Put the previously parsed expression into the left hand side of the new disjunction
+      // and try to parse another same-precedence expression for the right hand side
+      logger.logDebug("Trying to parse a rhs for this disjunction expression");
+      lhs = new DisjunctionExpression(lhs, parseConjunctionExpression());
+    }
+
+    return lhs;
+  }
+
+  private AExpression parseConjunctionExpression() {
+    logger.logDebug("Trying to parse a conjunction expression");
+
+    AExpression lhs = parseEqualityExpression();
+    Token tk;
+
+    while ((tk = tokenizer.peekToken()) != null && tk.getType() == TokenType.BOOL_AND) {
+      tokenizer.consumeToken();
+
+      // Put the previously parsed expression into the left hand side of the new conjunction
+      // and try to parse another same-precedence expression for the right hand side
+      logger.logDebug("Trying to parse a rhs for this conjunction expression");
+      lhs = new ConjunctionExpression(lhs, parseEqualityExpression());
     }
 
     return lhs;
