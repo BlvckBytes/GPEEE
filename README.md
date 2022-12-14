@@ -124,7 +124,18 @@ are available as parenthesis modifiers:
 | -        | -(1 + 2)     | Flips the sign of the parentheses expression result |
 | not      | not (a && b) | Inverts the boolean parentheses expression result   |
 
-![parentheses](readme_images/railroad_parentheses.png)
+![expression](readme_images/railroad_expression.png)
+
+### Function Invocation
+
+Functions are provided by the evaluation context and arbitrarily many may be called an arbitrary amount of times within
+the expression. Prepending the invocation with a minus sign will flip the function return value's sign. An invocation is defined like this:
+
+```ebnf
+FunctionInvocationExpression ::= "-"? Identifier "(" (Expression | (Expression ("," Expression)*))? ")"
+```
+
+![function invocation](readme_images/railroad_function_invocation.png)
 
 ### Complete Definition
 
@@ -157,4 +168,6 @@ DisjunctionExpression ::= ConjunctionExpression ("or" ConjunctionExpression)*
 ConcatenationExpression ::= DisjunctionExpression ("&" DisjunctionExpression)*
 
 Expression ::= ConcatenationExpression | ("-" | "not")? "(" Expression ")"
+
+FunctionInvocationExpression ::= "-"? Identifier "(" (Expression | (Expression ("," Expression)*))? ")"
 ```
