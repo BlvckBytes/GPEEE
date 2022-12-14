@@ -7,7 +7,9 @@ import me.blvckbytes.gpeee.functions.FExpressionFunction;
 import me.blvckbytes.gpeee.parser.expression.*;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Supplier;
 
 public class Interpreter {
@@ -58,20 +60,58 @@ public class Interpreter {
     if (expression instanceof FunctionInvocationExpression) {
       FunctionInvocationExpression functionExpression = (FunctionInvocationExpression) expression;
 
+      // Try to look up the target function in the environment's function table
       FExpressionFunction function = environment.getFunctions().get(functionExpression.getName().getSymbol());
       if (function == null)
         throw new UndefinedFunctionError(expression);
 
+      // Evaluate and collect all arguments
       List<ExpressionValue> arguments = new ArrayList<>();
       for (AExpression argument : functionExpression.getArguments())
         arguments.add(evaluateExpression(argument, environment));
 
+      // Invoke and return that function's result
       return function.apply(arguments);
     }
 
     if (expression instanceof CallbackExpression) {
-      // TODO: Implement
-      return null;
+      CallbackExpression callbackExpression = (CallbackExpression) expression;
+
+      // This function (wrapped as a value) will be called by java every time the caller invokes it
+      return ExpressionValue.fromFunction(args -> {
+
+        // Copy the static variable table and extend it below
+        Map<String, ExpressionValue> combinedVariables = new HashMap<>(environment.getStaticVariables());
+
+        // Map all identifiers from the callback's signature to a matching java argument in sequence
+        // If there are more arguments in the signature than provided by java, they'll just be set to null
+        for (int i = 0; i < callbackExpression.getSignature().size(); i++) {
+          combinedVariables.put(
+            callbackExpression.getSignature().get(i).getSymbol(),
+            (i < args.size() ? args.get(i) : null)
+          );
+        }
+
+        // Callback expressions are evaluated within their own environment, which extends the current environment
+        // by the additional variables coming from the arguments passed by the callback caller
+        return evaluateExpression(callbackExpression.getBody(), new IEvaluationEnvironment() {
+
+          @Override
+          public Map<String, FExpressionFunction> getFunctions() {
+            return environment.getFunctions();
+          }
+
+          @Override
+          public Map<String, Supplier<ExpressionValue>> getLiveVariables() {
+            return environment.getLiveVariables();
+          }
+
+          @Override
+          public Map<String, ExpressionValue> getStaticVariables() {
+            return combinedVariables;
+          }
+        });
+      });
     }
 
     //////////////////// Binary Expressions /////////////////////
