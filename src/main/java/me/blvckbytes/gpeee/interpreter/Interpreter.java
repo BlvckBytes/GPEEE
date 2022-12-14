@@ -15,7 +15,6 @@ import java.util.function.Supplier;
 public class Interpreter {
 
   private static final ExpressionValue NEGATIVE_ONE = ExpressionValue.fromInteger(-1);
-  private static final ExpressionValue BOOLEAN_FALSE = ExpressionValue.fromBoolean(false);
 
   public ExpressionValue evaluateExpression(AExpression expression, IEvaluationEnvironment environment) throws AEvaluatorError {
     if (expression == null)
@@ -150,7 +149,7 @@ public class Interpreter {
           case NOT_EQUAL_EXACT:
             return ExpressionValue.fromBoolean(!lhs.equalsTo(rhs, true));
           default:
-            return BOOLEAN_FALSE;
+            return ExpressionValue.FALSE;
         }
       }
 
@@ -167,7 +166,7 @@ public class Interpreter {
           case GREATER_THAN_OR_EQUAL:
             return ExpressionValue.fromBoolean(comparisonResult >= 0);
           default:
-            return BOOLEAN_FALSE;
+            return ExpressionValue.FALSE;
         }
       }
 

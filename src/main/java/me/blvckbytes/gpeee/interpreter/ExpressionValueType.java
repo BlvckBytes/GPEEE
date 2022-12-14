@@ -10,6 +10,7 @@ public enum ExpressionValueType {
   STRING,
   BOOLEAN,
   NULL,
-  FUNCTION
+  FUNCTION,
+  LIST
 
 }
