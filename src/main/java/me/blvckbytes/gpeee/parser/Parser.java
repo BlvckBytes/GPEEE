@@ -570,9 +570,9 @@ public class Parser {
     if (tk.getType() == TokenType.MINUS) {
       tk = tokenizer.consumeToken();
 
-      // Either no token left or it's not a number, a float or an identifier
-      if (tk == null || !(tk.getType() == TokenType.INT || tk.getType() == TokenType.FLOAT || tk.getType() == TokenType.IDENTIFIER))
-        throw new UnexpectedTokenError(tokenizer, tk, TokenType.INT, TokenType.FLOAT, TokenType.IDENTIFIER);
+      // Either no token left or it's not a number, a double or an identifier
+      if (tk == null || !(tk.getType() == TokenType.INT || tk.getType() == TokenType.DOUBLE || tk.getType() == TokenType.IDENTIFIER))
+        throw new UnexpectedTokenError(tokenizer, tk, TokenType.INT, TokenType.DOUBLE, TokenType.IDENTIFIER);
 
       negativeToken = tk;
       isNegative = true;
@@ -585,9 +585,9 @@ public class Parser {
         debugLogger.accept("Found an integer");
         return new IntExpression((isNegative ? -1 : 1) * Integer.parseInt(tk.getValue()), head, tk, tokenizer.getRawText());
 
-      case FLOAT:
-        debugLogger.accept("Found a float");
-        return new FloatExpression((isNegative ? -1 : 1) * Float.parseFloat(tk.getValue()), head, tk, tokenizer.getRawText());
+      case DOUBLE:
+        debugLogger.accept("Found a double");
+        return new DoubleExpression((isNegative ? -1 : 1) * Double.parseDouble(tk.getValue()), head, tk, tokenizer.getRawText());
 
       case STRING:
         debugLogger.accept("Found a string");

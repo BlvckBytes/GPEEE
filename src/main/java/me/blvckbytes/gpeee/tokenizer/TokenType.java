@@ -53,7 +53,7 @@ public enum TokenType {
   }),
 
   // -?[0-9]*.?[0-9]+
-  FLOAT(TokenCategory.VALUE, null, tokenizer -> {
+  DOUBLE(TokenCategory.VALUE, null, tokenizer -> {
     StringBuilder result = new StringBuilder();
 
     // Shorthand 0.x notation
@@ -68,7 +68,7 @@ public enum TokenType {
       return result.toString();
     }
 
-    // A float starts out like an integer
+    // A double starts out like an integer
     if (collectDigits(tokenizer, result, true) != CollectorResult.READ_OKAY)
       return null;
 

@@ -166,7 +166,7 @@ point of writing them within the expression onwards.
 | Type    | Example                                    |
 |---------|--------------------------------------------|
 | Integer | 1, -1                                      |
-| Float   | .1, -.1, 3.1415                            |
+| Double  | .1, -.1, 3.1415                            |
 | String  | "Escaped \\" double- and \s single quote " |
 | Boolean | true, false                                |
 | Null    | null                                       |
@@ -194,12 +194,12 @@ Integer ::= "-"? Digit+
 ```
 ![integer](readme_images/railroad_integer.png)
 
-If the number contains a decimal, it's a float. It may omit the zero right before the dot.
+If the number contains a decimal, it's a double. It may omit the zero right before the dot.
 
 ```ebnf
-Float ::= "-"? Digit* "." Digit+
+Double ::= "-"? Digit* "." Digit+
 ```
-![float](readme_images/railroad_float.png)
+![double](readme_images/railroad_double.png)
 
 ### Strings
 
@@ -323,7 +323,7 @@ Digit ::= [0-9]
 Letter ::= [A-Za-z]
 
 Int ::= "-"? Digit+
-Float ::= "-"? Digit* "." Digit+
+Double ::= "-"? Digit* "." Digit+
 String ::= '"' ('\"' | [^"] | "\s")* '"'
 Identifier ::= Letter (Digit | Letter | '_')*
 Literal ::= "true" | "false" | "null"
@@ -333,7 +333,7 @@ MultiplicativeOperator ::= "*" | "/" | "%"
 EqualityOperator ::= "==" | "!=" | "===" | "!=="
 ComparisonOperator ::= ">" | "<" | ">=" | "<="
 
-PrimaryExpression ::= Int | Float | String | Identifier | Literal
+PrimaryExpression ::= Int | Double | String | Identifier | Literal
 NegationExpression ::= "not"? PrimaryExpression
 ExponentiationExpression ::= NegationExpression ("^" NegationExpression)*
 MultiplicativeExpression ::= ExponentiationExpression (MultiplicativeOperator ExponentiationExpression)*
