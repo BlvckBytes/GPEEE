@@ -7,6 +7,7 @@ want to integrate into your next project. It's pronounced "cheapy", matching it'
 cost when comparing against a project without `GPEEE`.
 
 ## Table of Contents
+- [Current State](#current-state)
 - [Mission Statement](#mission-statement)
 - [How It Works](#how-it-works)
   - [Evaluator API](#evaluator-api)
@@ -25,6 +26,90 @@ cost when comparing against a project without `GPEEE`.
   - [Parentheses](#parentheses)
   - [Function Invocation](#function-invocation)
   - [Complete Definition](#complete-definition)
+
+## Current State
+
+The project is still far from being production-ready, but here you can have a look at the most impressive thing it
+can accomplish so far:
+
+<details>
+  <summary>Click Me</summary>
+
+  Expression:
+
+  ```
+  "my prefix: " & iter_cat(my_items, (it, ind) -> "(" & ind & " -> " & it & ")", "|", "no items available")
+  ```
+
+  Result:
+
+  ```
+  my prefix: (0 -> 1)|(1 -> 3)|(2 -> 5)|(3 -> 21)|(4 -> 49)
+  ```
+
+  Environment:
+
+  ```java
+  IEvaluationEnvironment env = new IEvaluationEnvironment() {
+
+    @Override
+    public Map<String, FExpressionFunction> getFunctions() {
+      // iter_cat(items, (it, ind) -> (..), "separator", "no items fallback")
+      return Map.of(
+        "iter_cat", args -> {
+          // Not enough arguments provided
+          if (args.size() < 3)
+            return ExpressionValue.NULL;
+
+          @Nullable FExpressionFunction formatter = args.get(1).asFunction();
+
+          // Needs to provide a function as the mapper parameter
+          if (formatter == null)
+            return ExpressionValue.NULL;
+
+          List<ExpressionValue> items = args.get(0).interpretAsList();
+          String separator = args.get(2).interpretAsString();
+
+          // Loop all items
+          StringBuilder result = new StringBuilder();
+          for (int i = 0; i < items.size(); i++) {
+            result.append(i == 0 ? "" : separator).append(
+              formatter
+                .apply(List.of(items.get(i), ExpressionValue.fromInteger(i)))
+                .interpretAsString()
+            );
+          }
+
+          // No items available but a fallback string has been supplied
+          if (items.size() == 0 && args.size() >= 4)
+            return ExpressionValue.fromString(args.get(3).interpretAsString());
+
+          // Respond with the built-up result
+          return ExpressionValue.fromString(result.toString());
+        }
+      );
+    }
+
+    @Override
+    public Map<String, Supplier<ExpressionValue>> getLiveVariables() {
+      return Map.of();
+    }
+
+    @Override
+    public Map<String, ExpressionValue> getStaticVariables() {
+      Map<String, ExpressionValue> vars = new HashMap<>();
+
+      vars.put("my_items", ExpressionValue.fromListAutoWrap(List.of(
+        1, 3, 5, 21, 49
+      )));
+
+      vars.put("no_items", ExpressionValue.EMPTY_LIST);
+
+      return vars;
+    }
+  };
+  ```
+</details>
 
 ## Mission Statement
 
@@ -141,6 +226,68 @@ public interface FExpressionFunction {
 As you might have already noticed, all input and output in regard to the evaluator's API takes place using
 the *expression value*. The main reason for using this wrapper is the dynamically typed nature of expressions. There
 are many conversion methods available to create, read and use these values in your own codebase.
+
+An expression value can be carrying the following types:
+
+| Type     | Description                     |
+|----------|---------------------------------|
+| INTEGER  | An integer number               |
+| DOUBLE   | A floating point number         |
+| STRING   | A string of characters          |
+| BOOLEAN  | True or False                   |
+| NULL     | No value (null)                 |
+| FUNCTION | A callable FExpressionFunction  |
+| LIST     | A list of 0-n expression values |
+
+To make this little language as fail-proof and as intuitive as possible, all operators will work on all data-types. The following
+cases are symmetric and allow for an exchange of RHS and LHS while they still hold true.
+
+**Math operations:**
+
+| LHS     | Operator    | RHS     | Result Type    | Notes                     |
+|---------|-------------|---------|----------------|---------------------------|
+| INTEGER | +,-,*,^,%   | INTEGER | Integer        | /                         |
+| INTEGER | /           | INTEGER | Integer/Double | Double only on remainders |
+| DOUBLE  | +,-,*,/,^,% | INTEGER | Double         | /                         |
+| DOUBLE  | +,-,*,/,^,% | DOUBLE  | Double         | /                         |
+
+Since equality- as well as comparison operations take place mostly on numbers only, all other values have number
+fallback values assigned to them:
+
+| Type            | Fallback | Notes              |
+|-----------------|----------|--------------------|
+| STRING (empty)  | 0        | An empty string    |
+| STRING          | 1        | A non-empty string |
+| BOOLEAN (true)  | 1        | /                  |
+| BOOLEAN (false) | 0        | /                  |
+| NULL            | 0        | /                  |
+| FUNCTION        | 1        | /                  |
+| LIST (empty)    | 0        | An empty list      |
+| LIST            | 1        | A non-empty list   |
+
+**Equality operations:**
+
+The non-exact operators (`==`, `!=`) match, if the content of two values is/isn't the same. This also means that
+a string containing a number's sequence of characters will equal (`==`) to that number. If the type is also to be
+checked, the use of exact operators (`===`, `!==`) is required.
+
+Lists are equal if either their reference is equal
+or all of their elements are equal (strict or not depends on the used operator on the lists).
+
+For Strings, non-exact means ignore casing as well as leading/trailing spaces when comparing while exact checks these properties.
+
+**Comparison operations:**
+
+The comparison operation compares *only* numbers, no matter their type, and will use fallback values on all other types.
+
+**Boolean operations:**
+
+A boolean operation applies *only* to booleans and numbers and will use fallback values on all other types. A number is
+being considered `true` if it's greater than zero and `false` otherwise.
+
+**Concatenation operation:**
+
+Operands of a concatenation operation will always be interpreted as a string and just added together.
 
 ### Resolving Variables
 

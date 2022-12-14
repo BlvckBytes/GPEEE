@@ -7,6 +7,18 @@
     <groupId>me.blvckbytes</groupId>
     <artifactId>GPEEE</artifactId>
     <version>0.1-SNAPSHOT</version>
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <source>15</source>
+                    <target>15</target>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
 
     <properties>
         <maven.compiler.source>11</maven.compiler.source>
@@ -38,6 +50,14 @@
             <artifactId>big-math</artifactId>
             <version>2.3.2</version>
         </dependency>
+
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>4.13.2</version>
+            <scope>test</scope>
+        </dependency>
+
     </dependencies>
 
 </project>
