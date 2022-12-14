@@ -9,10 +9,11 @@ public abstract class AParserError extends RuntimeException {
 
   private final int row, col;
   private final String text;
+  private final String rawInput;
 
-  public String generateWarning(String parsedText) {
+  public String generateWarning() {
     StringBuilder result = new StringBuilder();
-    String targetLine = parsedText.split("\n")[row];
+    String targetLine = rawInput.split("\n")[row];
 
     String lineNumber = (row + 1) + ": ";
 

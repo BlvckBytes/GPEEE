@@ -1,6 +1,9 @@
-package me.blvckbytes.gpeee.interpreter;
+package me.blvckbytes.gpeee;
 
 import me.blvckbytes.gpeee.error.AParserError;
+import me.blvckbytes.gpeee.interpreter.AInterpreterError;
+import me.blvckbytes.gpeee.interpreter.ExpressionValue;
+import me.blvckbytes.gpeee.interpreter.IEvaluationEnvironment;
 import me.blvckbytes.gpeee.parser.expression.AExpression;
 
 public interface IExpressionEvaluator {

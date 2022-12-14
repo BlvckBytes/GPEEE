@@ -127,7 +127,7 @@ public enum TokenType {
 
     // Strings need to be terminated
     if (!isTerminated)
-      throw new UnterminatedStringError(startRow, startCol);
+      throw new UnterminatedStringError(startRow, startCol, tokenizer.getRawText());
 
     return result.toString();
   }),

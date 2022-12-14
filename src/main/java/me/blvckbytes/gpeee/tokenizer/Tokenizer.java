@@ -185,6 +185,6 @@ public class Tokenizer implements ITokenizer {
     }
 
     // No tokenizer matched
-    throw new UnknownTokenError(state.row, state.col);
+    throw new UnknownTokenError(state.row, state.col, rawText);
   }
 }

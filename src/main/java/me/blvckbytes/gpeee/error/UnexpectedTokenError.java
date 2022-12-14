@@ -14,7 +14,9 @@ public class UnexpectedTokenError extends AParserError {
     super(
       actual == null ? tokenizer.getCurrentRow() : actual.getRow(),
       actual == null ? tokenizer.getCurrentCol() : actual.getCol(),
-      "Expected token " + formatTokenNames(expected) + ", found " + (actual == null ? "nothing" : actual.getType().name()));
+      "Expected token " + formatTokenNames(expected) + ", found " + (actual == null ? "nothing" : actual.getType().name()),
+      tokenizer.getRawText()
+    );
   }
 
   private static String formatTokenNames(TokenType[] tokens) {
