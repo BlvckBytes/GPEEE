@@ -9,13 +9,13 @@ import java.util.List;
 @Getter
 public class FunctionInvocationExpression extends AExpression {
 
-  private final IdentifierExpression symbol;
+  private final IdentifierExpression name;
   private final List<AExpression> arguments;
 
-  public FunctionInvocationExpression(IdentifierExpression symbol, List<AExpression> arguments, Token head, Token tail, String fullContainingExpression) {
+  public FunctionInvocationExpression(IdentifierExpression name, List<AExpression> arguments, Token head, Token tail, String fullContainingExpression) {
     super(head, tail, fullContainingExpression);
 
-    this.symbol = symbol;
+    this.name = name;
     this.arguments = arguments;
   }
 
@@ -29,7 +29,7 @@ public class FunctionInvocationExpression extends AExpression {
     }
 
     return (
-      symbol.expressionify() + TokenType.PARENTHESIS_OPEN.getRepresentation() +
+      name.expressionify() + TokenType.PARENTHESIS_OPEN.getRepresentation() +
       argExpression +
       TokenType.PARENTHESIS_CLOSE.getRepresentation()
     );
