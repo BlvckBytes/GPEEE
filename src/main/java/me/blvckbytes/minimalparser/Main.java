@@ -154,12 +154,12 @@ public class Main {
         }
       };
 
-      Tokenizer tk = new Tokenizer(logger, "21 > 55 and 22 < 3 or 3 - 2 == 1");
-      Parser parser = new Parser(logger, tk);
+      Tokenizer tk = new Tokenizer(logger, "21 > 55 and 22 < 3 or 3 - 2 == 1 & \"Hello, world!\"");
+      Parser parser = new Parser(logger);
 
       AExpression expression;
       try {
-        expression = parser.parse();
+        expression = parser.parse(tk);
       } catch (AParserError err) {
         System.err.println(err.generateWarning(tk.getRawText()));
         throw new IllegalStateException();
