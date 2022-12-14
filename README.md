@@ -104,12 +104,12 @@ public interface IEvaluationEnvironment {
   /**
    * Mapping identifiers to available live variables which an expression may resolve
    */
-  Map<String, Supplier<Object>> getLiveVariables();
+  Map<String, Supplier<ExpressionValue>> getLiveVariables();
 
   /**
    * Mapping identifiers to available static variables which an expression may resolve
    */
-  Map<String, Object> getStaticVariables();
+  Map<String, ExpressionValue> getStaticVariables();
 
 }
 ```

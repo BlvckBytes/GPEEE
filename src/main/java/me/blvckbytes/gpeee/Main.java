@@ -2,6 +2,7 @@ package me.blvckbytes.gpeee;
 
 import me.blvckbytes.gpeee.error.AEvaluatorError;
 import me.blvckbytes.gpeee.functions.IExpressionFunction;
+import me.blvckbytes.gpeee.interpreter.ExpressionValue;
 import me.blvckbytes.gpeee.interpreter.IEvaluationEnvironment;
 import me.blvckbytes.gpeee.parser.expression.AExpression;
 
@@ -32,12 +33,12 @@ public class Main {
         }
 
         @Override
-        public Map<String, Supplier<Object>> getLiveVariables() {
+        public Map<String, Supplier<ExpressionValue>> getLiveVariables() {
           return Map.of();
         }
 
         @Override
-        public Map<String, Object> getStaticVariables() {
+        public Map<String, ExpressionValue> getStaticVariables() {
           return Map.of();
         }
       };
