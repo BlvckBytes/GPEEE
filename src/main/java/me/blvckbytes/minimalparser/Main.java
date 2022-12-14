@@ -141,20 +141,9 @@ public class Main {
         }
       };
 
-      ILogger logger = new ILogger() {
+      ILogger logger = message -> System.out.println("[DEBUG]: " + message);
 
-        @Override
-        public void logDebug(String message) {
-          System.out.println("[DEBUG]: " + message);
-        }
-
-        @Override
-        public void logError(String message) {
-          System.err.println(message);
-        }
-      };
-
-      Tokenizer tk = new Tokenizer(logger, "21 > 55 and 22 < 3 or 3 - 2 == 1 & \"Hello, world!\"");
+      Tokenizer tk = new Tokenizer(logger, "22 < myFunc(1, 2, 3) and func2(\"hi\", .4, true) or a + -sin(33) - my_var");
       Parser parser = new Parser(logger);
 
       AExpression expression;

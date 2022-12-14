@@ -8,6 +8,9 @@ import me.blvckbytes.minimalparser.tokenizer.ITokenizer;
 import me.blvckbytes.minimalparser.tokenizer.Token;
 import me.blvckbytes.minimalparser.tokenizer.TokenType;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * This parser uses the compact and flexible algorithm called "precedence climbing" / "top down
  * recursive decent", which of course is not highly efficient. The main purpose of this project is
@@ -24,7 +27,6 @@ public class Parser {
     this.logger = logger;
 
     this.precedenceLadder = new FExpressionParser[] {
-      this::parseParenthesisExpression,
       this::parseConcatenationExpression,
       this::parseDisjunctionExpression,
       this::parseConjunctionExpression,
@@ -34,6 +36,8 @@ public class Parser {
       this::parseMultiplicativeExpression,
       this::parseExponentiationExpression,
       this::parseNegationExpression,
+      this::parseFunctionInvocationExpression,
+      this::parseParenthesisExpression,
       this::parsePrimaryExpression,
     };
   }
@@ -74,6 +78,97 @@ public class Parser {
   //=========================================================================//
   //                            Expression Parsers                           //
   //=========================================================================//
+
+  private AExpression parseFunctionInvocationExpression(ITokenizer tokenizer, FExpressionParser[] precedenceLadder, int precedenceSelf) throws AParserError {
+    logger.logDebug("Trying to parse a function invocation expression");
+
+    Token tk = tokenizer.peekToken();
+
+    // There's no identifier or minus as the next token, hand over to the next higher precedence parser
+    if (tk == null || !(tk.getType() == TokenType.IDENTIFIER || tk.getType() == TokenType.MINUS)) {
+      logger.logDebug("Not a function invocation expression");
+      return invokeNextPrecedenceParser(tokenizer, precedenceLadder, precedenceSelf);
+    }
+
+    boolean flipResult = false;
+
+    // The function return value's sign should be flipped
+    if (tk.getType() == TokenType.MINUS) {
+      flipResult = true;
+
+      // Store before consuming the minus
+      tokenizer.saveState(true);
+      tokenizer.consumeToken();
+
+      tk = tokenizer.peekToken();
+
+      // There's no identifier as the next token, hand over to the next higher precedence parser
+      if (tk == null || tk.getType() != TokenType.IDENTIFIER) {
+        logger.logDebug("Not a function invocation expression");
+
+        // Put back the minus
+        tokenizer.restoreState(true);
+
+        return invokeNextPrecedenceParser(tokenizer, precedenceLadder, precedenceSelf);
+      }
+    }
+
+    // Store before consuming the identifier
+    tokenizer.saveState(true);
+
+    // Consume the identifier
+    Token identifier = tk;
+    tokenizer.consumeToken();
+
+    tk = tokenizer.peekToken();
+
+    // There's no opening parenthesis as the next token, hand over to the next higher precedence parser
+    if (tk == null || tk.getType() != TokenType.PARENTHESIS_OPEN) {
+      logger.logDebug("Not a function invocation expression");
+
+      // Put back the token
+      tokenizer.restoreState(true);
+
+      return invokeNextPrecedenceParser(tokenizer, precedenceLadder, precedenceSelf);
+    }
+
+    // Not going to go need to restore anymore, this has to be a function invocation
+    tokenizer.discardState(true);
+
+    // Also discard the save from parsing the minus
+    if (flipResult)
+      tokenizer.discardState(true);
+
+    // Consume the opening parenthesis
+    tokenizer.consumeToken();
+
+    List<AExpression> arguments = new ArrayList<>();
+
+    // As long as there is no closing parenthesis, there are still arguments left
+    while ((tk = tokenizer.peekToken()) != null && tk.getType() != TokenType.PARENTHESIS_CLOSE) {
+      logger.logDebug("Parsing argument " + arguments.size());
+
+      if (arguments.size() > 0) {
+        // Arguments other than the first one need to be separated out by a comma
+        if (tk.getType() != TokenType.COMMA)
+          throw new UnexpectedTokenError(tokenizer, tk, TokenType.COMMA);
+
+        // Consume that comma
+        tokenizer.consumeToken();
+      }
+
+      // Parse the argument expression (start climbing the ladder all over again)
+      arguments.add(precedenceLadder[0].apply(tokenizer, precedenceLadder, 0));
+    }
+
+    // Function invocations have to be terminated with a closing parenthesis
+    tk = tokenizer.consumeToken();
+    if (tk == null || tk.getType() != TokenType.PARENTHESIS_CLOSE)
+      throw new UnexpectedTokenError(tokenizer, tk, TokenType.PARENTHESIS_CLOSE);
+
+    FunctionInvocationExpression functionExpression = new FunctionInvocationExpression(new IdentifierExpression(identifier.getValue()), arguments);
+    return flipResult ? new FlipSignExpression(functionExpression) : functionExpression;
+  }
 
   private AExpression parseNegationExpression(ITokenizer tokenizer, FExpressionParser[] precedenceLadder, int precedenceSelf) throws AParserError {
     logger.logDebug("Trying to parse a negotiation expression");
@@ -415,9 +510,11 @@ public class Parser {
         logger.logDebug("Found an string");
         return new StringExpression(tk.getValue());
 
-      case IDENTIFIER:
+      case IDENTIFIER: {
         logger.logDebug("Found an identifier");
-        return new FlipSignExpression(new IdentifierExpression(tk.getValue()));
+        IdentifierExpression identifier = new IdentifierExpression(tk.getValue());
+        return isNegative ? new FlipSignExpression(identifier) : identifier;
+      }
 
       case TRUE:
         logger.logDebug("Found the true literal");
