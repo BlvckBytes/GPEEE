@@ -6,14 +6,15 @@ import me.blvckbytes.gpeee.interpreter.IEvaluationEnvironment;
 import me.blvckbytes.gpeee.parser.expression.AExpression;
 
 import java.util.Map;
+import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 public class Main {
 
   public static void main(String[] args) {
     try {
-      IDebugLogger logger = message -> System.out.println("[DEBUG]: " + message);
-      GPEEE evaluator = new GPEEE(logger);
+      Consumer<String> debugLogger = message -> System.out.println("[DEBUG]: " + message);
+      GPEEE evaluator = new GPEEE(debugLogger);
 
       String input = "foreach(items, (index) -> \"index=\" & index, \"\\n\")";
 

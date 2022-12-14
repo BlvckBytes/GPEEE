@@ -1,21 +1,21 @@
 package me.blvckbytes.gpeee.tokenizer;
 
-import me.blvckbytes.gpeee.IDebugLogger;
 import me.blvckbytes.gpeee.error.AParserError;
 import me.blvckbytes.gpeee.error.UnknownTokenError;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Stack;
+import java.util.function.Consumer;
 
 public class Tokenizer implements ITokenizer {
 
   private final String rawText;
-  private final IDebugLogger logger;
+  private final Consumer<String> logger;
   private final char[] text;
   private final Stack<TokenizerState> saveStates;
   private TokenizerState state;
 
-  public Tokenizer(IDebugLogger logger, String text) {
+  public Tokenizer(Consumer<String> logger, String text) {
     this.rawText = text;
     this.logger = logger;
     this.text = text.toCharArray();
@@ -47,7 +47,7 @@ public class Tokenizer implements ITokenizer {
     this.saveStates.push(this.state.copy());
 
     if (debugLog)
-      logger.logDebug("Saved state " + this.saveStates.size() + " (charIndex=" + state.charIndex + ")");
+      logger.accept("Saved state " + this.saveStates.size() + " (charIndex=" + state.charIndex + ")");
   }
 
   @Override
@@ -56,7 +56,7 @@ public class Tokenizer implements ITokenizer {
     this.state = this.saveStates.pop();
 
     if (debugLog)
-      logger.logDebug("Restored state " + sizeBefore + " (charIndex=" + state.charIndex + ")");
+      logger.accept("Restored state " + sizeBefore + " (charIndex=" + state.charIndex + ")");
   }
 
   @Override
@@ -65,7 +65,7 @@ public class Tokenizer implements ITokenizer {
     TokenizerState state = this.saveStates.pop();
 
     if (debugLog)
-      logger.logDebug("Discarded state " + sizeBefore + " (charIndex=" + state.charIndex + ")");
+      logger.accept("Discarded state " + sizeBefore + " (charIndex=" + state.charIndex + ")");
 
     return state;
   }
@@ -115,7 +115,7 @@ public class Tokenizer implements ITokenizer {
     if (state.currentToken == null)
       readNextToken();
 
-    logger.logDebug("Peeked token " + state.currentToken);
+    logger.accept("Peeked token " + state.currentToken);
     return state.currentToken;
   }
 
@@ -127,7 +127,7 @@ public class Tokenizer implements ITokenizer {
     Token result = state.currentToken;
     readNextToken();
 
-    logger.logDebug("Consumed token " + result);
+    logger.accept("Consumed token " + result);
     return result;
   }
 

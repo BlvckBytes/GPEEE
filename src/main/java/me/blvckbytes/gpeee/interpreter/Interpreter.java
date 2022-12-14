@@ -1,16 +1,17 @@
 package me.blvckbytes.gpeee.interpreter;
 
-import me.blvckbytes.gpeee.IDebugLogger;
 import me.blvckbytes.gpeee.parser.expression.AExpression;
 import me.blvckbytes.gpeee.parser.expression.BinaryExpression;
 import me.blvckbytes.gpeee.parser.expression.UnaryExpression;
 
+import java.util.function.Consumer;
+
 public class Interpreter {
 
-  private final IDebugLogger logger;
+  private final Consumer<String> debugLogger;
 
-  public Interpreter(IDebugLogger logger) {
-    this.logger = logger;
+  public Interpreter(Consumer<String> debugLogger) {
+    this.debugLogger = debugLogger;
   }
 
   public ExpressionValue evaluateExpression(AExpression expression, IEvaluationEnvironment environment) throws AInterpreterError {

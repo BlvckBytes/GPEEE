@@ -10,21 +10,23 @@ import me.blvckbytes.gpeee.parser.expression.AExpression;
 import me.blvckbytes.gpeee.tokenizer.Tokenizer;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.function.Consumer;
+
 public class GPEEE implements IExpressionEvaluator {
 
   private final Parser parser;
   private final Interpreter interpreter;
-  private final IDebugLogger logger;
+  private final Consumer<String> debugLogger;
 
-  public GPEEE(@Nullable IDebugLogger logger) {
-    this.logger = logger == null ? m -> {} : logger;
-    this.parser = new Parser(logger);
-    this.interpreter = new Interpreter(logger);
+  public GPEEE(@Nullable Consumer<String> debugLogger) {
+    this.debugLogger = debugLogger == null ? m -> {} : debugLogger;
+    this.parser = new Parser(debugLogger);
+    this.interpreter = new Interpreter(debugLogger);
   }
 
   @Override
   public AExpression parseString(String input) throws AParserError {
-    return parser.parse(new Tokenizer(logger, input));
+    return parser.parse(new Tokenizer(debugLogger, input));
   }
 
   @Override

@@ -46,9 +46,8 @@ main guidelines in stone:
 * **All** control flow and complex logic will be outsourced to Java and hidden behind functions
 
 Without adhering to these, I'm sure the project would grow into an unmaintainable beast of "one more
-feature please" in no time. The restrictions may seem harsh, but you're still able to get up and
-running with all customizations by defining your own *evaluation environment* exactly to your needs
-in no time.
+feature please". The restrictions may seem harsh, but you're still able to get up and running with
+all customizations by defining your own *evaluation environment* exactly to your needs in no time.
 
 ## How It Works
 
@@ -80,6 +79,15 @@ public interface IExpressionEvaluator {
 
 }
 ```
+
+This interface is implemented by the `GPEEE` class, which can be quickly instantiated with an optional debug logger:
+
+```java
+public GPEEE(@Nullable Consumer<String> debugLogger);
+```
+
+The `debugLogger` will get called with many internal debug messages which can help you to understand how the inner workings
+of this state machine operate. In production, it's advised to keep this value at `null`.
 
 ### The Evaluation Environment
 
@@ -164,6 +172,8 @@ point of writing them within the expression onwards.
 | Null    | null                                       |
 
 ## Grammar
+
+All railroad diagrams have been created using [rr](https://bottlecaps.de/rr/ui).
 
 ### Numbers
 
