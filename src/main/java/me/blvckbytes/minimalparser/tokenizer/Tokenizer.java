@@ -1,6 +1,5 @@
 package me.blvckbytes.minimalparser.tokenizer;
 
-import lombok.Getter;
 import me.blvckbytes.minimalparser.ILogger;
 import me.blvckbytes.minimalparser.error.AParserError;
 import me.blvckbytes.minimalparser.error.UnknownTokenError;
@@ -10,9 +9,7 @@ import java.util.Stack;
 
 public class Tokenizer implements ITokenizer {
 
-  @Getter
   private final String rawText;
-
   private final ILogger logger;
   private final char[] text;
   private final Stack<TokenizerState> saveStates;
@@ -26,6 +23,16 @@ public class Tokenizer implements ITokenizer {
     this.saveStates = new Stack<>();
   }
 
+  //=========================================================================//
+  //                                ITokenizer                               //
+  //=========================================================================//
+
+  @Override
+  public String getRawText() {
+    return rawText;
+  }
+
+  @Override
   public boolean hasNextChar() {
     return state.charIndex < this.text.length;
   }
@@ -63,6 +70,7 @@ public class Tokenizer implements ITokenizer {
     return state;
   }
 
+  @Override
   public char nextChar() {
     char next = this.text[state.charIndex++];
 
@@ -87,6 +95,7 @@ public class Tokenizer implements ITokenizer {
     return this.text[state.charIndex];
   }
 
+  @Override
   public void undoNextChar() {
     char lastChar = this.text[state.charIndex - 1];
 
@@ -101,11 +110,6 @@ public class Tokenizer implements ITokenizer {
     state.charIndex--;
   }
 
-  private void eatWhitespace() {
-    while (hasNextChar() && (isConsideredWhitespace(peekNextChar()) || peekNextChar() == '\n'))
-      nextChar();
-  }
-
   @Override
   public @Nullable Token peekToken() throws AParserError {
     if (state.currentToken == null)
@@ -115,6 +119,7 @@ public class Tokenizer implements ITokenizer {
     return state.currentToken;
   }
 
+  @Override
   public @Nullable Token consumeToken() throws AParserError {
     if (state.currentToken == null)
       readNextToken();
@@ -134,6 +139,15 @@ public class Tokenizer implements ITokenizer {
   @Override
   public int getCurrentCol() {
     return state.col;
+  }
+
+  //=========================================================================//
+  //                                Utilities                                //
+  //=========================================================================//
+
+  private void eatWhitespace() {
+    while (hasNextChar() && (isConsideredWhitespace(peekNextChar()) || peekNextChar() == '\n'))
+      nextChar();
   }
 
   /**
