@@ -1,15 +1,159 @@
-# MinimalParser
+# GPEEE
+
+The opensource `General Purpose Environment Expression Evaluator` which you most definitely
+want to integrate into your next project. It's pronounced "cheapy", matching it's slim technical
+cost when comparing against a project without `GPEEE`.
 
 ## Table of Contents
+- [Mission Statement](#mission-statement)
+- [How It Works](#how-it-works)
+  - [Evaluator API](#evaluator-api)
+  - [The Evaluation Environment](#the-evaluation-environment)
+  - [Expression Values](#expression-values)
+  - [Resolving Variables](#resolving-variables)
+  - [Calling Functions](#calling-functions)
+  - [Terminal Values](#terminal-values)
 - [Grammar](#grammar)
   - [Numbers](#numbers)
   - [Strings](#strings)
   - [Literals](#literals)
   - [Identifiers](#identifiers)
-  - [Operators](#operators)
+  - [Operators And Precedences](#operators-and-precedences)
   - [Parentheses](#parentheses)
   - [Function Invocation](#function-invocation)
   - [Complete Definition](#complete-definition)
+
+## Mission Statement
+
+While this *is* a general purpose evaluator, it has been designed to solve a very specific problem
+many bukkit plugin developers face: Allowing the user to easily describe dynamic and possibly complex
+behavior inside a *YAML* configuration file. Many successful projects offer such a feature, but - at least
+to my knowledge - they all painstakingly implement their own evaluator. Not only does this suck for
+the end user who has to learn a million different flavors for basic operation expressions, but it also
+heavily constrains lots of plugin developers who don't know how to write a parser in the user experience
+of their software.
+
+In order to keep this already pretty complex project as dead simple as possible, I've set a few
+main guidelines in stone:
+
+* Very clean, maintainable and well documented codebase to make it accessible for everyone
+* Implement all generally known operators but **don't** add anything fancy
+* Expressions will **not** keep any state (no variable declarations, etc)
+* Next to basic terminal values and operators there will be **no** keywords
+* **All** control flow and complex logic will be outsourced to Java and hidden behind functions
+
+Without adhering to these, I'm sure the project would grow into an unmaintainable beast of "one more
+feature please" in no time. The restrictions may seem harsh, but you're still able to get up and
+running with all customizations by defining your own *evaluation environment* exactly to your needs
+in no time.
+
+## How It Works
+
+The working principle of this evaluator is as simple as it gets: You provide an *evaluation environment*
+as well as a string containing the target expression and the evaluator returns an *evaluation result* or
+throws an error to be properly handled by the caller.
+
+### Evaluator API
+
+```java
+public interface IExpressionEvaluator {
+
+  /**
+   * Parses an input string into an abstract syntax tree (AST) to be evaluated
+   * later on and possibly be reused for multiple evaluations with multiple environments.
+   * @param input Input to parse
+   * @return Root node of the AST
+   * @throws AParserError Error during the parsing process
+   */
+  AExpression parseString(String input) throws AParserError;
+
+  /**
+   * Evaluates a previously parsed expression within a provided evaluation environment.
+   * @param expression Expression to evaluate
+   * @return Resulting expression value
+   * @throws AInterpreterError Error during the interpretation process
+   */
+  ExpressionValue evaluateExpression(AExpression expression, IEvaluationEnvironment environment) throws AInterpreterError;
+
+}
+```
+
+### The Evaluation Environment
+
+An *evaluation environment* consists of the following properties:
+
+```java
+public interface IEvaluationEnvironment {
+
+  /**
+   * Mapping identifiers to available functions which an expression may invoke
+   */
+  Map<String, IExpressionFunction> getFunctions();
+
+  /**
+   * Mapping identifiers to available live variables which an expression may resolve
+   */
+  Map<String, Supplier<Object>> getLiveVariables();
+
+  /**
+   * Mapping identifiers to available static variables which an expression may resolve
+   */
+  Map<String, Object> getStaticVariables();
+
+}
+```
+
+An `identifier` is basically a unique name which can be used inside of expressions and underlies these
+[constraints](#identifiers). The only difference between live variables and static variables is that a
+live variable will be resolved by calling the supplier function while a static variable has to be set
+in stone ahead of time.
+
+An *expression function* can be easily created by adhering to the following signature:
+
+```java
+@FunctionalInterface
+public interface IExpressionFunction {
+
+  /**
+   * Called whenever a function call to the registered corresponding
+   * identifier is performed within an expression
+   * @param args Arguments supplied by the invocation
+   * @return Return value of this function
+   */
+  ExpressionValue apply(ExpressionValue[] args);
+
+}
+```
+
+### Expression Values
+
+As you might have already noticed, all input and output in regard to the evaluator's API takes place using
+the *expression value*. The main reason for using this wrapper is the dynamically typed nature of expressions. There
+are many conversion methods available to create, read and use these values in your own codebase.
+
+### Resolving Variables
+
+A variable is resolved as soon as you write out an `identifier` that's available in the current environment.
+
+### Calling Functions
+
+You should have a look at the exact [grammar](#function-invocation) of a function invocation, but the general idea
+has been carried over from most other programming-/scripting-languages. Provide an identifier, open a parenthesis,
+specify 0-n parameters (which can be expressions too) and close the parenthesis again. Something like this:
+`myFunction("hello world", 1, .3, null, true, false)`.
+
+### Terminal Values
+
+Terminal values are immediate values which do not resolve any further and are set in stone from the
+point of writing them within the expression onwards.
+
+| Type    | Example                                    |
+|---------|--------------------------------------------|
+| Integer | 1, -1                                      |
+| Float   | .1, -.1, 3.1415                            |
+| String  | "Escaped \\" double- and \s single quote " |
+| Boolean | true, false                                |
+| Null    | null                                       |
 
 ## Grammar
 
@@ -75,7 +219,7 @@ Identifier ::= Letter (Digit | Letter | '_')*
 
 ![identifier](readme_images/railroad_identifier.png)
 
-### Operators
+### Operators And Precedences
 
 In order to not have to call functions for simple operations and to improve on readability,
 some of the most used operators have been implemented. Operators are listed top to bottom, in descending precedence.
@@ -140,7 +284,7 @@ FunctionInvocationExpression ::= "-"? Identifier "(" (Expression | (Expression (
 
 ### Complete Definition
 
-The following `EBNF` defines the whole grammar which this parser understands:
+The following [EBNF](https://www.w3.org/2001/06/blindfold/grammar) defines the whole grammar which this parser understands:
 
 ```ebnf
 Digit ::= [0-9]
