@@ -5,6 +5,8 @@ import me.blvckbytes.minimalparser.IEvaluationContext;
 import me.blvckbytes.minimalparser.IValueInterpreter;
 import me.blvckbytes.minimalparser.error.AParserError;
 import me.blvckbytes.minimalparser.parser.MathOperation;
+import me.blvckbytes.minimalparser.tokenizer.TokenType;
+import org.jetbrains.annotations.Nullable;
 
 import java.math.BigDecimal;
 import java.math.MathContext;
@@ -47,6 +49,26 @@ public class MathExpression extends BinaryExpression {
 
       default:
         return 0;
+    }
+  }
+
+  @Override
+  protected @Nullable String getInfixSymbol() {
+    switch (operation) {
+      case ADDITION:
+        return TokenType.PLUS.getRepresentation();
+      case SUBTRACTION:
+        return TokenType.MINUS.getRepresentation();
+      case MULTIPLICATION:
+        return TokenType.MULTIPLICATION.getRepresentation();
+      case DIVISION:
+        return TokenType.DIVISION.getRepresentation();
+      case MODULO:
+        return TokenType.MODULO.getRepresentation();
+      case POWER:
+        return TokenType.EXPONENT.getRepresentation();
+      default:
+        return null;
     }
   }
 }

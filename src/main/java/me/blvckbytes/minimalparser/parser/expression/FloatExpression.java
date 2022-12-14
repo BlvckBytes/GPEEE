@@ -16,4 +16,9 @@ public class FloatExpression extends AExpression {
   public Object evaluate(IEvaluationContext context, IValueInterpreter valueInterpreter) throws AParserError {
     return value;
   }
+
+  @Override
+  public String expressionify() {
+    return String.valueOf(value);
+  }
 }

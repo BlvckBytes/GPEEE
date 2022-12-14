@@ -16,4 +16,9 @@ public class StringExpression extends AExpression {
   public Object evaluate(IEvaluationContext context, IValueInterpreter valueInterpreter) throws AParserError {
     return value;
   }
+
+  @Override
+  public String expressionify() {
+    return "\"" + value + "\"";
+  }
 }

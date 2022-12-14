@@ -16,4 +16,9 @@ public class IdentifierExpression extends AExpression {
   public Object evaluate(IEvaluationContext context, IValueInterpreter valueInterpreter) throws AParserError {
     return symbol;
   }
+
+  @Override
+  public String expressionify() {
+    return symbol;
+  }
 }

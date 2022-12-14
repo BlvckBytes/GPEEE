@@ -16,4 +16,9 @@ public class IntExpression extends AExpression {
   public Object evaluate(IEvaluationContext context, IValueInterpreter valueInterpreter) throws AParserError {
     return number;
   }
+
+  @Override
+  public String expressionify() {
+    return String.valueOf(number);
+  }
 }

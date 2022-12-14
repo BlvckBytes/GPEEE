@@ -16,15 +16,15 @@ public enum TokenType {
   //                                 Literals                                //
   //=========================================================================//
 
-  TRUE(TokenCategory.LITERAL, tokenizer -> tryCollectSequenceWithNextCheck(tokenizer, null, "true".toCharArray())),
-  FALSE(TokenCategory.LITERAL, tokenizer -> tryCollectSequenceWithNextCheck(tokenizer, null, "false".toCharArray())),
-  NULL(TokenCategory.LITERAL, tokenizer -> tryCollectSequenceWithNextCheck(tokenizer, null, "null".toCharArray())),
+  TRUE(TokenCategory.LITERAL, "true", tokenizer -> tryCollectSequenceWithNextCheck(tokenizer, null, "true".toCharArray())),
+  FALSE(TokenCategory.LITERAL, "false", tokenizer -> tryCollectSequenceWithNextCheck(tokenizer, null, "false".toCharArray())),
+  NULL(TokenCategory.LITERAL, "null", tokenizer -> tryCollectSequenceWithNextCheck(tokenizer, null, "null".toCharArray())),
 
   //=========================================================================//
   //                                  Values                                 //
   //=========================================================================//
 
-  IDENTIFIER(TokenCategory.VALUE, tokenizer -> {
+  IDENTIFIER(TokenCategory.VALUE, null, tokenizer -> {
     StringBuilder result = new StringBuilder();
 
     char firstChar = tokenizer.nextChar();
@@ -43,7 +43,7 @@ public enum TokenType {
   }),
 
   // -?[0-9]+
-  INT(TokenCategory.VALUE, tokenizer -> {
+  INT(TokenCategory.VALUE, null, tokenizer -> {
     StringBuilder result = new StringBuilder();
 
     if (collectDigits(tokenizer, result, false) != CollectorResult.READ_OKAY)
@@ -53,7 +53,7 @@ public enum TokenType {
   }),
 
   // -?[0-9]*.?[0-9]+
-  FLOAT(TokenCategory.VALUE, tokenizer -> {
+  FLOAT(TokenCategory.VALUE, null, tokenizer -> {
     StringBuilder result = new StringBuilder();
 
     // Shorthand 0.x notation
@@ -85,7 +85,7 @@ public enum TokenType {
     return result.toString();
   }),
 
-  STRING(TokenCategory.VALUE, tokenizer -> {
+  STRING(TokenCategory.VALUE, null, tokenizer -> {
     int startRow = tokenizer.getCurrentRow(), startCol = tokenizer.getCurrentCol();
 
     // String start marker not found
@@ -136,43 +136,43 @@ public enum TokenType {
   //                                Operators                                //
   //=========================================================================//
 
-  EXPONENT(TokenCategory.OPERATOR, tokenizer -> tokenizer.nextChar() == '^' ? "^" : null),
-  MULTIPLICATION(TokenCategory.OPERATOR, tokenizer -> tokenizer.nextChar() == '*' ? "*" : null),
-  DIVISION(TokenCategory.OPERATOR, tokenizer -> tokenizer.nextChar() == '/' ? "/" : null),
-  MODULO(TokenCategory.OPERATOR, tokenizer -> tokenizer.nextChar() == '%' ? "%" : null),
-  PLUS(TokenCategory.OPERATOR, tokenizer -> tokenizer.nextChar() == '+' ? "+" : null),
-  MINUS(TokenCategory.OPERATOR, tokenizer -> tokenizer.nextChar() == '-' ? "-" : null),
+  EXPONENT(TokenCategory.OPERATOR, "^", tokenizer -> tokenizer.nextChar() == '^' ? "^" : null),
+  MULTIPLICATION(TokenCategory.OPERATOR, "*", tokenizer -> tokenizer.nextChar() == '*' ? "*" : null),
+  DIVISION(TokenCategory.OPERATOR, "/", tokenizer -> tokenizer.nextChar() == '/' ? "/" : null),
+  MODULO(TokenCategory.OPERATOR, "%", tokenizer -> tokenizer.nextChar() == '%' ? "%" : null),
+  PLUS(TokenCategory.OPERATOR, "+", tokenizer -> tokenizer.nextChar() == '+' ? "+" : null),
+  MINUS(TokenCategory.OPERATOR, "-", tokenizer -> tokenizer.nextChar() == '-' ? "-" : null),
 
-  GREATER_THAN(TokenCategory.OPERATOR, tokenizer -> tryCollectSequenceWithNextCheck(tokenizer, '=', '>')),
-  GREATER_THAN_OR_EQUAL(TokenCategory.OPERATOR, tokenizer -> tryCollectSequenceWithNextCheck(tokenizer, null, '>', '=')),
-  LESS_THAN(TokenCategory.OPERATOR, tokenizer -> tryCollectSequenceWithNextCheck(tokenizer, '=', '<')),
-  LESS_THAN_OR_EQUAL(TokenCategory.OPERATOR, tokenizer -> tryCollectSequenceWithNextCheck(tokenizer, null, '<', '=')),
-  VALUE_EQUALS(TokenCategory.OPERATOR, tokenizer -> tryCollectSequenceWithNextCheck(tokenizer, '=', '=', '=')),
-  VALUE_NOT_EQUALS(TokenCategory.OPERATOR, tokenizer -> tryCollectSequenceWithNextCheck(tokenizer, '=', '!', '=')),
-  VALUE_EQUALS_EXACT(TokenCategory.OPERATOR, tokenizer -> tryCollectSequenceWithNextCheck(tokenizer, null, '=', '=', '=')),
-  VALUE_NOT_EQUALS_EXACT(TokenCategory.OPERATOR, tokenizer -> tryCollectSequenceWithNextCheck(tokenizer, null, '!', '=', '=')),
+  GREATER_THAN(TokenCategory.OPERATOR, ">", tokenizer -> tryCollectSequenceWithNextCheck(tokenizer, '=', '>')),
+  GREATER_THAN_OR_EQUAL(TokenCategory.OPERATOR, ">=", tokenizer -> tryCollectSequenceWithNextCheck(tokenizer, null, '>', '=')),
+  LESS_THAN(TokenCategory.OPERATOR, "<", tokenizer -> tryCollectSequenceWithNextCheck(tokenizer, '=', '<')),
+  LESS_THAN_OR_EQUAL(TokenCategory.OPERATOR, "<=", tokenizer -> tryCollectSequenceWithNextCheck(tokenizer, null, '<', '=')),
+  VALUE_EQUALS(TokenCategory.OPERATOR, "==", tokenizer -> tryCollectSequenceWithNextCheck(tokenizer, '=', '=', '=')),
+  VALUE_NOT_EQUALS(TokenCategory.OPERATOR, "!=", tokenizer -> tryCollectSequenceWithNextCheck(tokenizer, '=', '!', '=')),
+  VALUE_EQUALS_EXACT(TokenCategory.OPERATOR, "===", tokenizer -> tryCollectSequenceWithNextCheck(tokenizer, null, '=', '=', '=')),
+  VALUE_NOT_EQUALS_EXACT(TokenCategory.OPERATOR, "!==", tokenizer -> tryCollectSequenceWithNextCheck(tokenizer, null, '!', '=', '=')),
 
-  CONCATENATE(TokenCategory.OPERATOR, tokenizer -> tryCollectSequenceWithNextCheck(tokenizer, null, '&')),
+  CONCATENATE(TokenCategory.OPERATOR, "&", tokenizer -> tryCollectSequenceWithNextCheck(tokenizer, null, '&')),
 
-  BOOL_NOT(TokenCategory.KEYWORD, tokenizer -> tryCollectSequenceWithNextCheck(tokenizer, null, "not".toCharArray())),
-  BOOL_AND(TokenCategory.KEYWORD, tokenizer -> tryCollectSequenceWithNextCheck(tokenizer, null, "and".toCharArray())),
-  BOOL_OR(TokenCategory.KEYWORD, tokenizer -> tryCollectSequenceWithNextCheck(tokenizer, null, "or".toCharArray())),
+  BOOL_NOT(TokenCategory.KEYWORD, "not", tokenizer -> tryCollectSequenceWithNextCheck(tokenizer, null, "not".toCharArray())),
+  BOOL_AND(TokenCategory.KEYWORD, "and", tokenizer -> tryCollectSequenceWithNextCheck(tokenizer, null, "and".toCharArray())),
+  BOOL_OR(TokenCategory.KEYWORD, "or", tokenizer -> tryCollectSequenceWithNextCheck(tokenizer, null, "or".toCharArray())),
 
   //=========================================================================//
   //                                 Symbols                                 //
   //=========================================================================//
 
-  PARENTHESIS_OPEN(TokenCategory.SYMBOL, tokenizer -> tokenizer.nextChar() == '(' ? "(" : null),
-  PARENTHESIS_CLOSE(TokenCategory.SYMBOL, tokenizer -> tokenizer.nextChar() == ')' ? ")" : null),
-  BRACKET_OPEN(TokenCategory.SYMBOL, tokenizer -> tokenizer.nextChar() == ']' ? "]" : null),
-  BRACKET_CLOSE(TokenCategory.SYMBOL, tokenizer -> tokenizer.nextChar() == '[' ? "[" : null),
-  COMMA(TokenCategory.SYMBOL, tokenizer -> tokenizer.nextChar() == ',' ? "," : null),
+  PARENTHESIS_OPEN(TokenCategory.SYMBOL, "(", tokenizer -> tokenizer.nextChar() == '(' ? "(" : null),
+  PARENTHESIS_CLOSE(TokenCategory.SYMBOL, ")", tokenizer -> tokenizer.nextChar() == ')' ? ")" : null),
+  BRACKET_OPEN(TokenCategory.SYMBOL, "[", tokenizer -> tokenizer.nextChar() == ']' ? "]" : null),
+  BRACKET_CLOSE(TokenCategory.SYMBOL, "]", tokenizer -> tokenizer.nextChar() == '[' ? "[" : null),
+  COMMA(TokenCategory.SYMBOL, ",", tokenizer -> tokenizer.nextChar() == ',' ? "," : null),
 
   //=========================================================================//
   //                                Invisible                                //
   //=========================================================================//
 
-  COMMENT(TokenCategory.INVISIBLE, tokenizer -> {
+  COMMENT(TokenCategory.INVISIBLE, null, tokenizer -> {
     StringBuilder result = new StringBuilder();
 
     if (tokenizer.nextChar() != '#')
@@ -186,6 +186,7 @@ public enum TokenType {
   ;
 
   private final TokenCategory category;
+  private final String representation;
   private final @Nullable FTokenReader tokenReader;
 
   public static final TokenType[] valuesInTrialOrder;

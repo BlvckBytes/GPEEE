@@ -167,6 +167,7 @@ public class Main {
 
       if (expression != null) {
         System.out.println(expression.stringify("  ", 0));
+        System.out.println("expression=" + expression.expressionify());
         System.out.println("result=" + expression.evaluate(dummyContext, valueInterpreter));
       }
 

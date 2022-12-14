@@ -22,6 +22,8 @@ public abstract class AExpression {
     return ((AExpression) maybeExpression).evaluate(context, valueInterpreter);
   }
 
+  public abstract String expressionify();
+
   public String stringify(String indentWidth, int indentLevel) throws Exception {
     String indent = indentWidth.repeat(indentLevel);
     StringBuilder result = new StringBuilder(getClass().getSimpleName() + " {\n");

@@ -15,4 +15,9 @@ public class LiteralExpression extends AExpression {
   public Object evaluate(IEvaluationContext context, IValueInterpreter valueInterpreter) throws AParserError {
     return type.getValue();
   }
+
+  @Override
+  public String expressionify() {
+    return String.valueOf(type.getValue());
+  }
 }
