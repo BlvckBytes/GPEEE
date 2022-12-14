@@ -18,12 +18,12 @@ import me.blvckbytes.minimalparser.tokenizer.TokenType;
 public class Parser {
 
   private final ILogger logger;
-  private final IExpressionParser[] precedenceLadder;
+  private final FExpressionParser[] precedenceLadder;
 
   public Parser(ILogger logger) {
     this.logger = logger;
 
-    this.precedenceLadder = new IExpressionParser[] {
+    this.precedenceLadder = new FExpressionParser[] {
       this::parseParenthesisExpression,
       this::parseConcatenationExpression,
       this::parseDisjunctionExpression,
@@ -67,7 +67,7 @@ public class Parser {
    * @param precedenceSelf Precedence of the current expression parser wanting to invoke the next
    * @return Result of invoking the next expression parser
    */
-  private AExpression invokeNextPrecedenceParser(ITokenizer tokenizer, IExpressionParser[] precedenceLadder, int precedenceSelf) throws AParserError {
+  private AExpression invokeNextPrecedenceParser(ITokenizer tokenizer, FExpressionParser[] precedenceLadder, int precedenceSelf) throws AParserError {
     return precedenceLadder[precedenceSelf + 1].apply(tokenizer, precedenceLadder, precedenceSelf + 1);
   }
 
@@ -75,7 +75,7 @@ public class Parser {
   //                            Expression Parsers                           //
   //=========================================================================//
 
-  private AExpression parseNegationExpression(ITokenizer tokenizer, IExpressionParser[] precedenceLadder, int precedenceSelf) throws AParserError {
+  private AExpression parseNegationExpression(ITokenizer tokenizer, FExpressionParser[] precedenceLadder, int precedenceSelf) throws AParserError {
     logger.logDebug("Trying to parse a negotiation expression");
 
     Token tk = tokenizer.peekToken();
@@ -98,7 +98,7 @@ public class Parser {
     return new InvertExpression(expression);
   }
 
-  private AExpression parseComparisonExpression(ITokenizer tokenizer, IExpressionParser[] precedenceLadder, int precedenceSelf) throws AParserError {
+  private AExpression parseComparisonExpression(ITokenizer tokenizer, FExpressionParser[] precedenceLadder, int precedenceSelf) throws AParserError {
     logger.logDebug("Trying to parse a comparison expression");
 
     AExpression lhs = invokeNextPrecedenceParser(tokenizer, precedenceLadder, precedenceSelf);
@@ -143,7 +143,7 @@ public class Parser {
     return lhs;
   }
 
-  private AExpression parseConcatenationExpression(ITokenizer tokenizer, IExpressionParser[] precedenceLadder, int precedenceSelf) throws AParserError {
+  private AExpression parseConcatenationExpression(ITokenizer tokenizer, FExpressionParser[] precedenceLadder, int precedenceSelf) throws AParserError {
     logger.logDebug("Trying to parse a concatenation expression");
 
     AExpression lhs = invokeNextPrecedenceParser(tokenizer, precedenceLadder, precedenceSelf);
@@ -159,7 +159,7 @@ public class Parser {
     return lhs;
   }
 
-  private AExpression parseDisjunctionExpression(ITokenizer tokenizer, IExpressionParser[] precedenceLadder, int precedenceSelf) throws AParserError {
+  private AExpression parseDisjunctionExpression(ITokenizer tokenizer, FExpressionParser[] precedenceLadder, int precedenceSelf) throws AParserError {
     logger.logDebug("Trying to parse a disjunction expression");
 
     AExpression lhs = invokeNextPrecedenceParser(tokenizer, precedenceLadder, precedenceSelf);
@@ -175,7 +175,7 @@ public class Parser {
     return lhs;
   }
 
-  private AExpression parseConjunctionExpression(ITokenizer tokenizer, IExpressionParser[] precedenceLadder, int precedenceSelf) throws AParserError {
+  private AExpression parseConjunctionExpression(ITokenizer tokenizer, FExpressionParser[] precedenceLadder, int precedenceSelf) throws AParserError {
     logger.logDebug("Trying to parse a conjunction expression");
 
     AExpression lhs = invokeNextPrecedenceParser(tokenizer,  precedenceLadder, precedenceSelf);
@@ -191,7 +191,7 @@ public class Parser {
     return lhs;
   }
 
-  private AExpression parseEqualityExpression(ITokenizer tokenizer, IExpressionParser[] precedenceLadder, int precedenceSelf) throws AParserError {
+  private AExpression parseEqualityExpression(ITokenizer tokenizer, FExpressionParser[] precedenceLadder, int precedenceSelf) throws AParserError {
     logger.logDebug("Trying to parse a equality expression");
 
     AExpression lhs = invokeNextPrecedenceParser(tokenizer, precedenceLadder, precedenceSelf);
@@ -236,7 +236,7 @@ public class Parser {
     return lhs;
   }
 
-  private AExpression parseAdditiveExpression(ITokenizer tokenizer, IExpressionParser[] precedenceLadder, int precedenceSelf) throws AParserError {
+  private AExpression parseAdditiveExpression(ITokenizer tokenizer, FExpressionParser[] precedenceLadder, int precedenceSelf) throws AParserError {
     logger.logDebug("Trying to parse a additive expression");
 
     AExpression lhs = invokeNextPrecedenceParser(tokenizer, precedenceLadder, precedenceSelf);
@@ -260,7 +260,7 @@ public class Parser {
     return lhs;
   }
 
-  private AExpression parseMultiplicativeExpression(ITokenizer tokenizer, IExpressionParser[] precedenceLadder, int precedenceSelf) throws AParserError {
+  private AExpression parseMultiplicativeExpression(ITokenizer tokenizer, FExpressionParser[] precedenceLadder, int precedenceSelf) throws AParserError {
     logger.logDebug("Trying to parse a multiplicative expression");
 
     AExpression lhs = invokeNextPrecedenceParser(tokenizer, precedenceLadder, precedenceSelf);
@@ -287,7 +287,7 @@ public class Parser {
     return lhs;
   }
 
-  private AExpression parseParenthesisExpression(ITokenizer tokenizer, IExpressionParser[] precedenceLadder, int precedenceSelf) throws AParserError {
+  private AExpression parseParenthesisExpression(ITokenizer tokenizer, FExpressionParser[] precedenceLadder, int precedenceSelf) throws AParserError {
     logger.logDebug("Trying to parse a parenthesis expression");
 
     Token tk = tokenizer.peekToken();
@@ -361,7 +361,7 @@ public class Parser {
     return expression;
   }
 
-  private AExpression parseExponentiationExpression(ITokenizer tokenizer, IExpressionParser[] precedenceLadder, int precedenceSelf) throws AParserError {
+  private AExpression parseExponentiationExpression(ITokenizer tokenizer, FExpressionParser[] precedenceLadder, int precedenceSelf) throws AParserError {
     logger.logDebug("Trying to parse a exponentiation expression");
 
     AExpression lhs = invokeNextPrecedenceParser(tokenizer, precedenceLadder, precedenceSelf);
@@ -380,7 +380,7 @@ public class Parser {
     return lhs;
   }
 
-  private AExpression parsePrimaryExpression(ITokenizer tokenizer, IExpressionParser[] precedenceLadder, int precedenceSelf) throws AParserError {
+  private AExpression parsePrimaryExpression(ITokenizer tokenizer, FExpressionParser[] precedenceLadder, int precedenceSelf) throws AParserError {
     logger.logDebug("Trying to parse a primary expression");
 
     Token tk = tokenizer.consumeToken();

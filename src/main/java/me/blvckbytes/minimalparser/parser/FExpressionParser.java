@@ -5,8 +5,8 @@ import me.blvckbytes.minimalparser.parser.expression.AExpression;
 import me.blvckbytes.minimalparser.tokenizer.ITokenizer;
 
 @FunctionalInterface
-public interface IExpressionParser {
+public interface FExpressionParser {
 
-  AExpression apply(ITokenizer tokenizer, IExpressionParser[] precedenceLadder, int selfPrecedence) throws AParserError;
+  AExpression apply(ITokenizer tokenizer, FExpressionParser[] precedenceLadder, int selfPrecedence) throws AParserError;
 
 }

@@ -9,5 +9,4 @@ public enum CollectorResult {
 
   // Whole sequence was okay
   READ_OKAY
-  ;
 }
