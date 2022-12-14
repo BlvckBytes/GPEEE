@@ -19,7 +19,7 @@ public class GPEEE implements IExpressionEvaluator {
 
   public GPEEE(@Nullable Consumer<String> debugLogger) {
     this.debugLogger = debugLogger == null ? m -> {} : debugLogger;
-    this.parser = new Parser(debugLogger);
+    this.parser = new Parser(this.debugLogger);
     this.interpreter = new Interpreter();
   }
 

@@ -118,7 +118,7 @@ public class Interpreter {
 
     if (expression instanceof BinaryExpression) {
       ExpressionValue lhs = evaluateExpression(((BinaryExpression) expression).getLhs(), environment);
-      ExpressionValue rhs = evaluateExpression(((BinaryExpression) expression).getLhs(), environment);
+      ExpressionValue rhs = evaluateExpression(((BinaryExpression) expression).getRhs(), environment);
 
       if (expression instanceof MathExpression) {
         switch (((MathExpression) expression).getOperation()) {
