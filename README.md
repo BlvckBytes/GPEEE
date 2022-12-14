@@ -8,6 +8,7 @@
   - [Identifiers](#identifiers)
   - [Operators](#operators)
   - [Parentheses](#parentheses)
+  - [Function Invocation](#function-invocation)
   - [Complete Definition](#complete-definition)
 
 ## Grammar
