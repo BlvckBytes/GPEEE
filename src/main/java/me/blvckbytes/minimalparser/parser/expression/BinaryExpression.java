@@ -16,7 +16,7 @@ public abstract class BinaryExpression extends AExpression {
   public String expressionify() {
     return (
       TokenType.PARENTHESIS_OPEN.getRepresentation() +
-      lhs.expressionify() + getInfixSymbol() + rhs.expressionify() +
+      lhs.expressionify() + " " + getInfixSymbol() + " " + rhs.expressionify() +
       TokenType.PARENTHESIS_CLOSE.getRepresentation()
     );
   }

@@ -12,7 +12,7 @@ public abstract class UnaryExpression extends AExpression {
 
   @Override
   public String expressionify() {
-    return getPrefixSymbol() + input.expressionify();
+    return getPrefixSymbol() + " " + input.expressionify();
   }
 
   protected abstract @Nullable String getPrefixSymbol();

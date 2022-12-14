@@ -1,9 +1,11 @@
 package me.blvckbytes.minimalparser.parser.expression;
 
+import lombok.Getter;
 import me.blvckbytes.minimalparser.parser.EqualityOperation;
 import me.blvckbytes.minimalparser.tokenizer.TokenType;
 import org.jetbrains.annotations.Nullable;
 
+@Getter
 public class EqualityExpression extends BinaryExpression {
 
   private final EqualityOperation operation;

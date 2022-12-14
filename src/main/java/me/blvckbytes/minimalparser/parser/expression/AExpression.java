@@ -2,6 +2,7 @@ package me.blvckbytes.minimalparser.parser.expression;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
+import java.util.List;
 
 public abstract class AExpression {
 
@@ -35,6 +36,27 @@ public abstract class AExpression {
 
         if (value instanceof AExpression)
           result.append(((AExpression) value).stringify(indentWidth, indentLevel + 1));
+        else if (value instanceof List) {
+          List<?> valueList = (List<?>) value;
+
+          StringBuilder listBuilder = new StringBuilder("[\n");
+
+          for (Object item : valueList) {
+            if (item instanceof AExpression) {
+              listBuilder.append(indent)
+                .append(indentWidth.repeat(2))
+                .append(((AExpression) item).stringify(indentWidth, indentLevel + 2))
+                .append('\n');
+            } else {
+              listBuilder.append(indent)
+                .append(indentWidth.repeat(2))
+                .append(item.toString())
+                .append('\n');
+            }
+          }
+
+          result.append(listBuilder).append(indent).append(indentWidth).append("]");
+        }
         else
           result.append(value);
 
