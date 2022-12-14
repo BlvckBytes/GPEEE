@@ -1,7 +1,12 @@
 package me.blvckbytes.gpeee;
 
 import me.blvckbytes.gpeee.error.AParserError;
+import me.blvckbytes.gpeee.functions.IExpressionFunction;
+import me.blvckbytes.gpeee.interpreter.IEvaluationEnvironment;
 import me.blvckbytes.gpeee.parser.expression.AExpression;
+
+import java.util.Map;
+import java.util.function.Supplier;
 
 public class Main {
 
@@ -10,14 +15,33 @@ public class Main {
       ILogger logger = message -> System.out.println("[DEBUG]: " + message);
       GPEEE evaluator = new GPEEE(logger);
 
-      String input = "22 < myFunc(1, 2, 3) and func2(\"hi\", .4, true) or a + -sin(33) - my_var";
+      String input = "32 + 22 - 18";
 
       AExpression expression = evaluator.parseString(input);
 
-      if (expression != null) {
-        System.out.println(expression.stringify("  ", 0));
-        System.out.println("expression=" + expression.expressionify());
-      }
+      System.out.println(expression.stringify("  ", 0));
+
+      System.out.println("expression=" + expression.expressionify());
+
+      IEvaluationEnvironment env = new IEvaluationEnvironment() {
+
+        @Override
+        public Map<String, IExpressionFunction> getFunctions() {
+          return Map.of();
+        }
+
+        @Override
+        public Map<String, Supplier<Object>> getLiveVariables() {
+          return Map.of();
+        }
+
+        @Override
+        public Map<String, Object> getStaticVariables() {
+          return Map.of();
+        }
+      };
+
+      System.out.println("result=" + evaluator.evaluateExpression(expression, env));
 
       System.out.println("Done!");
     } catch (AParserError err) {

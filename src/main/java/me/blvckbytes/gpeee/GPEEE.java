@@ -1,10 +1,10 @@
 package me.blvckbytes.gpeee;
 
-import lombok.Setter;
 import me.blvckbytes.gpeee.error.AParserError;
 import me.blvckbytes.gpeee.interpreter.AInterpreterError;
 import me.blvckbytes.gpeee.interpreter.ExpressionValue;
 import me.blvckbytes.gpeee.interpreter.IEvaluationEnvironment;
+import me.blvckbytes.gpeee.interpreter.Interpreter;
 import me.blvckbytes.gpeee.parser.Parser;
 import me.blvckbytes.gpeee.parser.expression.AExpression;
 import me.blvckbytes.gpeee.tokenizer.Tokenizer;
@@ -12,11 +12,13 @@ import me.blvckbytes.gpeee.tokenizer.Tokenizer;
 public class GPEEE implements IExpressionEvaluator {
 
   private final Parser parser;
+  private final Interpreter interpreter;
   private final ILogger logger;
 
   public GPEEE(ILogger logger) {
     this.logger = logger;
-    this.parser = new Parser(this.logger);
+    this.parser = new Parser(logger);
+    this.interpreter = new Interpreter(logger);
   }
 
   @Override
@@ -26,7 +28,6 @@ public class GPEEE implements IExpressionEvaluator {
 
   @Override
   public ExpressionValue evaluateExpression(AExpression expression, IEvaluationEnvironment environment) throws AInterpreterError {
-    // TODO: Implement
-    return null;
+    return interpreter.evaluateExpression(expression, environment);
   }
 }
