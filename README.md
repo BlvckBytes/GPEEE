@@ -14,6 +14,7 @@ cost when comparing against a project without `GPEEE`.
   - [Expression Values](#expression-values)
   - [Resolving Variables](#resolving-variables)
   - [Calling Functions](#calling-functions)
+  - [Callback Functions](#callback-functions)
   - [Terminal Values](#terminal-values)
 - [Grammar](#grammar)
   - [Numbers](#numbers)
@@ -139,10 +140,15 @@ A variable is resolved as soon as you write out an `identifier` that's available
 
 ### Calling Functions
 
-You should have a look at the exact [grammar](#function-invocation) of a function invocation, but the general idea
-has been carried over from most other programming-/scripting-languages. Provide an identifier, open a parenthesis,
-specify 0-n parameters (which can be expressions too) and close the parenthesis again. Something like this:
+You should have a look at the exact [grammar](#function-invocation) of a function invocation. Summary: Provide an identifier,
+open a parenthesis, specify 0-n parameters (which can be expressions too) and close the parenthesis again. Something like this:
 `myFunction("hello world", 1, .3, null, true, false)`.
+
+### Callback Functions
+
+You should have a look at the exact [grammar](#callback-function) of a callback function. Summary: Open a parenthesis,
+specify 0-n parameters, close the parenthesis again, write an arrow operator and follow that up by an expression. Something like this:
+`foreach(items, (index) -> "index=" & index, "\n")`.
 
 ### Terminal Values
 
@@ -283,6 +289,20 @@ FunctionInvocationExpression ::= "-"? Identifier "(" (Expression | (Expression (
 ```
 
 ![function invocation](readme_images/railroad_function_invocation.png)
+
+### Callback Function
+
+A callback function is an expression which can be programmatically evaluated within a Java function which has been invoked by an
+expression. This way, a back and forth type data flow becomes possible.
+
+Callbacks may have an arbitrary amount of parameters which then at runtime become available within the expression
+noted after the arrow operator.
+
+```ebnf
+CallbackExpression ::= "(" (Identifier | (Identifier ("," Identifier)*))? ")" "->" Expression
+```
+
+![callback function](readme_images/railroad_callback_function.png)
 
 ### Complete Definition
 

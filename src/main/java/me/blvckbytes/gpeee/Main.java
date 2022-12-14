@@ -15,7 +15,7 @@ public class Main {
       ILogger logger = message -> System.out.println("[DEBUG]: " + message);
       GPEEE evaluator = new GPEEE(logger);
 
-      String input = "foreach(items, () -> \"index=\" & index, \"\\n\")";
+      String input = "foreach(items, (index) -> \"index=\" & index, \"\\n\")";
 
       AExpression expression = evaluator.parseString(input);
 
