@@ -4,7 +4,7 @@ import com.google.common.primitives.Primitives;
 import me.blvckbytes.minimalparser.error.AParserError;
 import me.blvckbytes.minimalparser.functions.AExpressionFunction;
 import me.blvckbytes.minimalparser.functions.IfExpressionFunction;
-import me.blvckbytes.minimalparser.parser.ExpressionParser;
+import me.blvckbytes.minimalparser.parser.Parser;
 import me.blvckbytes.minimalparser.parser.expression.AExpression;
 import me.blvckbytes.minimalparser.tokenizer.Tokenizer;
 import org.jetbrains.annotations.Nullable;
@@ -155,7 +155,7 @@ public class Main {
       };
 
       Tokenizer tk = new Tokenizer(logger, "21 > 55 and 22 < 3 or 3 - 2 == 1");
-      ExpressionParser parser = new ExpressionParser(logger, tk);
+      Parser parser = new Parser(logger, tk);
 
       AExpression expression;
       try {

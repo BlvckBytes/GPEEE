@@ -18,7 +18,7 @@ import org.jetbrains.annotations.Nullable;
  * this intended use-case, efficiency at the level of the parser is sacrificed for understandability.
  */
 @AllArgsConstructor
-public class ExpressionParser {
+public class Parser {
 
   private final ILogger logger;
   private final ITokenizer tokenizer;
@@ -35,24 +35,26 @@ public class ExpressionParser {
 
     AdditiveOperator ::= "+" | "-"
     MultiplicativeOperator ::= "*" | "/" | "%"
-    EqualityOperator ::= ">" | "<" | ">=" | "<=" | "==" | "!=" | "===" | "!=="
+    EqualityOperator ::= "==" | "!=" | "===" | "!=="
+    ComparisonOperator ::= ">" | "<" | ">=" | "<="
 
     PrimaryExpression ::= Int | Float | String | Identifier | Literal
 
-    ExponentiationExpression ::= PrimaryExpression (MultiplicativeOperator PrimaryExpression)*
+    NegationExpression ::= "not"? PrimaryExpression
+
+    ExponentiationExpression ::= NegationExpression (MultiplicativeOperator NegationExpression)*
     MultiplicativeExpression ::= ExponentiationExpression (MultiplicativeOperator ExponentiationExpression)*
     AdditiveExpression ::= MultiplicativeExpression (AdditiveOperator MultiplicativeExpression)*
 
     MathExpression ::= AdditiveExpression | MultiplicativeExpression | ExponentiationExpression
-    EqualityExpression ::= AdditiveExpression (EqualityOperator AdditiveExpression)*
+    ComparisonExpression ::= MathExpression (ComparisonOperator MathExpression)*
+    EqualityExpression ::= ComparisonExpression (EqualityOperator ComparisonExpression)*
 
     ConjunctionExpression ::= EqualityExpression ("and" EqualityExpression)*
     DisjunctionExpression ::= ConjunctionExpression ("or" ConjunctionExpression)*
     ConcatenationExpression ::= DisjunctionExpression ("&" DisjunctionExpression)*
 
-    Expression ::= EqualityExpression | MathExpression | ("-" | "not")? "(" Expression ")" | PrimaryExpression
-
-    NegationExpression ::= "not" Expression
+    Expression ::= ConcatenationExpression | ("-" | "not")? "(" Expression ")"
    */
 
   /**
