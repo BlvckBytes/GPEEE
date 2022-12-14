@@ -14,8 +14,8 @@ public class UnexpectedTokenError extends AEvaluatorError {
     super(
       actual == null ? tokenizer.getCurrentRow() : actual.getRow(),
       actual == null ? tokenizer.getCurrentCol() : actual.getCol(),
-      "Expected token " + formatTokenNames(expected) + ", found " + (actual == null ? "nothing" : actual.getType().name()),
-      tokenizer.getRawText()
+      tokenizer.getRawText(),
+      "Expected token " + formatTokenNames(expected) + ", found " + (actual == null ? "nothing" : actual.getType().name())
     );
   }
 
