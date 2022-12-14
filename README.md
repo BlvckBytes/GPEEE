@@ -317,4 +317,5 @@ ConcatenationExpression ::= DisjunctionExpression ("&" DisjunctionExpression)*
 Expression ::= ConcatenationExpression | ("-" | "not")? "(" Expression ")"
 
 FunctionInvocationExpression ::= "-"? Identifier "(" (Expression | (Expression ("," Expression)*))? ")"
+CallbackExpression ::= "(" (Identifier | (Identifier ("," Identifier)*))? ")" "->" Expression
 ```

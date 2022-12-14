@@ -37,8 +37,9 @@ public class Parser {
       this::parseExponentiationExpression,
       this::parseNegationExpression,
       this::parseFunctionInvocationExpression,
+      this::parseCallbackExpression,
       this::parseParenthesisExpression,
-      this::parsePrimaryExpression,
+      (tk, l, s) -> this.parsePrimaryExpression(tk),
     };
   }
 
@@ -78,6 +79,66 @@ public class Parser {
   //=========================================================================//
   //                            Expression Parsers                           //
   //=========================================================================//
+
+  private AExpression parseCallbackExpression(ITokenizer tokenizer, FExpressionParser[] precedenceLadder, int precedenceSelf) throws AParserError {
+    logger.logDebug("Trying to parse a callback expression");
+
+    Token tk = tokenizer.peekToken();
+
+    // There's no opening parenthesis as the next token, hand over to the next higher precedence parser
+    if (tk == null || tk.getType() != TokenType.PARENTHESIS_OPEN) {
+      logger.logDebug("Not a callback expression");
+      return invokeNextPrecedenceParser(tokenizer, precedenceLadder, precedenceSelf);
+    }
+
+    // Save once before consuming anything
+    tokenizer.saveState(true);
+
+    // Consume the opening parenthesis
+    tokenizer.consumeToken();
+
+    List<IdentifierExpression> signature = new ArrayList<>();
+
+    // As long as there is no closing parenthesis, there are still arguments left
+    while ((tk = tokenizer.peekToken()) != null && tk.getType() != TokenType.PARENTHESIS_CLOSE) {
+      logger.logDebug("Parsing argument " + signature.size());
+
+      if (signature.size() > 0) {
+        // Arguments other than the first one need to be separated out by a comma
+        if (tk.getType() != TokenType.COMMA)
+          throw new UnexpectedTokenError(tokenizer, tk, TokenType.COMMA);
+
+        // Consume that comma
+        tokenizer.consumeToken();
+      }
+
+      AExpression identifier = parsePrimaryExpression(tokenizer);
+
+      // Anything else than an identifier cannot be within a callback's parentheses
+      if (!(identifier instanceof IdentifierExpression)) {
+        logger.logDebug("Not a callback expression");
+        tokenizer.restoreState(true);
+        return invokeNextPrecedenceParser(tokenizer, precedenceLadder, precedenceSelf);
+      }
+
+      signature.add((IdentifierExpression) identifier);
+    }
+
+    // Callback signatures have to be terminated with a closing parenthesis
+    tk = tokenizer.consumeToken();
+    if (tk == null || tk.getType() != TokenType.PARENTHESIS_CLOSE)
+      throw new UnexpectedTokenError(tokenizer, tk, TokenType.PARENTHESIS_CLOSE);
+
+    // Expect and consume the arrow operator
+    tk = tokenizer.consumeToken();
+    if (tk == null || tk.getType() != TokenType.ARROW)
+      throw new UnexpectedTokenError(tokenizer, tk, TokenType.ARROW);
+
+    // Parse the callback body expression (start climbing the ladder all over again)
+    AExpression body = precedenceLadder[0].apply(tokenizer, precedenceLadder, 0);
+
+    return new CallbackExpression(signature, body);
+  }
 
   private AExpression parseFunctionInvocationExpression(ITokenizer tokenizer, FExpressionParser[] precedenceLadder, int precedenceSelf) throws AParserError {
     logger.logDebug("Trying to parse a function invocation expression");
@@ -475,7 +536,7 @@ public class Parser {
     return lhs;
   }
 
-  private AExpression parsePrimaryExpression(ITokenizer tokenizer, FExpressionParser[] precedenceLadder, int precedenceSelf) throws AParserError {
+  private AExpression parsePrimaryExpression(ITokenizer tokenizer) throws AParserError {
     logger.logDebug("Trying to parse a primary expression");
 
     Token tk = tokenizer.consumeToken();

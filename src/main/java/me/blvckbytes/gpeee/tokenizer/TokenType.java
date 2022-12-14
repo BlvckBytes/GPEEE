@@ -141,7 +141,7 @@ public enum TokenType {
   DIVISION(TokenCategory.OPERATOR, "/", tokenizer -> tokenizer.nextChar() == '/' ? "/" : null),
   MODULO(TokenCategory.OPERATOR, "%", tokenizer -> tokenizer.nextChar() == '%' ? "%" : null),
   PLUS(TokenCategory.OPERATOR, "+", tokenizer -> tokenizer.nextChar() == '+' ? "+" : null),
-  MINUS(TokenCategory.OPERATOR, "-", tokenizer -> tokenizer.nextChar() == '-' ? "-" : null),
+  MINUS(TokenCategory.OPERATOR, "-", tokenizer -> tryCollectSequenceWithNextCheck(tokenizer, '>', '-')),
 
   GREATER_THAN(TokenCategory.OPERATOR, ">", tokenizer -> tryCollectSequenceWithNextCheck(tokenizer, '=', '>')),
   GREATER_THAN_OR_EQUAL(TokenCategory.OPERATOR, ">=", tokenizer -> tryCollectSequenceWithNextCheck(tokenizer, null, '>', '=')),
@@ -157,6 +157,8 @@ public enum TokenType {
   BOOL_NOT(TokenCategory.KEYWORD, "not", tokenizer -> tryCollectSequenceWithNextCheck(tokenizer, null, "not".toCharArray())),
   BOOL_AND(TokenCategory.KEYWORD, "and", tokenizer -> tryCollectSequenceWithNextCheck(tokenizer, null, "and".toCharArray())),
   BOOL_OR(TokenCategory.KEYWORD, "or", tokenizer -> tryCollectSequenceWithNextCheck(tokenizer, null, "or".toCharArray())),
+
+  ARROW(TokenCategory.OPERATOR, "->", tokenizer -> tryCollectSequenceWithNextCheck(tokenizer, null, "->".toCharArray())),
 
   //=========================================================================//
   //                                 Symbols                                 //

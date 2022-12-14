@@ -20,11 +20,13 @@ public class Interpreter {
     if (expression instanceof BinaryExpression) {
       BinaryExpression binary = (BinaryExpression) expression;
       // TODO: Implement
+      return null;
     }
 
     if (expression instanceof UnaryExpression) {
       UnaryExpression unary = (UnaryExpression) expression;
       // TODO: Implement
+      return null;
     }
 
     throw new IllegalStateException("Cannot parse unknown expression type " + expression.getClass());
