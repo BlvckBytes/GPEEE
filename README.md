@@ -8,6 +8,7 @@
   - [Identifiers](#identifiers)
   - [Operators](#operators)
   - [Parentheses](#parentheses)
+  - [Complete Definition](#complete-definition)
 
 ## Grammar
 
@@ -124,3 +125,36 @@ are available as parenthesis modifiers:
 | not      | not (a && b) | Inverts the boolean parentheses expression result   |
 
 ![parentheses](readme_images/railroad_parentheses.png)
+
+### Complete Definition
+
+The following `EBNF` defines the whole grammar which this parser understands:
+
+```ebnf
+Digit ::= [0-9]
+Letter ::= [A-Za-z]
+
+Int ::= "-"? Digit+
+Float ::= "-"? Digit* "." Digit+
+String ::= '"' ('\"' | [^"] | "\s")* '"'
+Identifier ::= Letter (Digit | Letter | '_')*
+Literal ::= "true" | "false" | "null"
+
+AdditiveOperator ::= "+" | "-"
+MultiplicativeOperator ::= "*" | "/" | "%"
+EqualityOperator ::= "==" | "!=" | "===" | "!=="
+ComparisonOperator ::= ">" | "<" | ">=" | "<="
+
+PrimaryExpression ::= Int | Float | String | Identifier | Literal
+NegationExpression ::= "not"? PrimaryExpression
+ExponentiationExpression ::= NegationExpression ("^" NegationExpression)*
+MultiplicativeExpression ::= ExponentiationExpression (MultiplicativeOperator ExponentiationExpression)*
+AdditiveExpression ::= MultiplicativeExpression (AdditiveOperator MultiplicativeExpression)*
+ComparisonExpression ::= AdditiveExpression (ComparisonOperator AdditiveExpression)*
+EqualityExpression ::= ComparisonExpression (EqualityOperator ComparisonExpression)*
+ConjunctionExpression ::= EqualityExpression ("and" EqualityExpression)*
+DisjunctionExpression ::= ConjunctionExpression ("or" ConjunctionExpression)*
+ConcatenationExpression ::= DisjunctionExpression ("&" DisjunctionExpression)*
+
+Expression ::= ConcatenationExpression | ("-" | "not")? "(" Expression ")"
+```

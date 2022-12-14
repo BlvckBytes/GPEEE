@@ -17,40 +17,6 @@ import me.blvckbytes.minimalparser.tokenizer.TokenType;
  */
 public class Parser {
 
-  /*
-    Digit ::= [0-9]
-    Letter ::= [A-Za-z]
-
-    Int ::= "-"? Digit+
-    Float ::= "-"? Digit* "." Digit+
-    String ::= '"' ('\"' | [^"] | "\s")* '"'
-    Identifier ::= Letter (Digit | Letter | '_')*
-    Literal ::= "true" | "false" | "null"
-
-    AdditiveOperator ::= "+" | "-"
-    MultiplicativeOperator ::= "*" | "/" | "%"
-    EqualityOperator ::= "==" | "!=" | "===" | "!=="
-    ComparisonOperator ::= ">" | "<" | ">=" | "<="
-
-    PrimaryExpression ::= Int | Float | String | Identifier | Literal
-
-    NegationExpression ::= "not"? PrimaryExpression
-
-    ExponentiationExpression ::= NegationExpression (MultiplicativeOperator NegationExpression)*
-    MultiplicativeExpression ::= ExponentiationExpression (MultiplicativeOperator ExponentiationExpression)*
-    AdditiveExpression ::= MultiplicativeExpression (AdditiveOperator MultiplicativeExpression)*
-
-    MathExpression ::= AdditiveExpression | MultiplicativeExpression | ExponentiationExpression
-    ComparisonExpression ::= MathExpression (ComparisonOperator MathExpression)*
-    EqualityExpression ::= ComparisonExpression (EqualityOperator ComparisonExpression)*
-
-    ConjunctionExpression ::= EqualityExpression ("and" EqualityExpression)*
-    DisjunctionExpression ::= ConjunctionExpression ("or" ConjunctionExpression)*
-    ConcatenationExpression ::= DisjunctionExpression ("&" DisjunctionExpression)*
-
-    Expression ::= ConcatenationExpression | ("-" | "not")? "(" Expression ")"
-   */
-
   private final ILogger logger;
   private final IExpressionParser[] precedenceLadder;
 
