@@ -1,5 +1,7 @@
 # GPEEE
 
+![logo](readme_images/logo.png)
+
 The opensource `General Purpose Environment Expression Evaluator` which you most definitely
 want to integrate into your next project. It's pronounced "cheapy", matching it's slim technical
 cost when comparing against a project without `GPEEE`.
