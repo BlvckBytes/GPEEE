@@ -1,9 +1,13 @@
 package me.blvckbytes.gpeee.interpreter;
 
 import me.blvckbytes.gpeee.error.AEvaluatorError;
+import me.blvckbytes.gpeee.error.UndefinedFunctionError;
 import me.blvckbytes.gpeee.error.UndefinedVariableError;
+import me.blvckbytes.gpeee.functions.FExpressionFunction;
 import me.blvckbytes.gpeee.parser.expression.*;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.function.Supplier;
 
 public class Interpreter {
@@ -52,8 +56,17 @@ public class Interpreter {
     ///////////////////////// Functions /////////////////////////
 
     if (expression instanceof FunctionInvocationExpression) {
-      // TODO: Implement
-      return null;
+      FunctionInvocationExpression functionExpression = (FunctionInvocationExpression) expression;
+
+      FExpressionFunction function = environment.getFunctions().get(functionExpression.getName().getSymbol());
+      if (function == null)
+        throw new UndefinedFunctionError(expression);
+
+      List<ExpressionValue> arguments = new ArrayList<>();
+      for (AExpression argument : functionExpression.getArguments())
+        arguments.add(evaluateExpression(argument, environment));
+
+      return function.apply(arguments);
     }
 
     if (expression instanceof CallbackExpression) {

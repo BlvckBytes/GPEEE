@@ -123,7 +123,7 @@ An *expression function* can be easily created by adhering to the following sign
 
 ```java
 @FunctionalInterface
-public interface IExpressionFunction {
+public interface FExpressionFunction {
 
   /**
    * Called whenever a function call to the registered corresponding
@@ -131,7 +131,7 @@ public interface IExpressionFunction {
    * @param args Arguments supplied by the invocation
    * @return Return value of this function
    */
-  ExpressionValue apply(ExpressionValue[] args);
+  ExpressionValue apply(List<ExpressionValue> args);
 
 }
 ```

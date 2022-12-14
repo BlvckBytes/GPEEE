@@ -1,7 +1,7 @@
 package me.blvckbytes.gpeee;
 
 import me.blvckbytes.gpeee.error.AEvaluatorError;
-import me.blvckbytes.gpeee.functions.IExpressionFunction;
+import me.blvckbytes.gpeee.functions.FExpressionFunction;
 import me.blvckbytes.gpeee.interpreter.ExpressionValue;
 import me.blvckbytes.gpeee.interpreter.IEvaluationEnvironment;
 import me.blvckbytes.gpeee.parser.expression.AExpression;
@@ -28,7 +28,7 @@ public class Main {
       IEvaluationEnvironment env = new IEvaluationEnvironment() {
 
         @Override
-        public Map<String, IExpressionFunction> getFunctions() {
+        public Map<String, FExpressionFunction> getFunctions() {
           return Map.of();
         }
 
