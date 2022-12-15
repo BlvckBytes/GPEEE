@@ -53,7 +53,6 @@ public class Parser {
     this.debugLogger = debugLogger;
 
     this.precedenceLadder = new FExpressionParser[] {
-      this::parseExpression,
       this::parseConcatenationExpression,
       this::parseDisjunctionExpression,
       this::parseConjunctionExpression,
@@ -63,6 +62,7 @@ public class Parser {
       this::parseMultiplicativeExpression,
       this::parseExponentiationExpression,
       this::parseNegationExpression,
+      this::parseExpression,
       (tk, l, s) -> this.parsePrimaryExpression(tk),
     };
   }

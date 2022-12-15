@@ -136,6 +136,7 @@ public class Main {
       };
 
       System.out.println("result=" + evaluator.evaluateExpression(expression, env));
+      System.out.println("expression=" + expression.expressionify());
 
       System.out.println("Done!");
     }
