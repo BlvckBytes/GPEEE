@@ -184,7 +184,7 @@ public interface IEvaluationEnvironment {
   /**
    * Mapping identifiers to available functions which an expression may invoke
    */
-  Map<String, IExpressionFunction> getFunctions();
+  Map<String, FExpressionFunction> getFunctions();
 
   /**
    * Mapping identifiers to available live variables which an expression may resolve
@@ -195,6 +195,13 @@ public interface IEvaluationEnvironment {
    * Mapping identifiers to available static variables which an expression may resolve
    */
   Map<String, Object> getStaticVariables();
+
+  /**
+   * Get the value interpreter used to interpret values when doing any kind of
+   * operation on them which they'd usually not support naturally. Provide null
+   * in order to use the standard interpreter.
+   */
+  @Nullable IValueInterpreter getValueInterpreter();
 
 }
 ```
@@ -223,33 +230,21 @@ public interface FExpressionFunction {
 
 ### Expression Values
 
-As you might have already noticed, all input and output in regard to the evaluator's API takes place using
-the *expression value*. The main reason for using this wrapper is the dynamically typed nature of expressions. There
-are many conversion methods available to create, read and use these values in your own codebase.
+Expressions interface with the world around them using the Java Object. All operations can be - by design - performed on
+all types, as the Interpreter makes use of a so-called `IValueInterpreter`, provided by the `IEvaluationEnvironment`.
+This object decides which value corresponds to an object in different situations. In general, this value can be left as
+`null`, since the standard implementation already very likely does what you'd think is intuitive.
 
-An expression value can be carrying the following types:
-
-| Type     | Description                     |
-|----------|---------------------------------|
-| INTEGER  | An integer number               |
-| DOUBLE   | A floating point number         |
-| STRING   | A string of characters          |
-| BOOLEAN  | True or False                   |
-| NULL     | No value (null)                 |
-| FUNCTION | A callable FExpressionFunction  |
-| LIST     | A list of 0-n expression values |
-
-To make this little language as fail-proof and as intuitive as possible, all operators will work on all data-types. The following
-cases are symmetric and allow for an exchange of RHS and LHS while they still hold true.
+The following tables are an overview of standard value interpretation:
 
 **Math operations:**
 
-| LHS     | Operator    | RHS     | Result Type    | Notes                     |
-|---------|-------------|---------|----------------|---------------------------|
-| INTEGER | +,-,*,^,%   | INTEGER | Integer        | /                         |
-| INTEGER | /           | INTEGER | Integer/Double | Double only on remainders |
-| DOUBLE  | +,-,*,/,^,% | INTEGER | Double         | /                         |
-| DOUBLE  | +,-,*,/,^,% | DOUBLE  | Double         | /                         |
+| LHS    | Operator    | RHS    | Result Type | Notes                     |
+|--------|-------------|--------|-------------|---------------------------|
+| Long   | +,-,*,^,%   | Long   | Long        | /                         |
+| Long   | /           | Long   | Long/Double | Double only on remainders |
+| Double | +,-,*,/,^,% | Long   | Double      | /                         |
+| Double | +,-,*,/,^,% | Double | Double      | /                         |
 
 Since equality- as well as comparison operations take place mostly on numbers only, all other values have number
 fallback values assigned to them:
@@ -271,19 +266,20 @@ The non-exact operators (`==`, `!=`) match, if the content of two values is/isn'
 a string containing a number's sequence of characters will equal (`==`) to that number. If the type is also to be
 checked, the use of exact operators (`===`, `!==`) is required.
 
-Lists are equal if either their reference is equal
-or all of their elements are equal (strict or not depends on the used operator on the lists).
+Lists are equal if either their reference is equal or all of their elements are equal (strict or not depends on
+the used operator on the lists).
 
 For Strings, non-exact means ignore casing as well as leading/trailing spaces when comparing while exact checks these properties.
 
 **Comparison operations:**
 
-The comparison operation compares *only* numbers, no matter their type, and will use fallback values on all other types.
+Comparison can only either take place on numbers or on values implementing the `Comparable` interface which are of same type.
+In all other instances, both sides of the operator will be interpreted as longs.
 
 **Boolean operations:**
 
-A boolean operation applies *only* to booleans and numbers and will use fallback values on all other types. A number is
-being considered `true` if it's greater than zero and `false` otherwise.
+Null values are considered to equal to `false` while all other values only equal true if they compare positively against
+zero (> 0). For non-numeric values this means that the fallback of interpreting them as a long will be made use of.
 
 **Concatenation operation:**
 
@@ -312,7 +308,7 @@ point of writing them within the expression onwards.
 
 | Type    | Example                                    |
 |---------|--------------------------------------------|
-| Integer | 1, -1                                      |
+| Long    | 1, -1                                      |
 | Double  | .1, -.1, 3.1415                            |
 | String  | "Escaped \\" double- and \s single quote " |
 | Boolean | true, false                                |
@@ -324,7 +320,7 @@ All railroad diagrams have been created using [rr](https://bottlecaps.de/rr/ui).
 
 ### Numbers
 
-There are two types of numbers, floating point as well as whole integers.
+There are two types of numbers, floating point as well as whole numbers.
 
 We start out by defining what a single digit has to look like:
 
@@ -334,12 +330,12 @@ Digit ::= [0-9]
 
 ![digit](readme_images/railroad_digit.png)
 
-Multiple digits in combination with an optional, leading minus sign compose an integer.
+Multiple digits in combination with an optional, leading minus sign compose a long.
 
 ```ebnf
-Integer ::= "-"? Digit+
+Long ::= "-"? Digit+
 ```
-![integer](readme_images/railroad_integer.png)
+![long](readme_images/railroad_long.png)
 
 If the number contains a decimal, it's a double. It may omit the zero right before the dot.
 
@@ -469,7 +465,7 @@ The following [EBNF](https://www.w3.org/2001/06/blindfold/grammar) defines the w
 Digit ::= [0-9]
 Letter ::= [A-Za-z]
 
-Int ::= "-"? Digit+
+Long ::= "-"? Digit+
 Double ::= "-"? Digit* "." Digit+
 String ::= '"' ('\"' | [^"] | "\s")* '"'
 Identifier ::= Letter (Digit | Letter | '_')*
@@ -480,7 +476,7 @@ MultiplicativeOperator ::= "*" | "/" | "%"
 EqualityOperator ::= "==" | "!=" | "===" | "!=="
 ComparisonOperator ::= ">" | "<" | ">=" | "<="
 
-PrimaryExpression ::= Int | Double | String | Identifier | Literal
+PrimaryExpression ::= Long | Double | String | Identifier | Literal
 NegationExpression ::= "not"? PrimaryExpression
 ExponentiationExpression ::= NegationExpression ("^" NegationExpression)*
 MultiplicativeExpression ::= ExponentiationExpression (MultiplicativeOperator ExponentiationExpression)*
