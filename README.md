@@ -174,7 +174,7 @@ public interface IExpressionEvaluator {
 This interface is implemented by the `GPEEE` class, which can be quickly instantiated with an optional debug logger:
 
 ```java
-public GPEEE(@Nullable Consumer<String> debugLogger);
+public GPEEE(@Nullable IDebugLogger debugLogger);
 ```
 
 The `debugLogger` will get called with many internal debug messages which can help you to understand how the inner workings

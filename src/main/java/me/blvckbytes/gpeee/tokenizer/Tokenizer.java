@@ -1,23 +1,24 @@
 package me.blvckbytes.gpeee.tokenizer;
 
+import me.blvckbytes.gpeee.DebugLogLevel;
+import me.blvckbytes.gpeee.IDebugLogger;
 import me.blvckbytes.gpeee.error.AEvaluatorError;
 import me.blvckbytes.gpeee.error.UnknownTokenError;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Stack;
-import java.util.function.Consumer;
 
 public class Tokenizer implements ITokenizer {
 
   private final String rawText;
-  private final Consumer<String> logger;
+  private final IDebugLogger debugLogger;
   private final char[] text;
   private final Stack<TokenizerState> saveStates;
   private TokenizerState state;
 
-  public Tokenizer(Consumer<String> logger, String text) {
+  public Tokenizer(IDebugLogger debugLogger, String text) {
     this.rawText = text;
-    this.logger = logger;
+    this.debugLogger = debugLogger;
     this.text = text.toCharArray();
     this.state = new TokenizerState();
     this.saveStates = new Stack<>();
@@ -47,7 +48,7 @@ public class Tokenizer implements ITokenizer {
     this.saveStates.push(this.state.copy());
 
     if (debugLog)
-      logger.accept("Saved state " + this.saveStates.size() + " (charIndex=" + state.charIndex + ")");
+      debugLogger.log(DebugLogLevel.TOKENIZER, "Saved state " + this.saveStates.size() + " (charIndex=" + state.charIndex + ")");
   }
 
   @Override
@@ -56,7 +57,7 @@ public class Tokenizer implements ITokenizer {
     this.state = this.saveStates.pop();
 
     if (debugLog)
-      logger.accept("Restored state " + sizeBefore + " (charIndex=" + state.charIndex + ")");
+      debugLogger.log(DebugLogLevel.TOKENIZER, "Restored state " + sizeBefore + " (charIndex=" + state.charIndex + ")");
   }
 
   @Override
@@ -65,7 +66,7 @@ public class Tokenizer implements ITokenizer {
     TokenizerState state = this.saveStates.pop();
 
     if (debugLog)
-      logger.accept("Discarded state " + sizeBefore + " (charIndex=" + state.charIndex + ")");
+      debugLogger.log(DebugLogLevel.TOKENIZER, "Discarded state " + sizeBefore + " (charIndex=" + state.charIndex + ")");
 
     return state;
   }
@@ -115,7 +116,7 @@ public class Tokenizer implements ITokenizer {
     if (state.currentToken == null)
       readNextToken();
 
-    logger.accept("Peeked token " + state.currentToken);
+    debugLogger.log(DebugLogLevel.TOKENIZER, "Peeked token " + state.currentToken);
     return state.currentToken;
   }
 
@@ -127,7 +128,7 @@ public class Tokenizer implements ITokenizer {
     Token result = state.currentToken;
     readNextToken();
 
-    logger.accept("Consumed token " + result);
+    debugLogger.log(DebugLogLevel.TOKENIZER, "Consumed token " + result);
     return result;
   }
 
@@ -146,8 +147,15 @@ public class Tokenizer implements ITokenizer {
   //=========================================================================//
 
   private void eatWhitespace() {
-    while (hasNextChar() && (isConsideredWhitespace(peekNextChar()) || peekNextChar() == '\n'))
+    int ate = 0;
+
+    while (hasNextChar() && (isConsideredWhitespace(peekNextChar()) || peekNextChar() == '\n')) {
+      ++ate;
       nextChar();
+    }
+
+    if (ate > 0)
+      debugLogger.log(DebugLogLevel.TOKENIZER, "Ate " + ate + " characters of whitespace");
   }
 
   /**
@@ -165,8 +173,10 @@ public class Tokenizer implements ITokenizer {
       FTokenReader reader = tryType.getTokenReader();
 
       // Token not yet implemented
-      if (reader == null)
+      if (reader == null) {
+        debugLogger.log(DebugLogLevel.TOKENIZER, "Token not yet implemented");
         continue;
+      }
 
       saveState(false);
 
@@ -181,6 +191,8 @@ public class Tokenizer implements ITokenizer {
       // Discard the saved state (to move forwards) but use it as the token's row/col supplier
       TokenizerState previousState = discardState(false);
       state.currentToken = new Token(tryType, previousState.row, previousState.col, result);
+
+      debugLogger.log(DebugLogLevel.TOKENIZER, "Reader for " + tryType + " was successful");
       return;
     }
 

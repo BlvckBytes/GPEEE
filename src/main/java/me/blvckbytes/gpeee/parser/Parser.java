@@ -1,5 +1,7 @@
 package me.blvckbytes.gpeee.parser;
 
+import me.blvckbytes.gpeee.DebugLogLevel;
+import me.blvckbytes.gpeee.IDebugLogger;
 import me.blvckbytes.gpeee.error.AEvaluatorError;
 import me.blvckbytes.gpeee.error.UnexpectedTokenError;
 import me.blvckbytes.gpeee.parser.expression.*;
@@ -9,7 +11,6 @@ import me.blvckbytes.gpeee.tokenizer.TokenType;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.function.Consumer;
 
 /**
  * This parser uses the compact and flexible algorithm called "precedence climbing" / "top down
@@ -20,10 +21,10 @@ import java.util.function.Consumer;
  */
 public class Parser {
 
-  private final Consumer<String> debugLogger;
+  private final IDebugLogger debugLogger;
   private final FExpressionParser[] precedenceLadder;
 
-  public Parser(Consumer<String> debugLogger) {
+  public Parser(IDebugLogger debugLogger) {
     this.debugLogger = debugLogger;
 
     this.precedenceLadder = new FExpressionParser[] {
@@ -81,13 +82,13 @@ public class Parser {
   //=========================================================================//
 
   private AExpression parseCallbackExpression(ITokenizer tokenizer, FExpressionParser[] precedenceLadder, int precedenceSelf) throws AEvaluatorError {
-    debugLogger.accept("Trying to parse a callback expression");
+    debugLogger.log(DebugLogLevel.PARSER, "Trying to parse a callback expression");
 
     Token tk = tokenizer.peekToken();
 
     // There's no opening parenthesis as the next token, hand over to the next higher precedence parser
     if (tk == null || tk.getType() != TokenType.PARENTHESIS_OPEN) {
-      debugLogger.accept("Not a callback expression");
+      debugLogger.log(DebugLogLevel.PARSER, "Not a callback expression");
       return invokeNextPrecedenceParser(tokenizer, precedenceLadder, precedenceSelf);
     }
 
@@ -101,7 +102,7 @@ public class Parser {
 
     // As long as there is no closing parenthesis, there are still arguments left
     while ((tk = tokenizer.peekToken()) != null && tk.getType() != TokenType.PARENTHESIS_CLOSE) {
-      debugLogger.accept("Parsing argument " + signature.size());
+      debugLogger.log(DebugLogLevel.PARSER, "Parsing argument " + signature.size());
 
       if (signature.size() > 0) {
         // Arguments other than the first one need to be separated out by a comma
@@ -116,7 +117,7 @@ public class Parser {
 
       // Anything else than an identifier cannot be within a callback's parentheses
       if (!(identifier instanceof IdentifierExpression)) {
-        debugLogger.accept("Not a callback expression");
+        debugLogger.log(DebugLogLevel.PARSER, "Not a callback expression");
         tokenizer.restoreState(true);
         return invokeNextPrecedenceParser(tokenizer, precedenceLadder, precedenceSelf);
       }
@@ -141,13 +142,13 @@ public class Parser {
   }
 
   private AExpression parseFunctionInvocationExpression(ITokenizer tokenizer, FExpressionParser[] precedenceLadder, int precedenceSelf) throws AEvaluatorError {
-    debugLogger.accept("Trying to parse a function invocation expression");
+    debugLogger.log(DebugLogLevel.PARSER, "Trying to parse a function invocation expression");
 
     Token tk = tokenizer.peekToken();
 
     // There's no identifier or minus as the next token, hand over to the next higher precedence parser
     if (tk == null || !(tk.getType() == TokenType.IDENTIFIER || tk.getType() == TokenType.MINUS)) {
-      debugLogger.accept("Not a function invocation expression");
+      debugLogger.log(DebugLogLevel.PARSER, "Not a function invocation expression");
       return invokeNextPrecedenceParser(tokenizer, precedenceLadder, precedenceSelf);
     }
 
@@ -166,7 +167,7 @@ public class Parser {
 
       // There's no identifier as the next token, hand over to the next higher precedence parser
       if (tk == null || tk.getType() != TokenType.IDENTIFIER) {
-        debugLogger.accept("Not a function invocation expression");
+        debugLogger.log(DebugLogLevel.PARSER, "Not a function invocation expression");
 
         // Put back the minus
         tokenizer.restoreState(true);
@@ -186,7 +187,7 @@ public class Parser {
 
     // There's no opening parenthesis as the next token, hand over to the next higher precedence parser
     if (tk == null || tk.getType() != TokenType.PARENTHESIS_OPEN) {
-      debugLogger.accept("Not a function invocation expression");
+      debugLogger.log(DebugLogLevel.PARSER, "Not a function invocation expression");
 
       // Put back the token
       tokenizer.restoreState(true);
@@ -208,7 +209,7 @@ public class Parser {
 
     // As long as there is no closing parenthesis, there are still arguments left
     while ((tk = tokenizer.peekToken()) != null && tk.getType() != TokenType.PARENTHESIS_CLOSE) {
-      debugLogger.accept("Parsing argument " + arguments.size());
+      debugLogger.log(DebugLogLevel.PARSER, "Parsing argument " + arguments.size());
 
       if (arguments.size() > 0) {
         // Arguments other than the first one need to be separated out by a comma
@@ -244,13 +245,13 @@ public class Parser {
   }
 
   private AExpression parseNegationExpression(ITokenizer tokenizer, FExpressionParser[] precedenceLadder, int precedenceSelf) throws AEvaluatorError {
-    debugLogger.accept("Trying to parse a negotiation expression");
+    debugLogger.log(DebugLogLevel.PARSER, "Trying to parse a negotiation expression");
 
     Token tk = tokenizer.peekToken();
 
     // There's no not operator as the next token, hand over to the next higher precedence parser
     if (tk == null || tk.getType() != TokenType.BOOL_NOT) {
-      debugLogger.accept("Not a negotiation expression");
+      debugLogger.log(DebugLogLevel.PARSER, "Not a negotiation expression");
       return invokeNextPrecedenceParser(tokenizer, precedenceLadder, precedenceSelf);
     }
 
@@ -258,16 +259,16 @@ public class Parser {
     Token notOperator = tokenizer.consumeToken();
 
     // Parse the following expression
-    debugLogger.accept("Trying to parse the expression to negate");
+    debugLogger.log(DebugLogLevel.PARSER, "Trying to parse the expression to negate");
     AExpression expression = invokeNextPrecedenceParser(tokenizer, precedenceLadder, precedenceSelf);
 
     // Return a wrapper on that expression which will negate it
-    debugLogger.accept("Wrapping the parsed expression in order to negate it");
+    debugLogger.log(DebugLogLevel.PARSER, "Wrapping the parsed expression in order to negate it");
     return new InvertExpression(expression, notOperator, expression.getTail(), tokenizer.getRawText());
   }
 
   private AExpression parseComparisonExpression(ITokenizer tokenizer, FExpressionParser[] precedenceLadder, int precedenceSelf) throws AEvaluatorError {
-    debugLogger.accept("Trying to parse a comparison expression");
+    debugLogger.log(DebugLogLevel.PARSER, "Trying to parse a comparison expression");
 
     AExpression lhs = invokeNextPrecedenceParser(tokenizer, precedenceLadder, precedenceSelf);
     Token tk, head = lhs.getHead();
@@ -302,7 +303,7 @@ public class Parser {
           throw new IllegalStateException();
       }
 
-      debugLogger.accept("Trying to parse a rhs for this comparison expression");
+      debugLogger.log(DebugLogLevel.PARSER, "Trying to parse a rhs for this comparison expression");
       AExpression rhs = invokeNextPrecedenceParser(tokenizer, precedenceLadder, precedenceSelf);
       lhs = new ComparisonExpression(lhs, rhs, operator, head, rhs.getTail(), tokenizer.getRawText());
     }
@@ -311,7 +312,7 @@ public class Parser {
   }
 
   private AExpression parseConcatenationExpression(ITokenizer tokenizer, FExpressionParser[] precedenceLadder, int precedenceSelf) throws AEvaluatorError {
-    debugLogger.accept("Trying to parse a concatenation expression");
+    debugLogger.log(DebugLogLevel.PARSER, "Trying to parse a concatenation expression");
 
     AExpression lhs = invokeNextPrecedenceParser(tokenizer, precedenceLadder, precedenceSelf);
     Token tk, head = lhs.getHead();
@@ -319,7 +320,7 @@ public class Parser {
     while ((tk = tokenizer.peekToken()) != null && tk.getType() == TokenType.CONCATENATE) {
       tokenizer.consumeToken();
 
-      debugLogger.accept("Trying to parse a rhs for this concatenation expression");
+      debugLogger.log(DebugLogLevel.PARSER, "Trying to parse a rhs for this concatenation expression");
       AExpression rhs = invokeNextPrecedenceParser(tokenizer, precedenceLadder, precedenceSelf);
       lhs = new ConcatenationExpression(lhs, rhs, head, rhs.getTail(), tokenizer.getRawText());
     }
@@ -328,7 +329,7 @@ public class Parser {
   }
 
   private AExpression parseDisjunctionExpression(ITokenizer tokenizer, FExpressionParser[] precedenceLadder, int precedenceSelf) throws AEvaluatorError {
-    debugLogger.accept("Trying to parse a disjunction expression");
+    debugLogger.log(DebugLogLevel.PARSER, "Trying to parse a disjunction expression");
 
     AExpression lhs = invokeNextPrecedenceParser(tokenizer, precedenceLadder, precedenceSelf);
     Token tk, head = lhs.getHead();
@@ -336,7 +337,7 @@ public class Parser {
     while ((tk = tokenizer.peekToken()) != null && tk.getType() == TokenType.BOOL_OR) {
       tokenizer.consumeToken();
 
-      debugLogger.accept("Trying to parse a rhs for this disjunction expression");
+      debugLogger.log(DebugLogLevel.PARSER, "Trying to parse a rhs for this disjunction expression");
       AExpression rhs = invokeNextPrecedenceParser(tokenizer, precedenceLadder, precedenceSelf);
       lhs = new DisjunctionExpression(lhs, rhs, head, rhs.getTail(), tokenizer.getRawText());
     }
@@ -345,7 +346,7 @@ public class Parser {
   }
 
   private AExpression parseConjunctionExpression(ITokenizer tokenizer, FExpressionParser[] precedenceLadder, int precedenceSelf) throws AEvaluatorError {
-    debugLogger.accept("Trying to parse a conjunction expression");
+    debugLogger.log(DebugLogLevel.PARSER, "Trying to parse a conjunction expression");
 
     AExpression lhs = invokeNextPrecedenceParser(tokenizer,  precedenceLadder, precedenceSelf);
     Token tk, head = lhs.getHead();
@@ -353,7 +354,7 @@ public class Parser {
     while ((tk = tokenizer.peekToken()) != null && tk.getType() == TokenType.BOOL_AND) {
       tokenizer.consumeToken();
 
-      debugLogger.accept("Trying to parse a rhs for this conjunction expression");
+      debugLogger.log(DebugLogLevel.PARSER, "Trying to parse a rhs for this conjunction expression");
       AExpression rhs = invokeNextPrecedenceParser(tokenizer,  precedenceLadder, precedenceSelf);
       lhs = new ConjunctionExpression(lhs, rhs, head, rhs.getTail(), tokenizer.getRawText());
     }
@@ -362,7 +363,7 @@ public class Parser {
   }
 
   private AExpression parseEqualityExpression(ITokenizer tokenizer, FExpressionParser[] precedenceLadder, int precedenceSelf) throws AEvaluatorError {
-    debugLogger.accept("Trying to parse a equality expression");
+    debugLogger.log(DebugLogLevel.PARSER, "Trying to parse a equality expression");
 
     AExpression lhs = invokeNextPrecedenceParser(tokenizer, precedenceLadder, precedenceSelf);
     Token tk, head = lhs.getHead();
@@ -399,7 +400,7 @@ public class Parser {
           throw new IllegalStateException();
       }
 
-      debugLogger.accept("Trying to parse a rhs for this equality expression");
+      debugLogger.log(DebugLogLevel.PARSER, "Trying to parse a rhs for this equality expression");
       AExpression rhs = invokeNextPrecedenceParser(tokenizer, precedenceLadder, precedenceSelf);
       lhs = new EqualityExpression(lhs, rhs, operator, head, rhs.getTail(), tokenizer.getRawText());
     }
@@ -408,7 +409,7 @@ public class Parser {
   }
 
   private AExpression parseAdditiveExpression(ITokenizer tokenizer, FExpressionParser[] precedenceLadder, int precedenceSelf) throws AEvaluatorError {
-    debugLogger.accept("Trying to parse a additive expression");
+    debugLogger.log(DebugLogLevel.PARSER, "Trying to parse a additive expression");
 
     AExpression lhs = invokeNextPrecedenceParser(tokenizer, precedenceLadder, precedenceSelf);
     Token tk, head = lhs.getHead();
@@ -424,7 +425,7 @@ public class Parser {
       if (tk.getType() == TokenType.MINUS)
         operator = MathOperation.SUBTRACTION;
 
-      debugLogger.accept("Trying to parse a rhs for this additive operation");
+      debugLogger.log(DebugLogLevel.PARSER, "Trying to parse a rhs for this additive operation");
       AExpression rhs = invokeNextPrecedenceParser(tokenizer, precedenceLadder, precedenceSelf);
       lhs = new MathExpression(lhs, rhs, operator, head, rhs.getTail(), tokenizer.getRawText());
     }
@@ -433,7 +434,7 @@ public class Parser {
   }
 
   private AExpression parseMultiplicativeExpression(ITokenizer tokenizer, FExpressionParser[] precedenceLadder, int precedenceSelf) throws AEvaluatorError {
-    debugLogger.accept("Trying to parse a multiplicative expression");
+    debugLogger.log(DebugLogLevel.PARSER, "Trying to parse a multiplicative expression");
 
     AExpression lhs = invokeNextPrecedenceParser(tokenizer, precedenceLadder, precedenceSelf);
     Token tk, head = lhs.getHead();
@@ -452,7 +453,7 @@ public class Parser {
       else if (tk.getType() == TokenType.MODULO)
         operator = MathOperation.MODULO;
 
-      debugLogger.accept("Trying to parse a rhs for this multiplicative operation");
+      debugLogger.log(DebugLogLevel.PARSER, "Trying to parse a rhs for this multiplicative operation");
       AExpression rhs = invokeNextPrecedenceParser(tokenizer, precedenceLadder, precedenceSelf);
       lhs = new MathExpression(lhs, rhs, operator, head, rhs.getTail(), tokenizer.getRawText());
     }
@@ -461,7 +462,7 @@ public class Parser {
   }
 
   private AExpression parseParenthesisExpression(ITokenizer tokenizer, FExpressionParser[] precedenceLadder, int precedenceSelf) throws AEvaluatorError {
-    debugLogger.accept("Trying to parse a parenthesis expression");
+    debugLogger.log(DebugLogLevel.PARSER, "Trying to parse a parenthesis expression");
 
     Token tk = tokenizer.peekToken();
 
@@ -480,7 +481,7 @@ public class Parser {
       tokenizer.consumeToken();
       consumedFirstToken = true;
 
-      debugLogger.accept("Found and consumed a parentheses modifier token");
+      debugLogger.log(DebugLogLevel.PARSER, "Found and consumed a parentheses modifier token");
 
       tk = tokenizer.peekToken();
     }
@@ -490,11 +491,11 @@ public class Parser {
 
       // Put back the consumed token which would have had an effect on these parentheses
       if (consumedFirstToken) {
-        debugLogger.accept("Putting the modifier token back");
+        debugLogger.log(DebugLogLevel.PARSER, "Putting the modifier token back");
         tokenizer.restoreState(true);
       }
 
-      debugLogger.accept("Not a parenthesis expression");
+      debugLogger.log(DebugLogLevel.PARSER, "Not a parenthesis expression");
       return invokeNextPrecedenceParser(tokenizer, precedenceLadder, precedenceSelf);
     }
 
@@ -505,7 +506,7 @@ public class Parser {
     // Consume the opening parenthesis
     tokenizer.consumeToken();
 
-    debugLogger.accept("Trying to parse the inner expression");
+    debugLogger.log(DebugLogLevel.PARSER, "Trying to parse the inner expression");
 
     // Parse the expression within the parentheses (start climbing the ladder all over again)
     AExpression expression = precedenceLadder[0].apply(tokenizer, precedenceLadder, 0);
@@ -516,17 +517,17 @@ public class Parser {
     if (tk == null || tk.getType() != TokenType.PARENTHESIS_CLOSE)
       throw new UnexpectedTokenError(tokenizer, tk, TokenType.PARENTHESIS_CLOSE);
 
-    debugLogger.accept("Validated the closing parenthesis");
+    debugLogger.log(DebugLogLevel.PARSER, "Validated the closing parenthesis");
 
     // Wrap the expression within a unary expression based on the first token's type
     switch (firstToken.getType()) {
       case MINUS:
-        debugLogger.accept("Wrapping expression in order to flip it's sign");
+        debugLogger.log(DebugLogLevel.PARSER, "Wrapping expression in order to flip it's sign");
         expression = new FlipSignExpression(expression, firstToken, expression.getTail(), tokenizer.getRawText());
         break;
 
       case BOOL_NOT:
-        debugLogger.accept("Wrapping expression in order to invert it");
+        debugLogger.log(DebugLogLevel.PARSER, "Wrapping expression in order to invert it");
         expression = new InvertExpression(expression, firstToken, expression.getTail(), tokenizer.getRawText());
         break;
     }
@@ -535,7 +536,7 @@ public class Parser {
   }
 
   private AExpression parseExponentiationExpression(ITokenizer tokenizer, FExpressionParser[] precedenceLadder, int precedenceSelf) throws AEvaluatorError {
-    debugLogger.accept("Trying to parse a exponentiation expression");
+    debugLogger.log(DebugLogLevel.PARSER, "Trying to parse a exponentiation expression");
 
     AExpression lhs = invokeNextPrecedenceParser(tokenizer, precedenceLadder, precedenceSelf);
     Token tk, head = lhs.getHead();
@@ -546,7 +547,7 @@ public class Parser {
     ) {
       tokenizer.consumeToken();
 
-      debugLogger.accept("Trying to parse a rhs for this exponentiation operation");
+      debugLogger.log(DebugLogLevel.PARSER, "Trying to parse a rhs for this exponentiation operation");
       AExpression rhs = invokeNextPrecedenceParser(tokenizer, precedenceLadder, precedenceSelf);
       lhs = new MathExpression(lhs, rhs, MathOperation.POWER, head, rhs.getTail(), tokenizer.getRawText());
     }
@@ -555,7 +556,7 @@ public class Parser {
   }
 
   private AExpression parsePrimaryExpression(ITokenizer tokenizer) throws AEvaluatorError {
-    debugLogger.accept("Trying to parse a primary expression");
+    debugLogger.log(DebugLogLevel.PARSER, "Trying to parse a primary expression");
 
     Token tk = tokenizer.consumeToken();
 
@@ -582,33 +583,33 @@ public class Parser {
 
     switch (tk.getType()) {
       case LONG:
-        debugLogger.accept("Found an integer");
+        debugLogger.log(DebugLogLevel.PARSER, "Found an integer");
         return new LongExpression((isNegative ? -1 : 1) * Integer.parseInt(tk.getValue()), head, tk, tokenizer.getRawText());
 
       case DOUBLE:
-        debugLogger.accept("Found a double");
+        debugLogger.log(DebugLogLevel.PARSER, "Found a double");
         return new DoubleExpression((isNegative ? -1 : 1) * Double.parseDouble(tk.getValue()), head, tk, tokenizer.getRawText());
 
       case STRING:
-        debugLogger.accept("Found a string");
+        debugLogger.log(DebugLogLevel.PARSER, "Found a string");
         return new StringExpression(tk.getValue(), head, tk, tokenizer.getRawText());
 
       case IDENTIFIER: {
-        debugLogger.accept("Found an identifier");
+        debugLogger.log(DebugLogLevel.PARSER, "Found an identifier");
         IdentifierExpression identifier = new IdentifierExpression(tk.getValue(), tk, tk, tokenizer.getRawText());
         return isNegative ? new FlipSignExpression(identifier, head, tk, tokenizer.getRawText()) : identifier;
       }
 
       case TRUE:
-        debugLogger.accept("Found the true literal");
+        debugLogger.log(DebugLogLevel.PARSER, "Found the true literal");
         return new LiteralExpression(LiteralType.TRUE, tk, tk, tokenizer.getRawText());
 
       case FALSE:
-        debugLogger.accept("Found the false literal");
+        debugLogger.log(DebugLogLevel.PARSER, "Found the false literal");
       return new LiteralExpression(LiteralType.FALSE, tk, tk, tokenizer.getRawText());
 
       case NULL:
-        debugLogger.accept("Found the null literal");
+        debugLogger.log(DebugLogLevel.PARSER, "Found the null literal");
       return new LiteralExpression(LiteralType.NULL, tk, tk, tokenizer.getRawText());
 
       default:

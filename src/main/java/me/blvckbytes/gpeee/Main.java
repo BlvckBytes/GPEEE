@@ -7,14 +7,15 @@ import me.blvckbytes.gpeee.interpreter.IValueInterpreter;
 import me.blvckbytes.gpeee.parser.expression.AExpression;
 
 import java.util.*;
-import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 public class Main {
 
+  // TODO: Get rid of this language level bs with """ and read from an input file again
+
   public static void main(String[] args) {
     try {
-      Consumer<String> debugLogger = message -> System.out.println("[DEBUG]: " + message);
+      IDebugLogger debugLogger = (level, message) -> System.out.println("[DEBUG] [" + level + "]: " + message);
       GPEEE evaluator = new GPEEE(debugLogger);
 
       String input = """
