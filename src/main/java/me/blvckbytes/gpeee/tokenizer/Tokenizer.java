@@ -113,6 +113,8 @@ public class Tokenizer implements ITokenizer {
 
   @Override
   public @Nullable Token peekToken() throws AEvaluatorError {
+    eatComments();
+
     if (state.currentToken == null)
       readNextToken();
 
@@ -122,6 +124,8 @@ public class Tokenizer implements ITokenizer {
 
   @Override
   public @Nullable Token consumeToken() throws AEvaluatorError {
+    eatComments();
+
     if (state.currentToken == null)
       readNextToken();
 
@@ -146,6 +150,17 @@ public class Tokenizer implements ITokenizer {
   //                                Utilities                                //
   //=========================================================================//
 
+  private void eatComments() {
+    int c = 0;
+    while (state.currentToken != null && state.currentToken.getType() == TokenType.COMMENT) {
+      readNextToken();
+      ++c;
+    }
+
+    if (c > 0)
+      debugLogger.log(DebugLogLevel.TOKENIZER, "Ate " + c + " comment(s)");
+  }
+
   private void eatWhitespace() {
     int ate = 0;
 
@@ -155,7 +170,7 @@ public class Tokenizer implements ITokenizer {
     }
 
     if (ate > 0)
-      debugLogger.log(DebugLogLevel.TOKENIZER, "Ate " + ate + " characters of whitespace");
+      debugLogger.log(DebugLogLevel.TOKENIZER, "Ate " + ate + " character(s) of whitespace");
   }
 
   /**

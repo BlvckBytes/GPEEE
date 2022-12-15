@@ -1,1 +1,3 @@
-5 + 5
+# Development debugging input
+
+35^-(1/2) # 1 / sqrt(35)
