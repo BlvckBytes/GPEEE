@@ -1,5 +1,6 @@
 package me.blvckbytes.gpeee;
 
+import me.blvckbytes.gpeee.error.AEvaluatorError;
 import me.blvckbytes.gpeee.functions.FExpressionFunction;
 import me.blvckbytes.gpeee.interpreter.IEvaluationEnvironment;
 import me.blvckbytes.gpeee.interpreter.IValueInterpreter;
@@ -16,6 +17,18 @@ import java.util.Map;
 import java.util.function.Supplier;
 
 public class Main {
+
+  // TODO:
+  /*
+    Create some kind of utility-set to properly interface between expressions and java without having
+    to perform a thousand checks for null or for I/O types.
+
+    A function builder would be cool (but how would that look like?)
+
+    Come up with an easy-to-use testing environment and create a hell load of tests for all kind of cases
+
+    Run tests on the github repo
+   */
 
   public static void main(String[] args) {
     try {
@@ -101,7 +114,11 @@ public class Main {
       System.out.println("result=" + evaluator.evaluateExpression(expression, env));
 
       System.out.println("Done!");
-    } catch (Exception e) {
+    }
+    catch (AEvaluatorError e) {
+      System.err.println(e.getMessage());
+    }
+    catch (Exception e) {
       e.printStackTrace();
     }
   }
