@@ -25,6 +25,7 @@ cost when comparing against a project without `GPEEE`.
   - [Operators And Precedences](#operators-and-precedences)
   - [Parentheses](#parentheses)
   - [Function Invocation](#function-invocation)
+  - [Callback Function](#callback-function)
   - [Complete Definition](#complete-definition)
 
 ## Current State
