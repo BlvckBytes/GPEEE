@@ -50,8 +50,6 @@ public class Main {
     A function builder would be cool (but how would that look like?)
 
     Come up with an easy-to-use testing environment and create a hell load of tests for all kind of cases
-
-    Run tests on the github repo
    */
 
   public static void main(String[] args) {

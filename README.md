@@ -1,5 +1,7 @@
 # GPEEE
 
+![tests](https://github.com/BlvckBytes/GPEEE/actions/workflows/test.yml/badge.svg)
+
 ![logo](readme_images/logo.png)
 
 The opensource `General Purpose Environment Expression Evaluator` which you most definitely
