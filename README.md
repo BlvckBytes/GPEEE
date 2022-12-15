@@ -160,7 +160,7 @@ public interface IExpressionEvaluator {
    * @return Resulting expression value
    * @throws AEvaluatorError Error during the interpretation process
    */
-  ExpressionValue evaluateExpression(AExpression expression, IEvaluationEnvironment environment) throws AEvaluatorError;
+  Object evaluateExpression(AExpression expression, IEvaluationEnvironment environment) throws AEvaluatorError;
 
 }
 ```
@@ -189,12 +189,12 @@ public interface IEvaluationEnvironment {
   /**
    * Mapping identifiers to available live variables which an expression may resolve
    */
-  Map<String, Supplier<ExpressionValue>> getLiveVariables();
+  Map<String, Supplier<Object>> getLiveVariables();
 
   /**
    * Mapping identifiers to available static variables which an expression may resolve
    */
-  Map<String, ExpressionValue> getStaticVariables();
+  Map<String, Object> getStaticVariables();
 
 }
 ```
@@ -216,7 +216,7 @@ public interface FExpressionFunction {
    * @param args Arguments supplied by the invocation
    * @return Return value of this function
    */
-  ExpressionValue apply(List<ExpressionValue> args);
+  Object apply(List<Object> args);
 
 }
 ```

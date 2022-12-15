@@ -1,8 +1,9 @@
 package me.blvckbytes.gpeee;
 
 import me.blvckbytes.gpeee.functions.FExpressionFunction;
-import me.blvckbytes.gpeee.interpreter.ExpressionValue;
 import me.blvckbytes.gpeee.interpreter.IEvaluationEnvironment;
+import me.blvckbytes.gpeee.interpreter.IValueInterpreter;
+import org.jetbrains.annotations.Nullable;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -28,13 +29,18 @@ public class ExpressionTests {
       }
 
       @Override
-      public Map<String, Supplier<ExpressionValue>> getLiveVariables() {
+      public Map<String, Supplier<Object>> getLiveVariables() {
         return Map.of();
       }
 
       @Override
-      public Map<String, ExpressionValue> getStaticVariables() {
+      public Map<String, Object> getStaticVariables() {
         return Map.of();
+      }
+
+      @Override
+      public @Nullable IValueInterpreter getValueInterpreter() {
+        return null;
       }
     };
   }
@@ -46,28 +52,18 @@ public class ExpressionTests {
   }
 
   private void assertExpression(String expression, Object result) {
-    ExpressionValue value = evaluator.evaluateExpression(evaluator.parseString(expression), environment);
+    Object value = evaluator.evaluateExpression(evaluator.parseString(expression), environment);
 
-    switch (value.getType()) {
-      case INTEGER:
-        assertTrue(result instanceof Integer);
-        assertEquals(result, value.asInteger());
-        break;
+    if (value instanceof Integer)
+      assertEquals(result, value);
 
-      case DOUBLE:
-        assertTrue(result instanceof Double);
-        Double d = value.asDouble();
-        assertNotNull(d);
-        assertTrue(Math.abs(((Double) result) - d) <= MAX_DOUBLE_DELTA);
-        break;
+    else if (value instanceof Double)
+      assertTrue(Math.abs(((Double) result) - ((Double) value)) <= MAX_DOUBLE_DELTA);
 
-      case STRING:
-        assertTrue(result instanceof String);
-        assertEquals(result, value.asString());
-        break;
+    else if (value instanceof String)
+      assertEquals(result, value);
 
-      default:
-        throw new IllegalStateException("Not yet implemented");
-    }
+    else
+      throw new IllegalStateException("Not yet implemented");
   }
 }

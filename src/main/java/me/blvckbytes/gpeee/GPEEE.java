@@ -1,7 +1,6 @@
 package me.blvckbytes.gpeee;
 
 import me.blvckbytes.gpeee.error.AEvaluatorError;
-import me.blvckbytes.gpeee.interpreter.ExpressionValue;
 import me.blvckbytes.gpeee.interpreter.IEvaluationEnvironment;
 import me.blvckbytes.gpeee.interpreter.Interpreter;
 import me.blvckbytes.gpeee.parser.Parser;
@@ -29,7 +28,7 @@ public class GPEEE implements IExpressionEvaluator {
   }
 
   @Override
-  public ExpressionValue evaluateExpression(AExpression expression, IEvaluationEnvironment environment) throws AEvaluatorError {
+  public Object evaluateExpression(AExpression expression, IEvaluationEnvironment environment) throws AEvaluatorError {
     return interpreter.evaluateExpression(expression, environment);
   }
 }

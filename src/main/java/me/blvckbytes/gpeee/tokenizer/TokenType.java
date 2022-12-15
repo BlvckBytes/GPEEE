@@ -43,7 +43,7 @@ public enum TokenType {
   }),
 
   // -?[0-9]+
-  INT(TokenCategory.VALUE, null, tokenizer -> {
+  LONG(TokenCategory.VALUE, null, tokenizer -> {
     StringBuilder result = new StringBuilder();
 
     if (collectDigits(tokenizer, result, false) != CollectorResult.READ_OKAY)

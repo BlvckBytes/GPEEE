@@ -571,8 +571,8 @@ public class Parser {
       tk = tokenizer.consumeToken();
 
       // Either no token left or it's not a number, a double or an identifier
-      if (tk == null || !(tk.getType() == TokenType.INT || tk.getType() == TokenType.DOUBLE || tk.getType() == TokenType.IDENTIFIER))
-        throw new UnexpectedTokenError(tokenizer, tk, TokenType.INT, TokenType.DOUBLE, TokenType.IDENTIFIER);
+      if (tk == null || !(tk.getType() == TokenType.LONG || tk.getType() == TokenType.DOUBLE || tk.getType() == TokenType.IDENTIFIER))
+        throw new UnexpectedTokenError(tokenizer, tk, TokenType.LONG, TokenType.DOUBLE, TokenType.IDENTIFIER);
 
       negativeToken = tk;
       isNegative = true;
@@ -581,9 +581,9 @@ public class Parser {
     Token head = negativeToken == null ? tk : negativeToken;
 
     switch (tk.getType()) {
-      case INT:
+      case LONG:
         debugLogger.accept("Found an integer");
-        return new IntExpression((isNegative ? -1 : 1) * Integer.parseInt(tk.getValue()), head, tk, tokenizer.getRawText());
+        return new LongExpression((isNegative ? -1 : 1) * Integer.parseInt(tk.getValue()), head, tk, tokenizer.getRawText());
 
       case DOUBLE:
         debugLogger.accept("Found a double");

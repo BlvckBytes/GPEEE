@@ -5,6 +5,8 @@ import me.blvckbytes.gpeee.error.UndefinedFunctionError;
 import me.blvckbytes.gpeee.error.UndefinedVariableError;
 import me.blvckbytes.gpeee.functions.FExpressionFunction;
 import me.blvckbytes.gpeee.parser.expression.*;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -14,16 +16,18 @@ import java.util.function.Supplier;
 
 public class Interpreter {
 
-  private static final ExpressionValue NEGATIVE_ONE = ExpressionValue.fromInteger(-1);
+  private static final IValueInterpreter STD_VALUE_INTERPRETER = new StandardValueInterpreter();
 
-  public ExpressionValue evaluateExpression(AExpression expression, IEvaluationEnvironment environment) throws AEvaluatorError {
+  public Object evaluateExpression(AExpression expression, IEvaluationEnvironment environment) throws AEvaluatorError {
     if (expression == null)
       return null;
 
+    IValueInterpreter valueInterpreter = getValueInterpreter(environment);
+
     /////////////////////// Static Values ///////////////////////
 
-    if (expression instanceof IntExpression)
-      return ((IntExpression) expression).getNumber();
+    if (expression instanceof LongExpression)
+      return ((LongExpression) expression).getNumber();
 
     if (expression instanceof DoubleExpression)
       return ((DoubleExpression) expression).getValue();
@@ -39,11 +43,11 @@ public class Interpreter {
     if (expression instanceof IdentifierExpression) {
       String symbol = ((IdentifierExpression) expression).getSymbol();
 
-      ExpressionValue value = environment.getStaticVariables().get(symbol);
+      Object value = environment.getStaticVariables().get(symbol);
       if (value != null)
         return value;
 
-      Supplier<ExpressionValue> valueSupplier = environment.getLiveVariables().get(symbol);
+      Supplier<Object> valueSupplier = environment.getLiveVariables().get(symbol);
       if (valueSupplier != null) {
         value = valueSupplier.get();
 
@@ -65,7 +69,7 @@ public class Interpreter {
         throw new UndefinedFunctionError(expression);
 
       // Evaluate and collect all arguments
-      List<ExpressionValue> arguments = new ArrayList<>();
+      List<Object> arguments = new ArrayList<>();
       for (AExpression argument : functionExpression.getArguments())
         arguments.add(evaluateExpression(argument, environment));
 
@@ -77,10 +81,10 @@ public class Interpreter {
       CallbackExpression callbackExpression = (CallbackExpression) expression;
 
       // This function (wrapped as a value) will be called by java every time the caller invokes it
-      return ExpressionValue.fromFunction(args -> {
+      return (FExpressionFunction) args -> {
 
         // Copy the static variable table and extend it below
-        Map<String, ExpressionValue> combinedVariables = new HashMap<>(environment.getStaticVariables());
+        Map<String, Object> combinedVariables = new HashMap<>(environment.getStaticVariables());
 
         // Map all identifiers from the callback's signature to a matching java argument in sequence
         // If there are more arguments in the signature than provided by java, they'll just be set to null
@@ -101,93 +105,91 @@ public class Interpreter {
           }
 
           @Override
-          public Map<String, Supplier<ExpressionValue>> getLiveVariables() {
+          public Map<String, Supplier<Object>> getLiveVariables() {
             return environment.getLiveVariables();
           }
 
           @Override
-          public Map<String, ExpressionValue> getStaticVariables() {
+          public Map<String, Object> getStaticVariables() {
             return combinedVariables;
           }
+
+          @Override
+          public @Nullable IValueInterpreter getValueInterpreter() {
+            return environment.getValueInterpreter();
+          }
         });
-      });
+      };
     }
 
     //////////////////// Binary Expressions /////////////////////
 
     if (expression instanceof BinaryExpression) {
-      ExpressionValue lhs = evaluateExpression(((BinaryExpression) expression).getLhs(), environment);
-      ExpressionValue rhs = evaluateExpression(((BinaryExpression) expression).getRhs(), environment);
+      Object lhs = evaluateExpression(((BinaryExpression) expression).getLhs(), environment);
+      Object rhs = evaluateExpression(((BinaryExpression) expression).getRhs(), environment);
 
-      if (expression instanceof MathExpression) {
-        switch (((MathExpression) expression).getOperation()) {
-          case ADDITION:
-            return lhs.add(rhs);
-          case SUBTRACTION:
-            return lhs.subtract(rhs);
-          case MULTIPLICATION:
-            return lhs.multiply(rhs);
-          case DIVISION:
-            return lhs.divide(rhs);
-          case MODULO:
-            return lhs.modulo(rhs);
-          case POWER:
-            return lhs.power(rhs);
-          default:
-            return null;
-        }
-      }
+      if (expression instanceof MathExpression)
+        return valueInterpreter.performMath(lhs, rhs, ((MathExpression) expression).getOperation());
 
       if (expression instanceof EqualityExpression) {
         switch (((EqualityExpression) expression).getOperation()) {
           case EQUAL:
-            return ExpressionValue.fromBoolean(lhs.equalsTo(rhs, false));
+            return valueInterpreter.areEqual(lhs, rhs, false);
           case NOT_EQUAL:
-            return ExpressionValue.fromBoolean(!lhs.equalsTo(rhs, false));
+            return !valueInterpreter.areEqual(lhs, rhs, false);
           case EQUAL_EXACT:
-            return ExpressionValue.fromBoolean(lhs.equalsTo(rhs, true));
+            return valueInterpreter.areEqual(lhs, rhs, true);
           case NOT_EQUAL_EXACT:
-            return ExpressionValue.fromBoolean(!lhs.equalsTo(rhs, true));
+            return !valueInterpreter.areEqual(lhs, rhs, true);
           default:
-            return ExpressionValue.FALSE;
+            return false;
         }
       }
 
       if (expression instanceof ComparisonExpression) {
-        int comparisonResult = lhs.compareTo(rhs);
+        int comparisonResult = valueInterpreter.compare(lhs, rhs);
 
         switch (((ComparisonExpression) expression).getOperation()) {
           case LESS_THAN:
-            return ExpressionValue.fromBoolean(comparisonResult < 0);
+            return comparisonResult < 0;
           case GREATER_THAN:
-            return ExpressionValue.fromBoolean(comparisonResult > 0);
+            return comparisonResult > 0;
           case LESS_THAN_OR_EQUAL:
-            return ExpressionValue.fromBoolean(comparisonResult <= 0);
+            return comparisonResult <= 0;
           case GREATER_THAN_OR_EQUAL:
-            return ExpressionValue.fromBoolean(comparisonResult >= 0);
+            return comparisonResult >= 0;
           default:
-            return ExpressionValue.FALSE;
+            return false;
         }
       }
 
       if (expression instanceof ConjunctionExpression)
-        return lhs.and(rhs);
+        return valueInterpreter.asBoolean(lhs) && valueInterpreter.asBoolean(rhs);
 
       if (expression instanceof DisjunctionExpression)
-        return lhs.or(rhs);
+        return valueInterpreter.asBoolean(lhs) || valueInterpreter.asBoolean(rhs);
 
       if (expression instanceof ConcatenationExpression)
-        return lhs.concatenate(rhs);
+        return valueInterpreter.asString(lhs) + valueInterpreter.asString(rhs);
     }
 
     ///////////////////// Unary Expressions /////////////////////
 
-    if (expression instanceof FlipSignExpression)
-      return evaluateExpression(((FlipSignExpression) expression).getInput(), environment).multiply(NEGATIVE_ONE);
+    if (expression instanceof UnaryExpression) {
+      Object input = evaluateExpression(((UnaryExpression) expression).getInput(), environment);
 
-    if (expression instanceof InvertExpression)
-      return evaluateExpression(((InvertExpression) expression).getInput(), environment).invert();
+      if (expression instanceof FlipSignExpression)
+        return -1 * (valueInterpreter.hasDecimalPoint(input) ? valueInterpreter.asDouble(input) : valueInterpreter.asLong(input));
+
+      if (expression instanceof InvertExpression)
+        return !valueInterpreter.asBoolean(input);
+    }
 
     throw new IllegalStateException("Cannot parse unknown expression type " + expression.getClass());
+  }
+
+  private @NotNull IValueInterpreter getValueInterpreter(IEvaluationEnvironment environment) {
+    IValueInterpreter environmentValueInterpreter = environment.getValueInterpreter();
+    return environmentValueInterpreter == null ? STD_VALUE_INTERPRETER : environmentValueInterpreter;
   }
 }
