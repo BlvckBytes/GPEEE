@@ -5,11 +5,8 @@ import me.blvckbytes.gpeee.functions.FExpressionFunction;
 import me.blvckbytes.gpeee.interpreter.IEvaluationEnvironment;
 import me.blvckbytes.gpeee.interpreter.IValueInterpreter;
 import me.blvckbytes.gpeee.parser.expression.AExpression;
-import org.jetbrains.annotations.Nullable;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
@@ -36,25 +33,31 @@ public class Main {
         public Map<String, FExpressionFunction> getFunctions() {
           // iter_cat(items, (it, ind) -> (..), "separator", "no items fallback")
           return Map.of(
-            "iter_cat", args -> {
-              // Not enough arguments provided
+            "iter_cat", (env, args) -> {
+              // Invalid call: Not enough arguments provided
               if (args.size() < 3)
                 return null;
 
-              @Nullable FExpressionFunction formatter = (FExpressionFunction) args.get(1);
-
-              // Needs to provide a function as the mapper parameter
-              if (formatter == null)
+              // Invalid call: Cannot iterate over non-collections
+              if (!(args.get(0) instanceof Collection))
                 return null;
 
-              List<?> items = (List<?>) args.get(0);
-              String separator = (String) args.get(2);
+              // Invalid call: Cannot invoke a non-function type
+              if (!(args.get(1) instanceof FExpressionFunction))
+                return null;
+
+              FExpressionFunction formatter = (FExpressionFunction) args.get(1);
+
+              Collection<?> items = (Collection<?>) args.get(0);
+              String separator = env.getValueInterpreter().asString(args.get(2));
 
               // Loop all items
               StringBuilder result = new StringBuilder();
-              for (int i = 0; i < items.size(); i++) {
-                result.append(i == 0 ? "" : separator).append(
-                  formatter.apply(List.of(items.get(i), i))
+
+              int c = 0;
+              for (Object item : items) {
+                result.append(result.length() == 0 ? "" : separator).append(
+                  formatter.apply(env, List.of(item, c++))
                 );
               }
 
@@ -84,8 +87,8 @@ public class Main {
         }
 
         @Override
-        public @Nullable IValueInterpreter getValueInterpreter() {
-          return null;
+        public IValueInterpreter getValueInterpreter() {
+          return GPEEE.STD_VALUE_INTERPRETER;
         }
       };
 

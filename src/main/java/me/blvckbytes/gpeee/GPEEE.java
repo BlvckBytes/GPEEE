@@ -2,7 +2,9 @@ package me.blvckbytes.gpeee;
 
 import me.blvckbytes.gpeee.error.AEvaluatorError;
 import me.blvckbytes.gpeee.interpreter.IEvaluationEnvironment;
+import me.blvckbytes.gpeee.interpreter.IValueInterpreter;
 import me.blvckbytes.gpeee.interpreter.Interpreter;
+import me.blvckbytes.gpeee.interpreter.StandardValueInterpreter;
 import me.blvckbytes.gpeee.parser.Parser;
 import me.blvckbytes.gpeee.parser.expression.AExpression;
 import me.blvckbytes.gpeee.tokenizer.Tokenizer;
@@ -11,6 +13,8 @@ import org.jetbrains.annotations.Nullable;
 import java.util.function.Consumer;
 
 public class GPEEE implements IExpressionEvaluator {
+
+  public static final IValueInterpreter STD_VALUE_INTERPRETER = new StandardValueInterpreter();
 
   private final Parser parser;
   private final Interpreter interpreter;

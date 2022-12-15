@@ -3,7 +3,6 @@ package me.blvckbytes.gpeee;
 import me.blvckbytes.gpeee.functions.FExpressionFunction;
 import me.blvckbytes.gpeee.interpreter.IEvaluationEnvironment;
 import me.blvckbytes.gpeee.interpreter.IValueInterpreter;
-import org.jetbrains.annotations.Nullable;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -39,8 +38,8 @@ public class ExpressionTests {
       }
 
       @Override
-      public @Nullable IValueInterpreter getValueInterpreter() {
-        return null;
+      public IValueInterpreter getValueInterpreter() {
+        return GPEEE.STD_VALUE_INTERPRETER;
       }
     };
   }

@@ -1,7 +1,6 @@
 package me.blvckbytes.gpeee.interpreter;
 
 import me.blvckbytes.gpeee.functions.FExpressionFunction;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.Map;
 import java.util.function.Supplier;
@@ -27,7 +26,9 @@ public interface IEvaluationEnvironment {
    * Get the value interpreter used to interpret values when doing any kind of
    * operation on them which they'd usually not support naturally. Provide null
    * in order to use the standard interpreter.
+   *
+   * Most of the time, you'd want to provide {@link me.blvckbytes.gpeee.GPEEE#STD_VALUE_INTERPRETER}
    */
-  @Nullable IValueInterpreter getValueInterpreter();
+  IValueInterpreter getValueInterpreter();
 
 }

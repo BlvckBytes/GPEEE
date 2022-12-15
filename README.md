@@ -33,82 +33,88 @@ The project is still far from being production-ready, but here you can have a lo
 can accomplish so far:
 
 <details>
-  <summary>Click Me</summary>
+<summary>Click Me</summary>
 
-  Expression:
+Expression:
 
-  ```
-  "my prefix: " & iter_cat(my_items, (it, ind) -> "(" & ind & " -> " & it & ")", "|", "no items available")
-  ```
+```
+"my prefix: " & iter_cat(my_items, (it, ind) -> "(" & ind & " -> " & it & ")", "|", "no items available")
+```
 
-  Result:
+Result:
 
-  ```
-  my prefix: (0 -> 1)|(1 -> 3)|(2 -> 5)|(3 -> 21)|(4 -> 49)
-  ```
+```
+my prefix: (0 -> 1)|(1 -> 3)|(2 -> 5)|(3 -> 21)|(4 -> 49)
+```
 
-  Environment:
+Environment:
 
-  ```java
+```java
   IEvaluationEnvironment env = new IEvaluationEnvironment() {
 
     @Override
     public Map<String, FExpressionFunction> getFunctions() {
       // iter_cat(items, (it, ind) -> (..), "separator", "no items fallback")
       return Map.of(
-        "iter_cat", args -> {
-          // Not enough arguments provided
+        "iter_cat", (env, args) -> {
+          // Invalid call: Not enough arguments provided
           if (args.size() < 3)
-            return ExpressionValue.NULL;
+            return null;
 
-          @Nullable FExpressionFunction formatter = args.get(1).asFunction();
+          // Invalid call: Cannot iterate over non-collections
+          if (!(args.get(0) instanceof Collection))
+            return null;
 
-          // Needs to provide a function as the mapper parameter
-          if (formatter == null)
-            return ExpressionValue.NULL;
+          // Invalid call: Cannot invoke a non-function type
+          if (!(args.get(1) instanceof FExpressionFunction))
+            return null;
 
-          List<ExpressionValue> items = args.get(0).interpretAsList();
-          String separator = args.get(2).interpretAsString();
+          FExpressionFunction formatter = (FExpressionFunction) args.get(1);
+
+          Collection<?> items = (Collection<?>) args.get(0);
+          String separator = env.getValueInterpreter().asString(args.get(2));
 
           // Loop all items
           StringBuilder result = new StringBuilder();
-          for (int i = 0; i < items.size(); i++) {
-            result.append(i == 0 ? "" : separator).append(
-              formatter
-                .apply(List.of(items.get(i), ExpressionValue.fromInteger(i)))
-                .interpretAsString()
+
+          int c = 0;
+          for (Object item : items) {
+            result.append(result.length() == 0 ? "" : separator).append(
+              formatter.apply(env, List.of(item, c++))
             );
           }
 
           // No items available but a fallback string has been supplied
           if (items.size() == 0 && args.size() >= 4)
-            return ExpressionValue.fromString(args.get(3).interpretAsString());
+            return args.get(3);
 
           // Respond with the built-up result
-          return ExpressionValue.fromString(result.toString());
+          return result.toString();
         }
       );
     }
 
     @Override
-    public Map<String, Supplier<ExpressionValue>> getLiveVariables() {
+    public Map<String, Supplier<Object>> getLiveVariables() {
       return Map.of();
     }
 
     @Override
-    public Map<String, ExpressionValue> getStaticVariables() {
-      Map<String, ExpressionValue> vars = new HashMap<>();
+    public Map<String, Object> getStaticVariables() {
+      Map<String, Object> vars = new HashMap<>();
 
-      vars.put("my_items", ExpressionValue.fromListAutoWrap(List.of(
-        1, 3, 5, 21, 49
-      )));
-
-      vars.put("no_items", ExpressionValue.EMPTY_LIST);
+      vars.put("my_items", List.of(1, 3, 5, 21, 49));
+      vars.put("no_items", List.of());
 
       return vars;
     }
+
+    @Override
+    public IValueInterpreter getValueInterpreter() {
+      return GPEEE.STD_VALUE_INTERPRETER;
+    }
   };
-  ```
+```
 </details>
 
 ## Mission Statement
@@ -198,10 +204,11 @@ public interface IEvaluationEnvironment {
 
   /**
    * Get the value interpreter used to interpret values when doing any kind of
-   * operation on them which they'd usually not support naturally. Provide null
-   * in order to use the standard interpreter.
+   * operation on them which they'd usually not support naturally.
+   *
+   * Most of the time, you'd want to provide {@link me.blvckbytes.gpeee.GPEEE#STD_VALUE_INTERPRETER}
    */
-  @Nullable IValueInterpreter getValueInterpreter();
+  IValueInterpreter getValueInterpreter();
 
 }
 ```
@@ -220,10 +227,11 @@ public interface FExpressionFunction {
   /**
    * Called whenever a function call to the registered corresponding
    * identifier is performed within an expression
+   * @param environment A reference to the current environment
    * @param args Arguments supplied by the invocation
    * @return Return value of this function
    */
-  Object apply(List<Object> args);
+  Object apply(IEvaluationEnvironment environment, List<Object> args);
 
 }
 ```
@@ -232,8 +240,7 @@ public interface FExpressionFunction {
 
 Expressions interface with the world around them using the Java Object. All operations can be - by design - performed on
 all types, as the Interpreter makes use of a so-called `IValueInterpreter`, provided by the `IEvaluationEnvironment`.
-This object decides which value corresponds to an object in different situations. In general, this value can be left as
-`null`, since the standard implementation already very likely does what you'd think is intuitive.
+This object decides which value corresponds to an object in different situations.
 
 The following tables are an overview of standard value interpretation:
 

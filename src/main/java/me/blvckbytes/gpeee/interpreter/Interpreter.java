@@ -5,8 +5,6 @@ import me.blvckbytes.gpeee.error.UndefinedFunctionError;
 import me.blvckbytes.gpeee.error.UndefinedVariableError;
 import me.blvckbytes.gpeee.functions.FExpressionFunction;
 import me.blvckbytes.gpeee.parser.expression.*;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -16,13 +14,11 @@ import java.util.function.Supplier;
 
 public class Interpreter {
 
-  private static final IValueInterpreter STD_VALUE_INTERPRETER = new StandardValueInterpreter();
-
   public Object evaluateExpression(AExpression expression, IEvaluationEnvironment environment) throws AEvaluatorError {
     if (expression == null)
       return null;
 
-    IValueInterpreter valueInterpreter = getValueInterpreter(environment);
+    IValueInterpreter valueInterpreter = environment.getValueInterpreter();
 
     /////////////////////// Static Values ///////////////////////
 
@@ -74,14 +70,14 @@ public class Interpreter {
         arguments.add(evaluateExpression(argument, environment));
 
       // Invoke and return that function's result
-      return function.apply(arguments);
+      return function.apply(environment, arguments);
     }
 
     if (expression instanceof CallbackExpression) {
       CallbackExpression callbackExpression = (CallbackExpression) expression;
 
       // This function (wrapped as a value) will be called by java every time the caller invokes it
-      return (FExpressionFunction) args -> {
+      return (FExpressionFunction) (env, args) -> {
 
         // Copy the static variable table and extend it below
         Map<String, Object> combinedVariables = new HashMap<>(environment.getStaticVariables());
@@ -115,7 +111,7 @@ public class Interpreter {
           }
 
           @Override
-          public @Nullable IValueInterpreter getValueInterpreter() {
+          public IValueInterpreter getValueInterpreter() {
             return environment.getValueInterpreter();
           }
         });
@@ -186,10 +182,5 @@ public class Interpreter {
     }
 
     throw new IllegalStateException("Cannot parse unknown expression type " + expression.getClass());
-  }
-
-  private @NotNull IValueInterpreter getValueInterpreter(IEvaluationEnvironment environment) {
-    IValueInterpreter environmentValueInterpreter = environment.getValueInterpreter();
-    return environmentValueInterpreter == null ? STD_VALUE_INTERPRETER : environmentValueInterpreter;
   }
 }
