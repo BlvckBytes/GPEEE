@@ -495,8 +495,10 @@ ConjunctionExpression ::= EqualityExpression ("and" EqualityExpression)*
 DisjunctionExpression ::= ConjunctionExpression ("or" ConjunctionExpression)*
 ConcatenationExpression ::= DisjunctionExpression ("&" DisjunctionExpression)*
 
-Expression ::= ConcatenationExpression | ("-" | "not")? "(" Expression ")"
+Expression ::= ConcatenationExpression | ("-" | "not")? "(" Expression ")" | FunctionInvocationExpression | CallbackExpression
 
 FunctionInvocationExpression ::= "-"? Identifier "(" (Expression | (Expression ("," Expression)*))? ")"
 CallbackExpression ::= "(" (Identifier | (Identifier ("," Identifier)*))? ")" "->" Expression
 ```
+
+![expression](readme_images/railroad_expression.png)
