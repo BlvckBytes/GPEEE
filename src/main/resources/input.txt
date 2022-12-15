@@ -1,3 +1,4 @@
 # Development debugging input
 
-35^-(1/2) # 1 / sqrt(35)
+# 35^-(1/2) # 1 / sqrt(35)
+fun1(fun2(fun3(1, 2), "hi", () -> "bye"))

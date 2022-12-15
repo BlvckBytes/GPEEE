@@ -8,6 +8,7 @@ import me.blvckbytes.gpeee.parser.expression.*;
 import me.blvckbytes.gpeee.tokenizer.ITokenizer;
 import me.blvckbytes.gpeee.tokenizer.Token;
 import me.blvckbytes.gpeee.tokenizer.TokenType;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -28,6 +29,7 @@ public class Parser {
     this.debugLogger = debugLogger;
 
     this.precedenceLadder = new FExpressionParser[] {
+      this::parseExpression,
       this::parseConcatenationExpression,
       this::parseDisjunctionExpression,
       this::parseConjunctionExpression,
@@ -37,9 +39,6 @@ public class Parser {
       this::parseMultiplicativeExpression,
       this::parseExponentiationExpression,
       this::parseNegationExpression,
-      this::parseFunctionInvocationExpression,
-      this::parseCallbackExpression,
-      this::parseParenthesisExpression,
       (tk, l, s) -> this.parsePrimaryExpression(tk),
     };
   }
@@ -81,15 +80,15 @@ public class Parser {
   //                            Expression Parsers                           //
   //=========================================================================//
 
-  private AExpression parseCallbackExpression(ITokenizer tokenizer, FExpressionParser[] precedenceLadder, int precedenceSelf) throws AEvaluatorError {
+  private @Nullable AExpression parseCallbackExpression(ITokenizer tokenizer) throws AEvaluatorError {
     debugLogger.log(DebugLogLevel.PARSER, "Trying to parse a callback expression");
 
     Token tk = tokenizer.peekToken();
 
-    // There's no opening parenthesis as the next token, hand over to the next higher precedence parser
+    // There's no opening parenthesis as the next token
     if (tk == null || tk.getType() != TokenType.PARENTHESIS_OPEN) {
       debugLogger.log(DebugLogLevel.PARSER, "Not a callback expression");
-      return invokeNextPrecedenceParser(tokenizer, precedenceLadder, precedenceSelf);
+      return null;
     }
 
     // Save once before consuming anything
@@ -106,8 +105,12 @@ public class Parser {
 
       if (signature.size() > 0) {
         // Arguments other than the first one need to be separated out by a comma
-        if (tk.getType() != TokenType.COMMA)
-          throw new UnexpectedTokenError(tokenizer, tk, TokenType.COMMA);
+        // If there's no comma, this cannot be a callback expression and is more likely a parenthesis expression
+        if (tk.getType() != TokenType.COMMA) {
+          debugLogger.log(DebugLogLevel.PARSER, "Not a callback expression");
+          tokenizer.restoreState(true);
+          return null;
+        }
 
         // Consume that comma
         tokenizer.consumeToken();
@@ -119,7 +122,7 @@ public class Parser {
       if (!(identifier instanceof IdentifierExpression)) {
         debugLogger.log(DebugLogLevel.PARSER, "Not a callback expression");
         tokenizer.restoreState(true);
-        return invokeNextPrecedenceParser(tokenizer, precedenceLadder, precedenceSelf);
+        return null;
       }
 
       signature.add((IdentifierExpression) identifier);
@@ -141,15 +144,15 @@ public class Parser {
     return new CallbackExpression(signature, body, head, body.getTail(), tokenizer.getRawText());
   }
 
-  private AExpression parseFunctionInvocationExpression(ITokenizer tokenizer, FExpressionParser[] precedenceLadder, int precedenceSelf) throws AEvaluatorError {
+  private @Nullable AExpression parseFunctionInvocationExpression(ITokenizer tokenizer) throws AEvaluatorError {
     debugLogger.log(DebugLogLevel.PARSER, "Trying to parse a function invocation expression");
 
     Token tk = tokenizer.peekToken();
 
-    // There's no identifier or minus as the next token, hand over to the next higher precedence parser
+    // There's no identifier or minus as the next token
     if (tk == null || !(tk.getType() == TokenType.IDENTIFIER || tk.getType() == TokenType.MINUS)) {
       debugLogger.log(DebugLogLevel.PARSER, "Not a function invocation expression");
-      return invokeNextPrecedenceParser(tokenizer, precedenceLadder, precedenceSelf);
+      return null;
     }
 
     boolean flipResult = false;
@@ -171,8 +174,7 @@ public class Parser {
 
         // Put back the minus
         tokenizer.restoreState(true);
-
-        return invokeNextPrecedenceParser(tokenizer, precedenceLadder, precedenceSelf);
+        return null;
       }
     }
 
@@ -185,14 +187,13 @@ public class Parser {
 
     tk = tokenizer.peekToken();
 
-    // There's no opening parenthesis as the next token, hand over to the next higher precedence parser
+    // There's no opening parenthesis as the next token
     if (tk == null || tk.getType() != TokenType.PARENTHESIS_OPEN) {
       debugLogger.log(DebugLogLevel.PARSER, "Not a function invocation expression");
 
       // Put back the token
       tokenizer.restoreState(true);
-
-      return invokeNextPrecedenceParser(tokenizer, precedenceLadder, precedenceSelf);
+      return null;
     }
 
     // Not going to go need to restore anymore, this has to be a function invocation
@@ -461,14 +462,14 @@ public class Parser {
     return lhs;
   }
 
-  private AExpression parseParenthesisExpression(ITokenizer tokenizer, FExpressionParser[] precedenceLadder, int precedenceSelf) throws AEvaluatorError {
+  private @Nullable AExpression parseParenthesisExpression(ITokenizer tokenizer) throws AEvaluatorError {
     debugLogger.log(DebugLogLevel.PARSER, "Trying to parse a parenthesis expression");
 
     Token tk = tokenizer.peekToken();
 
-    // End reached, let the default routine handle this case
+    // End reached
     if (tk == null)
-      return invokeNextPrecedenceParser(tokenizer, precedenceLadder, precedenceSelf);
+      return null;
 
     Token firstToken = tk;
     boolean consumedFirstToken = false;
@@ -486,7 +487,7 @@ public class Parser {
       tk = tokenizer.peekToken();
     }
 
-    // Not a parenthesis expression, let the default routine handle this case
+    // Not a parenthesis expression
     if (tk == null || tk.getType() != TokenType.PARENTHESIS_OPEN) {
 
       // Put back the consumed token which would have had an effect on these parentheses
@@ -496,7 +497,7 @@ public class Parser {
       }
 
       debugLogger.log(DebugLogLevel.PARSER, "Not a parenthesis expression");
-      return invokeNextPrecedenceParser(tokenizer, precedenceLadder, precedenceSelf);
+      return null;
     }
 
     // Don't need to return anymore as we're now inside parentheses
@@ -553,6 +554,29 @@ public class Parser {
     }
 
     return lhs;
+  }
+
+  private AExpression parseExpression(ITokenizer tokenizer, FExpressionParser[] precedenceLadder, int precedenceSelf) throws AEvaluatorError {
+    debugLogger.log(DebugLogLevel.PARSER, "Trying to parse an expression");
+    AExpression expression;
+
+    // Try to parse a callback expression before a parenthesis expression, as it's way easier
+    // to check if it's actually a callback expression (only parens, identifiers, commas and the arrow)
+    // It actually has the same precedence too, as it also resets precedence in it's body
+    expression = this.parseCallbackExpression(tokenizer);
+    if (expression != null)
+      return expression;
+
+    expression = this.parseParenthesisExpression(tokenizer);
+    if (expression != null)
+      return expression;
+
+    expression = this.parseFunctionInvocationExpression(tokenizer);
+    if (expression != null)
+      return expression;
+
+    // Just start climbing the precedence ladder and look for "normal" expressions
+    return invokeNextPrecedenceParser(tokenizer, precedenceLadder, precedenceSelf);
   }
 
   private AExpression parsePrimaryExpression(ITokenizer tokenizer) throws AEvaluatorError {
