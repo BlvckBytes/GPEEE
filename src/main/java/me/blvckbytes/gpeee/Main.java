@@ -1,31 +1,36 @@
 package me.blvckbytes.gpeee;
 
-import me.blvckbytes.gpeee.error.AEvaluatorError;
 import me.blvckbytes.gpeee.functions.FExpressionFunction;
 import me.blvckbytes.gpeee.interpreter.IEvaluationEnvironment;
 import me.blvckbytes.gpeee.interpreter.IValueInterpreter;
 import me.blvckbytes.gpeee.parser.expression.AExpression;
 
-import java.util.*;
+import java.net.URL;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.function.Supplier;
 
 public class Main {
 
-  // TODO: Get rid of this language level bs with """ and read from an input file again
-
   public static void main(String[] args) {
     try {
+      URL resource = Thread.currentThread().getContextClassLoader().getResource("input.txt");
+
+      if (resource == null)
+        throw new IllegalStateException();
+
+      String input = String.join("\n", Files.readAllLines(Paths.get(resource.toURI()), StandardCharsets.UTF_8));
       IDebugLogger debugLogger = (level, message) -> System.out.println("[DEBUG] [" + level + "]: " + message);
       GPEEE evaluator = new GPEEE(debugLogger);
-
-      String input = """
-        "my prefix: " & iter_cat(my_items, (it, ind) -> "(" & ind & " -> " & it & ")", "|", "no items available")
-      """.trim();
 
       AExpression expression = evaluator.parseString(input);
 
       System.out.println(expression.stringify("  ", 0));
-
       System.out.println("expression=" + expression.expressionify());
 
       IEvaluationEnvironment env = new IEvaluationEnvironment() {
@@ -96,9 +101,6 @@ public class Main {
       System.out.println("result=" + evaluator.evaluateExpression(expression, env));
 
       System.out.println("Done!");
-    } catch (AEvaluatorError err) {
-      System.err.println(err.getMessage());
-      throw new IllegalStateException();
     } catch (Exception e) {
       e.printStackTrace();
     }
