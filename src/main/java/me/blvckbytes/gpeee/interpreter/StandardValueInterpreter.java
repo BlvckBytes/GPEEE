@@ -1,6 +1,7 @@
 package me.blvckbytes.gpeee.interpreter;
 
 import me.blvckbytes.gpeee.parser.MathOperation;
+import org.jetbrains.annotations.Nullable;
 
 import java.lang.reflect.Array;
 import java.util.Collection;
@@ -9,7 +10,10 @@ import java.util.Iterator;
 public class StandardValueInterpreter implements IValueInterpreter {
 
   @Override
-  public boolean asBoolean(Object value) {
+  public boolean asBoolean(@Nullable Object value) {
+    if (value == null)
+      return false;
+
     if (value instanceof Boolean)
       return ((Boolean) value);
 
@@ -18,7 +22,10 @@ public class StandardValueInterpreter implements IValueInterpreter {
   }
 
   @Override
-  public long asLong(Object value) {
+  public long asLong(@Nullable Object value) {
+    if (value == null)
+      return 0;
+
     if (value instanceof Long)
       return ((Long) value);
 
@@ -43,7 +50,10 @@ public class StandardValueInterpreter implements IValueInterpreter {
   }
 
   @Override
-  public double asDouble(Object value) {
+  public double asDouble(@Nullable Object value) {
+    if (value == null)
+      return 0;
+
     if (value instanceof Double)
       return ((Double) value);
 
@@ -56,19 +66,31 @@ public class StandardValueInterpreter implements IValueInterpreter {
   }
 
   @Override
-  public String asString(Object value) {
+  public String asString(@Nullable Object value) {
+    if (value == null)
+      return "<null>";
+
     if (value instanceof String)
       return ((String) value);
+
     return value.toString();
   }
 
   @Override
-  public boolean hasDecimalPoint(Object value) {
+  public boolean hasDecimalPoint(@Nullable Object value) {
     return (value instanceof Float || value instanceof Double);
   }
 
   @Override
-  public boolean areEqual(Object a, Object b, boolean strict) {
+  public boolean areEqual(@Nullable Object a, @Nullable Object b, boolean strict) {
+    // Null always equals itself
+    if (a == null && b == null)
+      return true;
+
+    // Non-null doesn't equal null
+    if (a == null || b == null)
+      return false;
+
     // Both values are of type string, specific rules apply
     if (a instanceof String && b instanceof String) {
       String sA = (String) a, sB = (String) b;
@@ -131,7 +153,7 @@ public class StandardValueInterpreter implements IValueInterpreter {
   }
 
   @Override
-  public Object performMath(Object a, Object b, MathOperation operation) {
+  public Object performMath(@Nullable Object a, @Nullable Object b, MathOperation operation) {
     switch (operation) {
       case ADDITION:
         return (hasDecimalPoint(a) || hasDecimalPoint(b)) ? asDouble(a) + asDouble(b) : asLong(a) + asLong(b);
@@ -169,7 +191,7 @@ public class StandardValueInterpreter implements IValueInterpreter {
 
   @Override
   @SuppressWarnings("unchecked")
-  public int compare(Object a, Object b) {
+  public int compare(@Nullable Object a, @Nullable Object b) {
     // Both values are a comparable already
     // Their types match, so the vanilla comparison method can be used safely
     if (a instanceof Comparable && b instanceof Comparable && a.getClass() == b.getClass())
