@@ -276,7 +276,7 @@ public class Parser {
       arguments.add(Tuple.of(
         // Parse the argument expression (start climbing the ladder all over again)
         precedenceLadder[0].apply(tokenizer, precedenceLadder, 0),
-        identifier == null ? null : new IdentifierExpression(identifier.getValue(), identifier, identifier, tokenIdentifier.getValue())
+        identifier == null ? null : new IdentifierExpression(identifier.getValue(), identifier, identifier, tokenizer.getRawText())
       ));
     }
 

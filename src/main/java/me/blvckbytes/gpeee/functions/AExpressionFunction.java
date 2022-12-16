@@ -25,13 +25,14 @@
 package me.blvckbytes.gpeee.functions;
 
 import me.blvckbytes.gpeee.Tuple;
-import me.blvckbytes.gpeee.error.InvalidFunctionArgumentError;
+import me.blvckbytes.gpeee.error.InvalidFunctionArgumentTypeError;
 import me.blvckbytes.gpeee.interpreter.IEvaluationEnvironment;
 import me.blvckbytes.gpeee.interpreter.IValueInterpreter;
 import me.blvckbytes.gpeee.parser.expression.FunctionInvocationExpression;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.function.BiFunction;
 
 public abstract class AExpressionFunction {
@@ -54,13 +55,13 @@ public abstract class AExpressionFunction {
 
   /**
    * Validates the provided list of arguments against the locally kept argument definitions
-   * and throws a detailed {@link InvalidFunctionArgumentError} when an argument mismatches.
+   * and throws a detailed {@link InvalidFunctionArgumentTypeError} when an argument mismatches.
    * @param expression Expression for error context
    * @param valueInterpreter Reference to the currently in-use value interpreter for possible auto-conversions
    * @param args Arguments to validate
-   * @throws InvalidFunctionArgumentError Thrown when an argument mismatches it's corresponding definition
+   * @throws InvalidFunctionArgumentTypeError Thrown when an argument mismatches it's corresponding definition
    */
-  public void validateArguments(FunctionInvocationExpression expression, IValueInterpreter valueInterpreter, List<@Nullable Object> args) throws InvalidFunctionArgumentError {
+  public void validateArguments(FunctionInvocationExpression expression, IValueInterpreter valueInterpreter, List<@Nullable Object> args) throws InvalidFunctionArgumentTypeError {
     List<ExpressionFunctionArgument> argumentDefinitions = getArguments();
 
     // No definitions available, cannot validate, call passes
@@ -75,7 +76,7 @@ public abstract class AExpressionFunction {
 
       // Value did not pass all checks and could not be auto-converted either
       if (!result.getA())
-        throw new InvalidFunctionArgumentError(expression, definition, i, argument);
+        throw new InvalidFunctionArgumentTypeError(expression, definition, i, argument);
 
       // Update the value within the list to the possibly converted value
       if (i < args.size())
@@ -102,5 +103,13 @@ public abstract class AExpressionFunction {
         return null;
       }
     };
+  }
+
+  protected String nonNull(List<@Nullable Object> args, int index) {
+    return (String) Objects.requireNonNull(args.get(index));
+  }
+
+  protected @Nullable String nullable(List<@Nullable Object> args, int index) {
+    return (String) args.get(index);
   }
 }

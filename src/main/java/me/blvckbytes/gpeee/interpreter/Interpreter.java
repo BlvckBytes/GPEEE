@@ -25,11 +25,11 @@
 package me.blvckbytes.gpeee.interpreter;
 
 import me.blvckbytes.gpeee.Tuple;
+import me.blvckbytes.gpeee.error.*;
+import me.blvckbytes.gpeee.functions.ExpressionFunctionArgument;
+import me.blvckbytes.gpeee.functions.std.NamedArgTestFunction;
 import me.blvckbytes.gpeee.logging.DebugLogLevel;
 import me.blvckbytes.gpeee.logging.ILogger;
-import me.blvckbytes.gpeee.error.AEvaluatorError;
-import me.blvckbytes.gpeee.error.UndefinedFunctionError;
-import me.blvckbytes.gpeee.error.UndefinedVariableError;
 import me.blvckbytes.gpeee.functions.AExpressionFunction;
 import me.blvckbytes.gpeee.functions.FunctionJarLoader;
 import me.blvckbytes.gpeee.functions.IStandardFunctionRegistry;
@@ -135,15 +135,61 @@ public class Interpreter implements IStandardFunctionRegistry {
 
       logger.logDebug(DebugLogLevel.INTERPRETER, "Evaluating arguments of function invocation " + functionExpression.getName().getSymbol());
 
-      // Evaluate and collect all arguments
-      int c = 0;
+      @Nullable List<ExpressionFunctionArgument> argDefinitions = function.getArguments();
+
       List<Object> arguments = new ArrayList<>();
+
+      // Argument definitions are available, fill up the argument list
+      // with null values to match the number of requested arguments
+      if (argDefinitions != null) {
+        while (arguments.size() < argDefinitions.size())
+          arguments.add(null);
+      }
+
+      boolean encounteredNamedArgument = false;
+      int debugArgCounter = 0, nonNamedArgCounter = 0;
+
+      // Evaluate and collect all arguments
       for (Tuple<AExpression, @Nullable IdentifierExpression> argument : functionExpression.getArguments()) {
-        // TODO: Make use of the identifier to match arguments
-        logger.logDebug(DebugLogLevel.INTERPRETER, "Evaluating argument " + (++c));
+        logger.logDebug(DebugLogLevel.INTERPRETER, "Evaluating argument " + (++debugArgCounter));
+
+        Object argumentValue = evaluateExpression(argument.getA(), environment);
+
+        // Argument definitions are available and this argument has a name attached
+        if (argDefinitions != null && argument.getB() != null) {
+          encounteredNamedArgument = true;
+
+          // Look through all definitions to find a match
+          boolean foundMatch = false;
+          for (int i = 0; i < argDefinitions.size(); i++) {
+            ExpressionFunctionArgument argDefinition = argDefinitions.get(i);
+            String name = argument.getB().getSymbol();
+
+            // Argument's identifier is not matching the arg definition name
+            if (!argDefinition.getName().equalsIgnoreCase(name))
+              continue;
+
+            // Found a name match, set the value at that same index
+            logger.logDebug(DebugLogLevel.INTERPRETER, "Matched named argument " + name + " to index " + i);
+            arguments.set(i, argumentValue);
+            foundMatch = true;
+            break;
+          }
+
+          // This argument is mapped, continue
+          if (foundMatch)
+            continue;
+
+          // Could not find a match for this named argument
+          throw new UndefinedFunctionArgumentNameError(function, argument.getB());
+        }
+
+        // Encountered a non-named argument after encountering a named argument
+        if (encounteredNamedArgument)
+          throw new NonNamedFunctionArgumentError(argument.getA());
 
         // Evaluate and collect all arguments
-        arguments.add(evaluateExpression(argument.getA(), environment));
+        arguments.set(nonNamedArgCounter++, argumentValue);
       }
 
       // Let the function validate the arguments of it's invocation before actually performing the call
@@ -339,6 +385,7 @@ public class Interpreter implements IStandardFunctionRegistry {
    */
   private void importStandardFunctions(@Nullable String functionFolder) {
     new IterCatFunction().registerSelf(this);
+    new NamedArgTestFunction().registerSelf(this);
 
     if (functionFolder == null)
       return;

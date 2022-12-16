@@ -27,9 +27,9 @@ package me.blvckbytes.gpeee.error;
 import me.blvckbytes.gpeee.functions.ExpressionFunctionArgument;
 import me.blvckbytes.gpeee.parser.expression.FunctionInvocationExpression;
 
-public class InvalidFunctionArgumentError extends AEvaluatorError {
+public class InvalidFunctionArgumentTypeError extends AEvaluatorError {
 
-  public InvalidFunctionArgumentError(
+  public InvalidFunctionArgumentTypeError(
     FunctionInvocationExpression function,
     ExpressionFunctionArgument definition,
     int argumentIndex,
