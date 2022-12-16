@@ -85,4 +85,19 @@ public class FunctionCallTests {
         validator.validate("my_func(1, b=2, d=1)", "abd");
       });
   }
+
+  @Test
+  public void shouldAcceptFunctionArguments() {
+    new EnvironmentBuilder()
+      .withFunction(
+        "add_one",
+        new FExpressionFunctionBuilder()
+          .withArg("a", "Input A", true, Long.class)
+          .build((env, args) -> (((Long) args.get(0)) + 1))
+      )
+      .launch(validator -> {
+        validator.validateThrows("add_one()", InvalidFunctionArgumentTypeError.class);
+        validator.validate("add_one(add_one(add_one(1)))", 4);
+      });
+  }
 }

@@ -46,7 +46,7 @@ public class StrFunction extends AStandardFunction {
   @Override
   public @Nullable List<ExpressionFunctionArgument> getArguments() {
     return List.of(
-      new ExpressionFunctionArgument("input", "Input to stringify", true)
+      new ExpressionFunctionArgument("input", "Input to stringify", false)
     );
   }
 
