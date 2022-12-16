@@ -25,6 +25,9 @@
 package me.blvckbytes.gpeee.functions;
 
 import lombok.Getter;
+import me.blvckbytes.gpeee.Tuple;
+import me.blvckbytes.gpeee.interpreter.IValueInterpreter;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Arrays;
@@ -43,37 +46,80 @@ public class ExpressionFunctionArgument {
     this.allowedTypes = allowedTypes;
   }
 
-  public boolean describesObject(@Nullable Object o) {
+  /**
+   * Checks whether the passed object matches the argument description embodied by this
+   * instance and tries to convert mismatching values using the value interpreter, if possible.
+   * @param o Input object to validate
+   * @param valueInterpreter Reference to the currently in-use value interpreter for possible auto-conversions
+   * @return Tuple of validation state as well as either the looped-through input object or a auto-converted substitution of it
+   */
+  public Tuple<Boolean, @Nullable Object> checkDescriptionAndPossiblyConvert(@Nullable Object o, IValueInterpreter valueInterpreter) {
     // Argument value is not present but also not required
     if (!required && o == null)
-      return true;
+      return Tuple.of(true, null);
 
     // Required fields do not accept null values
     if (o == null)
-      return false;
+      return Tuple.of(false, null);
 
     Class<?> type = o.getClass();
 
     boolean anyAllowedMatches = false;
 
-    // TODO: Automatically convert convertible objects to the required argument type
-
     for (Class<?> allowedType : allowedTypes) {
       // This allowed type cannot be assigned to the provided type
-      if (!allowedType.isAssignableFrom(type))
-        continue;
+      if (!allowedType.isAssignableFrom(type)) {
+
+        // Try to automatically convert to this allowed type
+        Object convertedSubstitution = tryConvertValue(o, allowedType, valueInterpreter);
+
+        // Could not convert, this type doesn't match either way
+        if (convertedSubstitution == null)
+          continue;
+
+        // Substitute
+        o = convertedSubstitution;
+      }
 
       // The provided type is part of the allowed types and thus passes
       anyAllowedMatches = true;
       break;
     }
 
-    return anyAllowedMatches;
+    return Tuple.of(anyAllowedMatches, o);
   }
 
+  /**
+   * Tries to automatically convert the passed value into an acceptable type
+   * @param value Value to try to convert
+   * @param targetType Type to try to convert to
+   * @param valueInterpreter Reference to the currently in-use value interpreter for possible auto-conversions
+   * @return Converted value on success, null on failure
+   */
+  private @Nullable Object tryConvertValue(@NotNull Object value, Class<?> targetType, IValueInterpreter valueInterpreter) {
+    if (targetType == String.class)
+      return valueInterpreter.asString(value);
+
+    if (targetType == Long.class)
+      return valueInterpreter.asLong(value);
+
+    if (targetType == Double.class)
+      return valueInterpreter.asDouble(value);
+
+    if (targetType == Boolean.class)
+      return valueInterpreter.asBoolean(value);
+
+    // Cannot auto-convert this type
+    return null;
+  }
+
+  /**
+   * Concatenates all fully qualified type names of the allowed
+   * type list in a human-readable format
+   */
   public String stringifyAllowedTypes() {
     return Arrays.stream(allowedTypes)
       .map(Class::getName)
-      .collect(Collectors.joining("|"));
+      .collect(Collectors.joining(" | "));
   }
 }

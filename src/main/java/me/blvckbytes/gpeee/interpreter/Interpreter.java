@@ -138,7 +138,7 @@ public class Interpreter implements IStandardFunctionRegistry {
       }
 
       // Let the function validate the arguments of it's invocation before actually performing the call
-      function.validateArguments(functionExpression, arguments);
+      function.validateArguments(functionExpression, environment.getValueInterpreter(), arguments);
 
       // Invoke and return that function's result
       Object result = function.apply(environment, arguments);

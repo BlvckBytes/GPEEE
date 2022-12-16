@@ -24,8 +24,10 @@
 
 package me.blvckbytes.gpeee.functions;
 
+import me.blvckbytes.gpeee.Tuple;
 import me.blvckbytes.gpeee.error.InvalidFunctionArgumentError;
 import me.blvckbytes.gpeee.interpreter.IEvaluationEnvironment;
+import me.blvckbytes.gpeee.interpreter.IValueInterpreter;
 import me.blvckbytes.gpeee.parser.expression.FunctionInvocationExpression;
 import org.jetbrains.annotations.Nullable;
 
@@ -54,10 +56,11 @@ public abstract class AExpressionFunction {
    * Validates the provided list of arguments against the locally kept argument definitions
    * and throws a detailed {@link InvalidFunctionArgumentError} when an argument mismatches.
    * @param expression Expression for error context
+   * @param valueInterpreter Reference to the currently in-use value interpreter for possible auto-conversions
    * @param args Arguments to validate
    * @throws InvalidFunctionArgumentError Thrown when an argument mismatches it's corresponding definition
    */
-  public void validateArguments(FunctionInvocationExpression expression, List<@Nullable Object> args) throws InvalidFunctionArgumentError {
+  public void validateArguments(FunctionInvocationExpression expression, IValueInterpreter valueInterpreter, List<@Nullable Object> args) throws InvalidFunctionArgumentError {
     List<ExpressionFunctionArgument> argumentDefinitions = getArguments();
 
     // No definitions available, cannot validate, call passes
@@ -68,9 +71,15 @@ public abstract class AExpressionFunction {
     for (int i = 0; i < argumentDefinitions.size(); i++) {
       ExpressionFunctionArgument definition = argumentDefinitions.get(i);
       Object argument = i >= args.size() ? null : args.get(i);
+      Tuple<Boolean, @Nullable Object> result = definition.checkDescriptionAndPossiblyConvert(argument, valueInterpreter);
 
-      if (!definition.describesObject(argument))
+      // Value did not pass all checks and could not be auto-converted either
+      if (!result.getA())
         throw new InvalidFunctionArgumentError(expression, definition, i, argument);
+
+      // Update the value within the list to the possibly converted value
+      if (i < args.size())
+        args.set(i, result.getB());
     }
   }
 
