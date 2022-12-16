@@ -27,13 +27,15 @@ package me.blvckbytes.gpeee;
 import me.blvckbytes.gpeee.functions.AExpressionFunction;
 import me.blvckbytes.gpeee.interpreter.IEvaluationEnvironment;
 import me.blvckbytes.gpeee.interpreter.IValueInterpreter;
+import org.jetbrains.annotations.Nullable;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.lang.reflect.Array;
+import java.util.*;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThrows;
 
 public class EnvironmentBuilder {
 
@@ -66,43 +68,167 @@ public class EnvironmentBuilder {
     return this;
   }
 
+  public @Nullable Object getVariable(String identifier) {
+    Object value = this.staticVariables.get(identifier);
+
+    if (value == null) {
+      Supplier<Object> supplier = this.liveVariables.get(identifier);
+
+      if (supplier != null)
+        value = supplier.get();
+    }
+
+    return value;
+  }
+
+  public String stringify(Object value) {
+    if (value == null)
+      return "<null>";
+
+    if (value instanceof String)
+      return ((String) value);
+
+    // Transform a map to a list of it's entries
+    if (value instanceof Map) {
+      Map<?, ?> map = (Map<?, ?>) value;
+      value = new ArrayList<>(map.entrySet());
+    }
+
+    // Stringify map entries
+    if (value instanceof Map.Entry) {
+      Map.Entry<?, ?> entry = (Map.Entry<?, ?>) value;
+      return "(" + stringify(entry.getKey()) + " -> " + stringify(entry.getValue()) + ")";
+    }
+
+    // Stringify collections, arrays are also considered to be collections in this language
+    if (value instanceof Collection<?> || value.getClass().isArray()) {
+      StringBuilder result = new StringBuilder();
+
+      if (value.getClass().isArray()) {
+        for (int i = 0; i < Array.getLength(value); i++)
+          result.append(i == 0 ? "" : ", ").append(stringify(Array.get(value, i)));
+      }
+
+      else {
+        int i = 0;
+        for (Object item : ((Collection<?>) value)) {
+          result.append(i == 0 ? "" : ", ").append(stringify(item));
+          i++;
+        }
+      }
+
+      return "[" + result + "]";
+    }
+
+    return value.toString();
+  }
+
+  public Object[] stringifiedPermutations(String identifier) {
+    Object value = getVariable(identifier);
+
+    // Transform an array to a list
+    if (value != null && value.getClass().isArray()) {
+      List<Object> list = new ArrayList<>();
+      for (int i = 0; i < Array.getLength(value); i++)
+        list.add(Array.get(value, i));
+      value = list;
+    }
+
+    // Transform a map to a list of it's entries
+    if (value instanceof Map) {
+      Map<?, ?> map = (Map<?, ?>) value;
+      value = new ArrayList<>(map.entrySet());
+    }
+
+    // Stringify all permutations of this list
+    if (value instanceof List)
+      return generatePerm((List<?>) value).stream().map(this::stringify).toArray(String[]::new);
+
+    return new Object[] { stringify(value) };
+  }
+
+  public List<List<Object>> generatePerm(List<?> original) {
+    if (original.isEmpty())
+      return List.of(List.of());
+
+    Object firstElement = original.remove(0);
+    List<List<Object>> returnValue = new ArrayList<>();
+    List<List<Object>> permutations = generatePerm(original);
+
+    for (List<Object> smallerPermutated : permutations) {
+      for (int index = 0; index <= smallerPermutated.size(); index++) {
+        List<Object> temp = new ArrayList<>(smallerPermutated);
+        temp.add(index, firstElement);
+        returnValue.add(temp);
+      }
+    }
+
+    return returnValue;
+  }
+
   public void launch(Consumer<IExpressionResultValidator> validator) {
     IEvaluationEnvironment env = this.buildEnvironment();
 
     validator.accept(new IExpressionResultValidator() {
 
       @Override
-      public void validate(String expression, Object result) throws AssertionError {
+      public void validate(String expression, Object[] results) throws AssertionError {
         Object value = evaluator.evaluateExpression(evaluator.parseString(expression), env);
 
-        // Substitute variables marked by {{ and }}
-        if (result instanceof String)
-          result = substituteVariables((String) result);
+        AssertionError lastThrow = null;
+        for (Object result : results) {
 
-        // Integers are longs in this language
-        if (result instanceof Integer)
-          result = ((Integer) result).longValue();
+          // Integers are longs in this language
+          if (result instanceof Integer)
+            result = ((Integer) result).longValue();
 
-        // Floats are doubles in this language
-        if (result instanceof Float)
-          result = ((Float) result).doubleValue();
+          // Floats are doubles in this language
+          if (result instanceof Float)
+            result = ((Float) result).doubleValue();
 
-        // Result had no decimals but was a double, convert to long
-        if (result instanceof Double) {
-          Double dV = (Double) result;
-          if (dV - dV.intValue() == 0)
-            result = dV.longValue();
-        }
+          // Result had no decimals but was a double, convert to long
+          if (result instanceof Double) {
+            Double dV = (Double) result;
+            if (dV - dV.intValue() == 0)
+              result = dV.longValue();
+          }
 
-        // Double comparison using max delta
-        if (value instanceof Double && result instanceof Double) {
-          if (!(Math.abs(((Double) result) - ((Double) value)) <= MAX_DOUBLE_DELTA))
+          // Double comparison using max delta
+          if (value instanceof Double && result instanceof Double) {
+            if (!(Math.abs(((Double) result) - ((Double) value)) <= MAX_DOUBLE_DELTA)) {
+              try {
+                assertEquals(result, value);
+              } catch (AssertionError e) {
+                lastThrow = e;
+                continue;
+              }
+            }
+
+            // Success exit
+            return;
+          }
+
+          // Compare everything else
+
+          try {
             assertEquals(result, value);
+          } catch (AssertionError e) {
+            lastThrow = e;
+            continue;
+          }
+
+          // Success exit
           return;
         }
 
-        // Compare everything else
-        assertEquals(result, value);
+        // There was no success exit but an error has been thrown, rethrow
+        if (lastThrow != null)
+          throw lastThrow;
+      }
+
+      @Override
+      public void validate(String expression, Object result) throws AssertionError {
+        validate(expression, new Object[] { result });
       }
 
       @Override
@@ -110,16 +236,7 @@ public class EnvironmentBuilder {
         assertThrows(error, () -> evaluator.evaluateExpression(evaluator.parseString(expression), env));
       }
     });
-  }
 
-  private String substituteVariables(String input) {
-    for (Map.Entry<String, Object> staticVariable : staticVariables.entrySet())
-      input = input.replace("{{" + staticVariable.getKey() + "}}", staticVariable.getValue().toString());
-
-    for (Map.Entry<String, Supplier<Object>> liveVariable : liveVariables.entrySet())
-      input = input.replace("{{" + liveVariable.getKey() + "}}", liveVariable.getValue().get().toString());
-
-    return input;
   }
 
   private IEvaluationEnvironment buildEnvironment() {

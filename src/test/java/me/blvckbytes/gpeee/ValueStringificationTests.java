@@ -24,44 +24,48 @@
 
 package me.blvckbytes.gpeee;
 
-import me.blvckbytes.gpeee.error.UndefinedVariableError;
-import me.blvckbytes.gpeee.error.UnknownTokenError;
-import me.blvckbytes.gpeee.error.UnterminatedStringError;
 import org.junit.Test;
 
-public class TerminalTests {
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+public class ValueStringificationTests {
 
   @Test
-  public void shouldEvaluateTerminals() {
+  public void shouldStringifyValues() {
     EnvironmentBuilder env = new EnvironmentBuilder()
-      .withStaticVariable("var_1", "contents of variable one");
+      .withStaticVariable("my_list", List.of(1, 2, 3))
+      .withStaticVariable("my_set", Set.of(4, 5, 6))
+      .withStaticVariable("my_array", new Integer[] {7, 8, 9})
+      .withStaticVariable("my_map", Map.of(
+        "One", 1,
+        "Two", 2,
+        "Three", 3
+      ));
 
     env.launch(validator -> {
       // Long
-      validator.validate("3", 3);
-      validator.validate(".3", .3);
-      validator.validate("-3", -3);
-      validator.validateThrows("-3a", UnknownTokenError.class);
+      validator.validate("str(55)", "55");
 
       // Double
-      validator.validate("3.3", 3.3);
-      validator.validate("-3.3", -3.3);
-      validator.validateThrows("3..3", UnknownTokenError.class);
+      validator.validate("str(-.2)", "-0.2");
 
       // String
-      validator.validate("\"hello, world\"", "hello, world");
-      validator.validateThrows("\"no termination", UnterminatedStringError.class);
-      validator.validate("\"\\\"\"", "\"");
-      validator.validate("\"\\s\"", "'");
+      validator.validate("\"already a string\"", "already a string");
 
       // Literal
-      validator.validate("true", true);
-      validator.validate("false", false);
-      validator.validate("null", (Object) null);
+      validator.validate("str(true)", "true");
+      validator.validate("str(false)", "false");
+      validator.validate("str(null)", "<null>");
 
-      // Variable Identifier
-      validator.validate("var_1", env.getVariable("var_1"));
-      validator.validateThrows("var_2", UndefinedVariableError.class);
+      // Collections
+      validator.validate("str(my_list)", env.stringify(env.getVariable("my_list")));
+      validator.validate("str(my_set)", env.stringifiedPermutations("my_set"));
+      validator.validate("str(my_array)", env.stringify(env.getVariable("my_array")));
+
+      // Maps
+      validator.validate("str(my_map)", env.stringifiedPermutations("my_map"));
     });
   }
 }

@@ -26,6 +26,8 @@ package me.blvckbytes.gpeee;
 
 public interface IExpressionResultValidator {
 
+  void validate(String expression, Object[] results) throws AssertionError;
+
   void validate(String expression, Object result) throws AssertionError;
 
   void validateThrows(String expression, Class<? extends RuntimeException> error) throws AssertionError;
