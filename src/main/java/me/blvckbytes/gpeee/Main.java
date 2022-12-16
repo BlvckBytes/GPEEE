@@ -54,8 +54,6 @@ public class Main {
     That would... work, I guess?
 
     Move loading stds out of the interpreter and into the IExpressionEvaluator, add proper error handling (custom exceptions maybe)
-
-    Refactor Parser by extracting common logic into routines
    */
 
   public static void main(String[] args) {
