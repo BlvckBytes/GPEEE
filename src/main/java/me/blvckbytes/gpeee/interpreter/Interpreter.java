@@ -28,7 +28,7 @@ import me.blvckbytes.gpeee.IDependencyRegistry;
 import me.blvckbytes.gpeee.Tuple;
 import me.blvckbytes.gpeee.error.*;
 import me.blvckbytes.gpeee.functions.ExpressionFunctionArgument;
-import me.blvckbytes.gpeee.functions.std.NamedArgTestFunction;
+import me.blvckbytes.gpeee.functions.std.IfFunction;
 import me.blvckbytes.gpeee.logging.DebugLogLevel;
 import me.blvckbytes.gpeee.logging.ILogger;
 import me.blvckbytes.gpeee.functions.AExpressionFunction;
@@ -391,7 +391,7 @@ public class Interpreter implements IStandardFunctionRegistry {
    */
   private void importStandardFunctions(@Nullable String functionFolder) {
     new IterCatFunction().registerSelf(this);
-    new NamedArgTestFunction().registerSelf(this);
+    new IfFunction().registerSelf(this);
 
     if (functionFolder == null)
       return;

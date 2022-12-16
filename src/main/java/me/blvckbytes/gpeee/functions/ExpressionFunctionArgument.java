@@ -54,6 +54,10 @@ public class ExpressionFunctionArgument {
    * @return Tuple of validation state as well as either the looped-through input object or a auto-converted substitution of it
    */
   public Tuple<Boolean, @Nullable Object> checkDescriptionAndPossiblyConvert(@Nullable Object o, IValueInterpreter valueInterpreter) {
+    // No argument types specified, allow everything
+    if (allowedTypes.length == 0)
+      return Tuple.of(true, o);
+
     // Argument value is not present but also not required
     if (!required && o == null)
       return Tuple.of(true, null);

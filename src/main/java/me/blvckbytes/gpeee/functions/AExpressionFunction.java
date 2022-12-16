@@ -105,11 +105,13 @@ public abstract class AExpressionFunction {
     };
   }
 
-  protected String nonNull(List<@Nullable Object> args, int index) {
-    return (String) Objects.requireNonNull(args.get(index));
+  @SuppressWarnings("unchecked")
+  protected<T> T nonNull(List<@Nullable Object> args, int index) {
+    return (T) Objects.requireNonNull(args.get(index));
   }
 
-  protected @Nullable String nullable(List<@Nullable Object> args, int index) {
-    return (String) args.get(index);
+  @SuppressWarnings("unchecked")
+  protected<T> @Nullable T nullable(List<@Nullable Object> args, int index) {
+    return (T) args.get(index);
   }
 }

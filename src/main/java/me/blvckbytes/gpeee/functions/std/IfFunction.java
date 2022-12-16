@@ -31,26 +31,30 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 
-public class NamedArgTestFunction extends AStandardFunction {
+/**
+ * Conditional branching - if
+ *
+ * Returns the value matched to the positive arg when receiving true and uses
+ * the negative argument otherwise.
+ */
+public class IfFunction extends AStandardFunction {
 
   @Override
   public Object apply(IEvaluationEnvironment environment, List<@Nullable Object> args) {
-    String needed = nonNull(args, 0), a = nullable(args, 1), b = nullable(args, 2), c = nullable(args, 3);
-    return "needed=" + needed + ", a=" + a + ", b=" + b + ", c=" + c;
+    return nonNull(args, 0) ? args.get(1) : args.get(2);
   }
 
   @Override
   public @Nullable List<ExpressionFunctionArgument> getArguments() {
     return List.of(
-      new ExpressionFunctionArgument("needed", true, String.class),
-      new ExpressionFunctionArgument("a", false, String.class),
-      new ExpressionFunctionArgument("b", false, String.class),
-      new ExpressionFunctionArgument("c", false, String.class)
+      new ExpressionFunctionArgument("bool", true, Boolean.class),
+      new ExpressionFunctionArgument("positive", true),
+      new ExpressionFunctionArgument("negative", false)
     );
   }
 
   @Override
   public void registerSelf(IStandardFunctionRegistry registry) {
-    registry.register("test", this);
+    registry.register("if", this);
   }
 }

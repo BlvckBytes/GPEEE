@@ -336,6 +336,8 @@ public class Parser {
           tk.getType() == TokenType.LESS_THAN || tk.getType() == TokenType.LESS_THAN_OR_EQUAL
         )
     ) {
+      tokenizer.consumeToken();
+
       ComparisonOperation operator;
 
       switch (tk.getType()) {

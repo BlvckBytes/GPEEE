@@ -32,7 +32,6 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.Collection;
 import java.util.List;
-import java.util.Objects;
 
 /**
  * Iteration concatenation - iter_cat
@@ -46,10 +45,14 @@ public class IterCatFunction extends AStandardFunction {
   @Override
   public Object apply(IEvaluationEnvironment env, List<@Nullable Object> args) {
     // Retrieve arguments
-    Collection<?> items = (Collection<?>) Objects.requireNonNull(args.get(0));
-    AExpressionFunction mapper = (AExpressionFunction) Objects.requireNonNull(args.get(1));
-    String separator = env.getValueInterpreter().asString(args.get(2));
-    @Nullable String fallback = env.getValueInterpreter().asString(args.get(3));
+    Collection<?> items = nonNull(args, 0);
+    AExpressionFunction mapper = nonNull(args, 1);
+    @Nullable String separator = nullable(args, 2);
+    @Nullable String fallback = nullable(args, 3);
+
+    // Fall back on a sensible default
+    if (separator == null)
+      return ", ";
 
     StringBuilder result = new StringBuilder();
 
@@ -75,7 +78,7 @@ public class IterCatFunction extends AStandardFunction {
     return List.of(
       new ExpressionFunctionArgument("items", true, Collection.class),
       new ExpressionFunctionArgument("mapper", true, AExpressionFunction.class),
-      new ExpressionFunctionArgument("separator", true, String.class),
+      new ExpressionFunctionArgument("separator", false, String.class),
       new ExpressionFunctionArgument("fallback", false, String.class)
     );
   }

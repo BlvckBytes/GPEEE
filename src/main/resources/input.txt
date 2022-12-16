@@ -3,5 +3,7 @@
 # 35^-(1/2) # 1 / sqrt(35)
 # fun1(fun2(fun3(1, 2), "hi", () -> "bye"))
 # "my prefix: " & iter_cat(my_items, (it, ind) -> "(" & ind & " -> " & it & ")", 5, test="no items available")
-lower("HeLLo WoRLd")
+# lower("HeLLo WoRLd")
 # test("hello", a="LOL", c="hi")
+
+if(my_number > 50, "number is greater than 50", "number is less than or equal to 50")
