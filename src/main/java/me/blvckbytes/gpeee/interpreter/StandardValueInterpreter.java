@@ -179,14 +179,23 @@ public class StandardValueInterpreter implements IValueInterpreter {
   @Override
   public Object performMath(@Nullable Object a, @Nullable Object b, MathOperation operation) {
     switch (operation) {
-      case ADDITION:
-        return (hasDecimalPoint(a) || hasDecimalPoint(b)) ? asDouble(a) + asDouble(b) : asLong(a) + asLong(b);
+      case ADDITION: {
+        if (hasDecimalPoint(a) || hasDecimalPoint(b))
+          return asDouble(a) + asDouble(b);
+        return asLong(a) + asLong(b);
+      }
 
-      case SUBTRACTION:
-        return (hasDecimalPoint(a) || hasDecimalPoint(b)) ? asDouble(a) - asDouble(b) : asLong(a) - asLong(b);
+      case SUBTRACTION: {
+        if (hasDecimalPoint(a) || hasDecimalPoint(b))
+          return asDouble(a) - asDouble(b);
+        return asLong(a) - asLong(b);
+      }
 
-      case MULTIPLICATION:
-        return (hasDecimalPoint(a) || hasDecimalPoint(b)) ? asDouble(a) * asDouble(b) : asLong(a) * asLong(b);
+      case MULTIPLICATION: {
+        if (hasDecimalPoint(a) || hasDecimalPoint(b))
+          return asDouble(a) * asDouble(b);
+        return asLong(a) * asLong(b);
+      }
 
       case DIVISION: {
         if (hasDecimalPoint(a) || hasDecimalPoint(b))
@@ -201,11 +210,17 @@ public class StandardValueInterpreter implements IValueInterpreter {
         return lA / lB;
       }
 
-      case MODULO:
-        return (hasDecimalPoint(a) || hasDecimalPoint(b)) ? asDouble(a) % asDouble(b) : asLong(a) % asLong(b);
+      case MODULO: {
+        if (hasDecimalPoint(a) || hasDecimalPoint(b))
+          return asDouble(a) % asDouble(b);
+        return asLong(a) % asLong(b);
+      }
 
-      case POWER:
-        return (hasDecimalPoint(a) || hasDecimalPoint(b)) ? Math.pow(asDouble(a), asDouble(b)) : (long) Math.pow(asDouble(a), asDouble(b));
+      case POWER: {
+        if (hasDecimalPoint(a) || hasDecimalPoint(b))
+          return Math.pow(asDouble(a), asDouble(b));
+        return (long) Math.pow(asDouble(a), asDouble(b));
+      }
 
       // Unknown operation
       default:
