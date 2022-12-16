@@ -43,6 +43,9 @@ public class FExpressionFunctionBuilder {
     if (name == null || name.isBlank())
       throw new IllegalStateException("Arguments always have to have a name");
 
+    if (description == null || description.isBlank())
+      throw new IllegalStateException("Arguments always have to have a description");
+
     if (
       // There are arguments present already
       argumentDescriptions.size() > 0 &&
