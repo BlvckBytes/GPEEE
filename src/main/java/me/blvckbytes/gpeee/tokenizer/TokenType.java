@@ -125,8 +125,9 @@ public enum TokenType {
       if (c == '"') {
         Character previous = tokenizer.previousChar();
 
-        // Escaped double quote character, collect
+        // Escaped double quote character, remove leading backslash
         if (previous != null && previous == '\\') {
+          result.deleteCharAt(result.length() - 1);
           result.append(c);
           continue;
         }
