@@ -28,8 +28,10 @@ import me.blvckbytes.gpeee.parser.MathOperation;
 import org.jetbrains.annotations.Nullable;
 
 import java.lang.reflect.Array;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.Map;
 
 public class StandardValueInterpreter implements IValueInterpreter {
 
@@ -100,6 +102,37 @@ public class StandardValueInterpreter implements IValueInterpreter {
 
     if (value instanceof String)
       return ((String) value);
+
+    // Transform a map to a list of it's entries
+    if (value instanceof Map) {
+      Map<?, ?> map = (Map<?, ?>) value;
+      return asString(new ArrayList<>(map.entrySet()));
+    }
+
+    // Stringify map entries
+    if (value instanceof Map.Entry) {
+      Map.Entry<?, ?> entry = (Map.Entry<?, ?>) value;
+      return "(" + asString(entry.getKey()) + " -> " + asString(entry.getValue()) + ")";
+    }
+
+    if (value instanceof Collection<?> || value.getClass().isArray()) {
+      StringBuilder result = new StringBuilder();
+
+      if (value.getClass().isArray()) {
+        for (int i = 0; i < Array.getLength(value); i++)
+          result.append(i == 0 ? "" : ", ").append(asString(Array.get(value, i)));
+      }
+
+      else {
+        int i = 0;
+        for (Object item : ((Collection<?>) value)) {
+          result.append(i == 0 ? "" : ", ").append(asString(item));
+          i++;
+        }
+      }
+
+      return "[" + result + "]";
+    }
 
     return value.toString();
   }

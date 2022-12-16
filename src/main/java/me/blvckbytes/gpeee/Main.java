@@ -54,6 +54,8 @@ public class Main {
     That would... work, I guess?
 
     Move loading stds out of the interpreter and into the IExpressionEvaluator, add proper error handling (custom exceptions maybe)
+
+    add function argument description texts next to the name
    */
 
   public static void main(String[] args) {

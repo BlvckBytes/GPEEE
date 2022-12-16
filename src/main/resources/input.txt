@@ -6,4 +6,5 @@
 # lower("HeLLo WoRLd")
 # test("hello", a="LOL", c="hi")
 
-if(my_number > 50, () -> 5 + 3, my_map["blue"])
+# if(my_number > 50, () -> 5 + 3, my_map["blue"])
+str(my_map)
