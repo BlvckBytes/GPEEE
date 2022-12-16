@@ -36,12 +36,13 @@ import java.util.stream.Collectors;
 @Getter
 public class ExpressionFunctionArgument {
 
-  private final String name;
+  private final String name, description;
   private final boolean required;
   private final Class<?>[] allowedTypes;
 
-  public ExpressionFunctionArgument(String name, boolean required, Class<?>... allowedTypes) {
+  public ExpressionFunctionArgument(String name, String description, boolean required, Class<?>... allowedTypes) {
     this.name = name;
+    this.description = description;
     this.required = required;
     this.allowedTypes = allowedTypes;
   }

@@ -76,10 +76,10 @@ public class IterCatFunction extends AStandardFunction {
   public @Nullable List<ExpressionFunctionArgument> getArguments() {
     // iter_cat(items, (it, ind) -> (..), "separator", "no items fallback")
     return List.of(
-      new ExpressionFunctionArgument("items", true, Collection.class),
-      new ExpressionFunctionArgument("mapper", true, AExpressionFunction.class),
-      new ExpressionFunctionArgument("separator", false, String.class),
-      new ExpressionFunctionArgument("fallback", false, String.class)
+      new ExpressionFunctionArgument("items",     "Collection to iterate",             true,  Collection.class),
+      new ExpressionFunctionArgument("mapper",    "Iteration item mapper function",    true,  AExpressionFunction.class),
+      new ExpressionFunctionArgument("separator", "Item separator",                    false, String.class),
+      new ExpressionFunctionArgument("fallback",  "Fallback when collection is empty", false, String.class)
     );
   }
 

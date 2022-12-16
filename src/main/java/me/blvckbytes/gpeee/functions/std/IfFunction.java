@@ -54,9 +54,9 @@ public class IfFunction extends AStandardFunction {
   @Override
   public @Nullable List<ExpressionFunctionArgument> getArguments() {
     return List.of(
-      new ExpressionFunctionArgument("bool", true, Boolean.class),
-      new ExpressionFunctionArgument("positive", true),
-      new ExpressionFunctionArgument("negative", false)
+      new ExpressionFunctionArgument("bool",     "Boolean input",    true, Boolean.class),
+      new ExpressionFunctionArgument("positive", "Positive pathway", true),
+      new ExpressionFunctionArgument("negative", "Negative pathway", false)
     );
   }
 

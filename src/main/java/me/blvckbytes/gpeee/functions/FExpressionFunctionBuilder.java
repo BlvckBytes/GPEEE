@@ -39,7 +39,7 @@ public class FExpressionFunctionBuilder {
     this.argumentDescriptions = new ArrayList<>();
   }
 
-  public FExpressionFunctionBuilder withArg(String name, boolean required, Class<?>... allowedTypes) {
+  public FExpressionFunctionBuilder withArg(String name, String description, boolean required, Class<?>... allowedTypes) {
     if (name == null || name.isBlank())
       throw new IllegalStateException("Arguments always have to have a name");
 
@@ -54,7 +54,7 @@ public class FExpressionFunctionBuilder {
       throw new IllegalStateException("Required arguments need to come before non-required entries");
     }
 
-    argumentDescriptions.add(new ExpressionFunctionArgument(name, required, allowedTypes));
+    argumentDescriptions.add(new ExpressionFunctionArgument(name, description, required, allowedTypes));
     return this;
   }
 

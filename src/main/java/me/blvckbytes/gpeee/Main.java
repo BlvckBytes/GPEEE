@@ -56,6 +56,8 @@ public class Main {
     Move loading stds out of the interpreter and into the IExpressionEvaluator, add proper error handling (custom exceptions maybe)
 
     add function argument description texts next to the name
+
+    try iter_cat on a map (maybe auto-convert a map to a list of it's keys?)
    */
 
   public static void main(String[] args) {

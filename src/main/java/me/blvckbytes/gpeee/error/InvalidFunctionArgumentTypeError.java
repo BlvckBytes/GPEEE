@@ -41,7 +41,8 @@ public class InvalidFunctionArgumentTypeError extends AEvaluatorError {
       function.getArguments().get(argumentIndex).getA().getHead().getCol(),
       function.getFullContainingExpression(),
       "Invalid function argument, expected value of type " + definition.stringifyAllowedTypes() +
-      " but got " + (argumentValue == null ? "<null>" : argumentValue.getClass().getName())
+      " but got " + (argumentValue == null ? "<null>" : argumentValue.getClass().getName()) + "\n" +
+      "Argument description: " + definition.getDescription()
     );
   }
 }

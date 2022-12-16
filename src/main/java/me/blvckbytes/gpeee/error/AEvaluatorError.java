@@ -37,13 +37,21 @@ public abstract class AEvaluatorError extends RuntimeException {
     StringBuilder result = new StringBuilder();
     String targetLine = rawInput.split("\n")[row];
 
+    // Split text on newlines to support properly indented multi-line prints
+    String[] textLines = text.split("\n");
+
     String lineNumber = (row + 1) + ": ";
 
+    // Append the marker with the first line next to it
     result
       // Show the target line with it's line number
       .append(lineNumber).append(targetLine).append("\n")
       // Draw an indicator under the target column and print the text next to it
-      .append(" ".repeat(col + lineNumber.length())).append("^").append(" ").append(text).append("\n");
+      .append(" ".repeat(col + lineNumber.length())).append("^").append(" ").append(textLines[0]).append("\n");
+
+    // Append remaining lines (if any) right below the text next to the marker
+    for (int i = 1; i < textLines.length; i++)
+      result.append(" ".repeat(col + lineNumber.length() + 2)).append(textLines[i]).append("\n");
 
     return result.toString();
   }
