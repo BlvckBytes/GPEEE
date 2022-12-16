@@ -52,10 +52,6 @@ public class Main {
 
     Think about how functions in separate jars would be tested... Each in their own project with their own artifact when compiling?
     That would... work, I guess?
-
-    Move loading stds out of the interpreter and into the IExpressionEvaluator, add proper error handling (custom exceptions maybe)
-
-    Do not allow to shadow std identifiers
    */
 
   public static void main(String[] args) {
@@ -82,7 +78,7 @@ public class Main {
         }
       };
 
-      GPEEE evaluator = new GPEEE(logger, "/Users/blvckbytes/Desktop/StdFunctionTesting/target");
+      GPEEE evaluator = new GPEEE(logger);
 
       AExpression expression = evaluator.parseString(input);
 

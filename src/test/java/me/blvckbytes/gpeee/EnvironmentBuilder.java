@@ -47,7 +47,7 @@ public class EnvironmentBuilder {
   private final GPEEE evaluator;
 
   public EnvironmentBuilder() {
-    this.evaluator = new GPEEE(null, null);
+    this.evaluator = new GPEEE(null);
     this.staticVariables = new HashMap<>();
     this.liveVariables = new HashMap<>();
     this.functions = new HashMap<>();

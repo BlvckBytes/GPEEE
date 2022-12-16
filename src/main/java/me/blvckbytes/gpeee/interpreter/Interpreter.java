@@ -28,11 +28,9 @@ import me.blvckbytes.gpeee.IDependencyRegistry;
 import me.blvckbytes.gpeee.Tuple;
 import me.blvckbytes.gpeee.error.*;
 import me.blvckbytes.gpeee.functions.ExpressionFunctionArgument;
-import me.blvckbytes.gpeee.functions.std.*;
 import me.blvckbytes.gpeee.logging.DebugLogLevel;
 import me.blvckbytes.gpeee.logging.ILogger;
 import me.blvckbytes.gpeee.functions.AExpressionFunction;
-import me.blvckbytes.gpeee.functions.FunctionJarLoader;
 import me.blvckbytes.gpeee.functions.IStandardFunctionRegistry;
 import me.blvckbytes.gpeee.parser.ComparisonOperation;
 import me.blvckbytes.gpeee.parser.EqualityOperation;
@@ -40,23 +38,18 @@ import me.blvckbytes.gpeee.parser.MathOperation;
 import me.blvckbytes.gpeee.parser.expression.*;
 import org.jetbrains.annotations.Nullable;
 
-import java.io.File;
 import java.lang.reflect.Array;
 import java.util.*;
 import java.util.function.Supplier;
 
-public class Interpreter implements IStandardFunctionRegistry {
+public class Interpreter {
 
-  private final Map<String, AStandardFunction> standardFunctions;
   private final ILogger logger;
-  private final FunctionJarLoader loader;
+  private final IStandardFunctionRegistry standardFunctionRegistry;
 
-  public Interpreter(ILogger logger, @Nullable String functionFolder) {
+  public Interpreter(ILogger logger, IStandardFunctionRegistry standardFunctionRegistry) {
     this.logger = logger;
-    this.standardFunctions = new HashMap<>();
-    this.loader = new FunctionJarLoader();
-
-    this.importStandardFunctions(functionFolder);
+    this.standardFunctionRegistry = standardFunctionRegistry;
   }
 
   public Object evaluateExpression(AExpression expression, IEvaluationEnvironment environment) throws AEvaluatorError {
@@ -100,7 +93,7 @@ public class Interpreter implements IStandardFunctionRegistry {
       FunctionInvocationExpression functionExpression = (FunctionInvocationExpression) expression;
 
       // Try to look up the target function in the standard function table first
-      AExpressionFunction function = standardFunctions.get(functionExpression.getName().getSymbol());
+      AExpressionFunction function = this.standardFunctionRegistry.lookup(functionExpression.getName().getSymbol());
       if (function == null) {
 
         // Now, try to look up the target function in the environment's function table
@@ -387,59 +380,6 @@ public class Interpreter implements IStandardFunctionRegistry {
     }
 
     throw new IllegalStateException("Cannot parse unknown expression type " + expression.getClass());
-  }
-
-  @Override
-  public void register(String name, AStandardFunction function) {
-    this.standardFunctions.put(name.toLowerCase(), function);
-  }
-
-  /**
-   * Call all available standard functions in order to register themselves on this interpreter
-   * @param functionFolder Folder to look for standard functions in
-   */
-  private void importStandardFunctions(@Nullable String functionFolder) {
-    new IterCatFunction().registerSelf(this);
-    new IfFunction().registerSelf(this);
-    new StrFunction().registerSelf(this);
-    new KeyFunction().registerSelf(this);
-    new ValueFunction().registerSelf(this);
-
-    if (functionFolder == null)
-      return;
-
-    try {
-      File folder = new File(functionFolder);
-      File[] contents = folder.listFiles();
-
-      if (contents == null) {
-        logger.logError("Could not list files in function folder", null);
-        return;
-      }
-
-      // Loop all available files in that folder
-      for (File file : contents) {
-
-        // Not a jar file, skip
-        if (!file.getName().endsWith(".jar"))
-          continue;
-
-        try {
-          AStandardFunction function = loader.loadFunctionFromFile(file);
-
-          if (function == null) {
-            logger.logError("Could not load function at " + file.getAbsolutePath(), null);
-            continue;
-          }
-
-          function.registerSelf(this);
-        } catch (Exception e) {
-          logger.logError("Could not load function at " + file.getAbsolutePath(), e);
-        }
-      }
-    } catch (Exception e) {
-      logger.logError("Could not load functions from folder", e);
-    }
   }
 
   /**

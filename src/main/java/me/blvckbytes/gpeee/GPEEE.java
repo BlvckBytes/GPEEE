@@ -25,6 +25,10 @@
 package me.blvckbytes.gpeee;
 
 import me.blvckbytes.gpeee.error.AEvaluatorError;
+import me.blvckbytes.gpeee.functions.AExpressionFunction;
+import me.blvckbytes.gpeee.functions.FunctionJarLoader;
+import me.blvckbytes.gpeee.functions.IStandardFunctionRegistry;
+import me.blvckbytes.gpeee.functions.std.*;
 import me.blvckbytes.gpeee.interpreter.IEvaluationEnvironment;
 import me.blvckbytes.gpeee.interpreter.IValueInterpreter;
 import me.blvckbytes.gpeee.interpreter.Interpreter;
@@ -36,23 +40,33 @@ import me.blvckbytes.gpeee.parser.expression.AExpression;
 import me.blvckbytes.gpeee.tokenizer.Tokenizer;
 import org.jetbrains.annotations.Nullable;
 
+import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
 
-public class GPEEE implements IExpressionEvaluator {
+public class GPEEE implements IExpressionEvaluator, IStandardFunctionRegistry {
 
   public static final IValueInterpreter STD_VALUE_INTERPRETER = new StandardValueInterpreter();
 
+  private final Map<String, AStandardFunction> standardFunctions;
   private final Map<Class<?>, Object> dependencyMap;
+
   private final Parser parser;
   private final Interpreter interpreter;
   private final ILogger logger;
+  private final FunctionJarLoader jarLoader;
 
-  public GPEEE(@Nullable ILogger logger, @Nullable String functionFolder) {
+  public GPEEE(@Nullable ILogger logger) {
     this.logger = logger == null ? new NullLogger() : logger;
+
     this.parser = new Parser(this.logger);
-    this.interpreter = new Interpreter(this.logger, functionFolder);
+    this.interpreter = new Interpreter(this.logger, this);
+    this.jarLoader = new FunctionJarLoader();
+
     this.dependencyMap = new HashMap<>();
+    this.standardFunctions = new HashMap<>();
+
+    this.loadStandardFunctions();
   }
 
   @Override
@@ -82,5 +96,68 @@ public class GPEEE implements IExpressionEvaluator {
     }
 
     return (T) result;
+  }
+
+  @Override
+  public void register(String name, AStandardFunction function) {
+    this.standardFunctions.put(name, function);
+  }
+
+  @Override
+  public @Nullable AExpressionFunction lookup(String name) {
+    return this.standardFunctions.get(name);
+  }
+
+  /**
+   * Loads all locally available standard functions into the local registry
+   */
+  private void loadStandardFunctions() {
+    new IterCatFunction().registerSelf(this);
+    new IfFunction().registerSelf(this);
+    new StrFunction().registerSelf(this);
+    new KeyFunction().registerSelf(this);
+    new ValueFunction().registerSelf(this);
+  }
+
+  /**
+   * Call all available standard functions in order to register themselves on this interpreter
+   * @param functionFolder Folder to look for standard functions in
+   */
+  public void importStandardFunctions(@Nullable String functionFolder) {
+    if (functionFolder == null)
+      return;
+
+    try {
+      File folder = new File(functionFolder);
+      File[] contents = folder.listFiles();
+
+      if (contents == null) {
+        logger.logError("Could not list files in function folder", null);
+        return;
+      }
+
+      // Loop all available files in that folder
+      for (File file : contents) {
+
+        // Not a jar file, skip
+        if (!(file.isFile() && file.getName().endsWith(".jar")))
+          continue;
+
+        try {
+          AStandardFunction function = jarLoader.loadFunctionFromFile(file);
+
+          if (function == null) {
+            logger.logError("Could not load function at " + file.getAbsolutePath(), null);
+            continue;
+          }
+
+          function.registerSelf(this);
+        } catch (Exception e) {
+          logger.logError("Could not load function at " + file.getAbsolutePath(), e);
+        }
+      }
+    } catch (Exception e) {
+      logger.logError("Could not load functions from folder", e);
+    }
   }
 }

@@ -25,9 +25,12 @@
 package me.blvckbytes.gpeee.functions;
 
 import me.blvckbytes.gpeee.functions.std.AStandardFunction;
+import org.jetbrains.annotations.Nullable;
 
 public interface IStandardFunctionRegistry {
 
   void register(String name, AStandardFunction function);
+
+  @Nullable AExpressionFunction lookup(String name);
 
 }
