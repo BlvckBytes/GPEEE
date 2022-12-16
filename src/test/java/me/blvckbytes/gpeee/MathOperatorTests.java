@@ -60,7 +60,7 @@ public class MathOperatorTests {
   public void shouldEvaluateParenthesesBeforeEverythingElse() {
     new EnvironmentBuilder()
       .launch(validator -> {
-        validator.validate("(2 + 3) * 4", (2 + 3) * 4);
+        validator.validate("(2 + 3) % 4", (2 + 3) % 4);
         validator.validate("4 * (2 + 3) * 2", 4 * (2 + 3) * 2);
         validator.validate("5 / (2 * 3)", 5.0 / (2 * 3));
         validator.validate("4^(3 + 2)", Math.pow(4, 3 + 2));
