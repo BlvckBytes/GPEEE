@@ -57,73 +57,60 @@ On argument type mismatches:
                             ^ Invalid function argument, expected value of type java.util.Collection but got java.lang.Long
 ```
 
-Environment:
+Which uses the standard `iter_cat` function:
 
 ```java
-  IEvaluationEnvironment env = new IEvaluationEnvironment() {
+/**
+ * Iteration concatenation - iter_cat
+ *
+ * Concatenates a collection of items by running each through a callback expression
+ * which will format it to a string value and then joins them all with the provided
+ * separator. If there are no items, the fallback will be returned only.
+ */
+public class IterCatFunction extends AStandardFunction {
 
-    @Override
-    public Map<String, FExpressionFunction> getFunctions() {
-      // iter_cat(items, (it, ind) -> (..), "separator", "no items fallback")
-      return Map.of(
-        "iter_cat", (env, args) -> {
-          // Invalid call: Not enough arguments provided
-          if (args.size() < 3)
-            return null;
+  @Override
+  public Object apply(IEvaluationEnvironment env, List<@Nullable Object> args) {
+    // Retrieve arguments
+    Collection<?> items = (Collection<?>) Objects.requireNonNull(args.get(0));
+    AExpressionFunction mapper = (AExpressionFunction) Objects.requireNonNull(args.get(1));
+    String separator = env.getValueInterpreter().asString(args.get(2));
+    @Nullable String fallback = env.getValueInterpreter().asString(args.get(3));
 
-          // Invalid call: Cannot iterate over non-collections
-          if (!(args.get(0) instanceof Collection))
-            return null;
+    StringBuilder result = new StringBuilder();
 
-          // Invalid call: Cannot invoke a non-function type
-          if (!(args.get(1) instanceof FExpressionFunction))
-            return null;
-
-          FExpressionFunction formatter = (FExpressionFunction) args.get(1);
-
-          Collection<?> items = (Collection<?>) args.get(0);
-          String separator = env.getValueInterpreter().asString(args.get(2));
-
-          // Loop all items
-          StringBuilder result = new StringBuilder();
-
-          int c = 0;
-          for (Object item : items) {
-            result.append(result.length() == 0 ? "" : separator).append(
-              formatter.apply(env, List.of(item, c++))
-            );
-          }
-
-          // No items available but a fallback string has been supplied
-          if (items.size() == 0 && args.size() >= 4)
-            return args.get(3);
-
-          // Respond with the built-up result
-          return result.toString();
-        }
+    // Loop all items with their indices
+    int c = 0;
+    for (Object item : items) {
+      result.append(result.length() == 0 ? "" : separator).append(
+        mapper.apply(env, List.of(item, c++))
       );
     }
 
-    @Override
-    public Map<String, Supplier<Object>> getLiveVariables() {
-      return Map.of();
-    }
+    // No items available but a fallback string has been supplied
+    if (items.size() == 0 && fallback != null)
+      return fallback;
 
-    @Override
-    public Map<String, Object> getStaticVariables() {
-      Map<String, Object> vars = new HashMap<>();
+    // Respond with the built-up result
+    return result.toString();
+  }
 
-      vars.put("my_items", List.of(1, 3, 5, 21, 49));
-      vars.put("no_items", List.of());
+  @Override
+  public @Nullable List<ExpressionFunctionArgument> getArguments() {
+    // iter_cat(items, (it, ind) -> (..), "separator", "no items fallback")
+    return List.of(
+      new ExpressionFunctionArgument("items", true, Collection.class),
+      new ExpressionFunctionArgument("mapper", true, AExpressionFunction.class),
+      new ExpressionFunctionArgument("separator", true, String.class),
+      new ExpressionFunctionArgument("fallback", false, String.class)
+    );
+  }
 
-      return vars;
-    }
-
-    @Override
-    public IValueInterpreter getValueInterpreter() {
-      return GPEEE.STD_VALUE_INTERPRETER;
-    }
-  };
+  @Override
+  public void registerSelf(IStandardFunctionRegistry registry) {
+    registry.register("iter_cat", this);
+  }
+}
 ```
 </details>
 
