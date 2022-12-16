@@ -25,6 +25,7 @@
 package me.blvckbytes.gpeee;
 
 import me.blvckbytes.gpeee.error.InvalidFunctionArgumentTypeError;
+import me.blvckbytes.gpeee.error.NonNamedFunctionArgumentError;
 import me.blvckbytes.gpeee.functions.FExpressionFunctionBuilder;
 import org.junit.Test;
 
@@ -77,12 +78,17 @@ public class FunctionCallTests {
           ))
       )
       .launch(validator -> {
+        // a is required
         validator.validateThrows("my_func()", InvalidFunctionArgumentTypeError.class);
+
         validator.validate("my_func(1)", "a");
         validator.validate("my_func(1, b=1)", "ab");
         validator.validate("my_func(1, c=1)", "ac");
         validator.validate("my_func(1, d=1)", "ad");
         validator.validate("my_func(1, b=2, d=1)", "abd");
+
+        // Cannot use non-named arguments after named arguments
+        validator.validateThrows("my_func(1, b=2, d=1, 2)", NonNamedFunctionArgumentError.class);
       });
   }
 
@@ -98,6 +104,27 @@ public class FunctionCallTests {
       .launch(validator -> {
         validator.validateThrows("add_one()", InvalidFunctionArgumentTypeError.class);
         validator.validate("add_one(add_one(add_one(1)))", 4);
+      });
+  }
+
+  @Test
+  public void shouldAcceptVariadicArguments() {
+    new EnvironmentBuilder()
+      .withFunction(
+        "sum",
+        new FExpressionFunctionBuilder()
+          .build((env, args) -> {
+            long sum = 0;
+
+            for (Object arg : args)
+              sum += env.getValueInterpreter().asLong(arg);
+
+            return sum;
+          })
+      )
+      .launch(validator -> {
+        validator.validate("sum(1)", 1);
+        validator.validate("sum(1, 2, 3, 4, 5, 6, 7, 8, 9, 10)", 55);
       });
   }
 }

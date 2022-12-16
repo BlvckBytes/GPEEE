@@ -70,8 +70,8 @@ public class FExpressionFunctionBuilder {
       }
 
       @Override
-      public List<ExpressionFunctionArgument> getArguments() {
-        return argumentDescriptions;
+      public @Nullable List<ExpressionFunctionArgument> getArguments() {
+        return argumentDescriptions.size() == 0 ? null : argumentDescriptions;
       }
     };
   }

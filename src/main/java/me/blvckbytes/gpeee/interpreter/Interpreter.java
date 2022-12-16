@@ -167,8 +167,13 @@ public class Interpreter implements IStandardFunctionRegistry {
         if (encounteredNamedArgument)
           throw new NonNamedFunctionArgumentError(argument.getA());
 
-        // Evaluate and collect all arguments
-        arguments.set(nonNamedArgCounter++, argumentValue);
+        // No definitions provided, just add to the list (variadic of unchecked type)
+        if (argDefinitions == null)
+          arguments.add(argumentValue);
+
+        // Set at the next non-named index (before named can occur)
+        else
+          arguments.set(nonNamedArgCounter++, argumentValue);
       }
 
       // Let the function validate the arguments of it's invocation before actually performing the call
