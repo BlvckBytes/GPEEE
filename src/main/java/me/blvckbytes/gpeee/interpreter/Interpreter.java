@@ -28,15 +28,12 @@ import me.blvckbytes.gpeee.IDependencyRegistry;
 import me.blvckbytes.gpeee.Tuple;
 import me.blvckbytes.gpeee.error.*;
 import me.blvckbytes.gpeee.functions.ExpressionFunctionArgument;
-import me.blvckbytes.gpeee.functions.std.IfFunction;
-import me.blvckbytes.gpeee.functions.std.StrFunction;
+import me.blvckbytes.gpeee.functions.std.*;
 import me.blvckbytes.gpeee.logging.DebugLogLevel;
 import me.blvckbytes.gpeee.logging.ILogger;
 import me.blvckbytes.gpeee.functions.AExpressionFunction;
 import me.blvckbytes.gpeee.functions.FunctionJarLoader;
 import me.blvckbytes.gpeee.functions.IStandardFunctionRegistry;
-import me.blvckbytes.gpeee.functions.std.AStandardFunction;
-import me.blvckbytes.gpeee.functions.std.IterCatFunction;
 import me.blvckbytes.gpeee.parser.ComparisonOperation;
 import me.blvckbytes.gpeee.parser.EqualityOperation;
 import me.blvckbytes.gpeee.parser.MathOperation;
@@ -405,6 +402,8 @@ public class Interpreter implements IStandardFunctionRegistry {
     new IterCatFunction().registerSelf(this);
     new IfFunction().registerSelf(this);
     new StrFunction().registerSelf(this);
+    new KeyFunction().registerSelf(this);
+    new ValueFunction().registerSelf(this);
 
     if (functionFolder == null)
       return;

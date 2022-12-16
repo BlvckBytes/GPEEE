@@ -29,6 +29,9 @@ import me.blvckbytes.gpeee.error.NonNamedFunctionArgumentError;
 import me.blvckbytes.gpeee.functions.FExpressionFunctionBuilder;
 import org.junit.Test;
 
+import java.util.LinkedHashMap;
+import java.util.Map;
+
 public class FunctionCallTests {
 
   @Test
@@ -125,6 +128,24 @@ public class FunctionCallTests {
       .launch(validator -> {
         validator.validate("sum(1)", 1);
         validator.validate("sum(1, 2, 3, 4, 5, 6, 7, 8, 9, 10)", 55);
+      });
+  }
+
+  @Test
+  public void testIterCatAndKeyValue() {
+    new EnvironmentBuilder()
+      .withLiveVariable("my_map", () -> {
+        Map<String, String> map = new LinkedHashMap<>();
+        map.put("red", "#FF0000");
+        map.put("green", "#00FF00");
+        map.put("blue", "#0000FF");
+        return map;
+      })
+      .launch(validator -> {
+        validator.validate(
+          "iter_cat(my_map, (it, ind) -> \"(\" & ind & \" -> \" & key(it) & \"-\" & value(it) & \")\", \", \")",
+          "(0 -> red-#FF0000), (1 -> green-#00FF00), (2 -> blue-#0000FF)"
+        );
       });
   }
 }

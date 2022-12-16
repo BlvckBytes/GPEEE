@@ -30,7 +30,10 @@ import me.blvckbytes.gpeee.interpreter.IValueInterpreter;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Getter
@@ -113,6 +116,10 @@ public class ExpressionFunctionArgument {
 
     if (targetType == Boolean.class)
       return valueInterpreter.asBoolean(value);
+
+    // Convert a map to a list of it's entries
+    if (Collection.class.isAssignableFrom(targetType) && Map.class.isAssignableFrom(value.getClass()))
+      return new ArrayList<>(((Map<?, ?>) value).entrySet());
 
     // Cannot auto-convert this type
     return null;
