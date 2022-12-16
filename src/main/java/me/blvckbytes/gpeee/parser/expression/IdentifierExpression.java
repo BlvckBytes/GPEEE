@@ -42,4 +42,9 @@ public class IdentifierExpression extends AExpression {
   public String expressionify() {
     return symbol;
   }
+
+  @Override
+  public int hashCode() {
+    return symbol.hashCode();
+  }
 }

@@ -46,13 +46,12 @@ public class FExpressionFunctionBuilder {
     if (
       // There are arguments present already
       argumentDescriptions.size() > 0 &&
-      // And the last one is not required
-      !argumentDescriptions.get(argumentDescriptions.size() - 1).isRequired() &&
-      // And the one about to be added is also not required
-      !required
+      // And any predecessor is not required
+      argumentDescriptions.stream().anyMatch(desc -> !desc.isRequired()) &&
+      // But the one about to be added is required
+      required
     ) {
-      // TODO: Think about how to allow multiple successive non-required arguments (maybe named arguments, like python has?)
-      throw new IllegalStateException("Currently only supporting one trailing non-required argument");
+      throw new IllegalStateException("Required arguments need to come before non-required entries");
     }
 
     argumentDescriptions.add(new ExpressionFunctionArgument(name, required, allowedTypes));

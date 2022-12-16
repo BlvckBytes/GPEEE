@@ -183,6 +183,7 @@ public enum TokenType {
   BOOL_OR(TokenCategory.KEYWORD, "or", tokenizer -> tryCollectSequenceWithNextCheck(tokenizer, null, "or".toCharArray())),
 
   ARROW(TokenCategory.OPERATOR, "->", tokenizer -> tryCollectSequenceWithNextCheck(tokenizer, null, "->".toCharArray())),
+  ASSIGN(TokenCategory.OPERATOR, "=", tokenizer -> tryCollectSequenceWithNextCheck(tokenizer, '=', "=".toCharArray())),
 
   //=========================================================================//
   //                                 Symbols                                 //

@@ -72,7 +72,7 @@ public class Tokenizer implements ITokenizer {
     this.saveStates.push(this.state.copy());
 
     if (debugLog)
-      logger.logDebug( DebugLogLevel.TOKENIZER, "Saved state " + this.saveStates.size() + " (charIndex=" + state.charIndex + ")");
+      logger.logDebug(DebugLogLevel.TOKENIZER, "Saved state " + this.saveStates.size() + " (charIndex=" + state.charIndex + ")");
   }
 
   @Override
@@ -81,7 +81,7 @@ public class Tokenizer implements ITokenizer {
     this.state = this.saveStates.pop();
 
     if (debugLog)
-      logger.logDebug( DebugLogLevel.TOKENIZER, "Restored state " + sizeBefore + " (charIndex=" + state.charIndex + ")");
+      logger.logDebug(DebugLogLevel.TOKENIZER, "Restored state " + sizeBefore + " (charIndex=" + state.charIndex + ")");
   }
 
   @Override
@@ -90,7 +90,7 @@ public class Tokenizer implements ITokenizer {
     TokenizerState state = this.saveStates.pop();
 
     if (debugLog)
-      logger.logDebug( DebugLogLevel.TOKENIZER, "Discarded state " + sizeBefore + " (charIndex=" + state.charIndex + ")");
+      logger.logDebug(DebugLogLevel.TOKENIZER, "Discarded state " + sizeBefore + " (charIndex=" + state.charIndex + ")");
 
     return state;
   }
@@ -142,7 +142,7 @@ public class Tokenizer implements ITokenizer {
     if (state.currentToken == null)
       readNextToken();
 
-    logger.logDebug( DebugLogLevel.TOKENIZER, "Peeked token " + state.currentToken);
+    logger.logDebug(DebugLogLevel.TOKENIZER, "Peeked token " + state.currentToken);
     return state.currentToken;
   }
 
@@ -156,7 +156,7 @@ public class Tokenizer implements ITokenizer {
     Token result = state.currentToken;
     readNextToken();
 
-    logger.logDebug( DebugLogLevel.TOKENIZER, "Consumed token " + result);
+    logger.logDebug(DebugLogLevel.TOKENIZER, "Consumed token " + result);
     return result;
   }
 
@@ -182,7 +182,7 @@ public class Tokenizer implements ITokenizer {
     }
 
     if (c > 0)
-      logger.logDebug( DebugLogLevel.TOKENIZER, "Ate " + c + " comment(s)");
+      logger.logDebug(DebugLogLevel.TOKENIZER, "Ate " + c + " comment(s)");
   }
 
   private void eatWhitespace() {
@@ -194,7 +194,7 @@ public class Tokenizer implements ITokenizer {
     }
 
     if (ate > 0)
-      logger.logDebug( DebugLogLevel.TOKENIZER, "Ate " + ate + " character(s) of whitespace");
+      logger.logDebug(DebugLogLevel.TOKENIZER, "Ate " + ate + " character(s) of whitespace");
   }
 
   /**
@@ -213,7 +213,7 @@ public class Tokenizer implements ITokenizer {
 
       // Token not yet implemented
       if (reader == null) {
-        logger.logDebug( DebugLogLevel.TOKENIZER, "Token not yet implemented");
+        logger.logDebug(DebugLogLevel.TOKENIZER, "Token not yet implemented");
         continue;
       }
 
@@ -231,7 +231,7 @@ public class Tokenizer implements ITokenizer {
       TokenizerState previousState = discardState(false);
       state.currentToken = new Token(tryType, previousState.row, previousState.col, result);
 
-      logger.logDebug( DebugLogLevel.TOKENIZER, "Reader for " + tryType + " was successful");
+      logger.logDebug(DebugLogLevel.TOKENIZER, "Reader for " + tryType + " was successful");
       return;
     }
 

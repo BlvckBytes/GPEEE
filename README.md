@@ -439,11 +439,17 @@ are available as parenthesis modifiers:
 ### Function Invocation
 
 Functions are provided by the evaluation context and arbitrarily many may be called an arbitrary amount of times within
-the expression. Prepending the invocation with a minus sign will flip the function return value's sign. An invocation is defined like this:
+the expression. Prepending the invocation with a minus sign will flip the function return value's sign. If multiple
+trailing arguments of a function are optional, they can be explicitly targeted using named arguments.
+
+An invocation is defined like this:
 
 ```ebnf
-FunctionInvocationExpression ::= "-"? Identifier "(" (Expression | (Expression ("," Expression)*))? ")"
+FunctionArgument ::= (Identifier "=")? Expression
+FunctionInvocationExpression ::= "-"? Identifier "(" (FunctionArgument | (FunctionArgument ("," FunctionArgument)*))? ")"
 ```
+
+![function argument](readme_images/railroad_function_argument.png)
 
 ![function invocation](readme_images/railroad_function_invocation.png)
 
@@ -493,7 +499,9 @@ ConcatenationExpression ::= DisjunctionExpression ("&" DisjunctionExpression)*
 
 Expression ::= ConcatenationExpression | ("-" | "not")? "(" Expression ")" | FunctionInvocationExpression | CallbackExpression
 
-FunctionInvocationExpression ::= "-"? Identifier "(" (Expression | (Expression ("," Expression)*))? ")"
+FunctionArgument ::= (Identifier "=")? Expression
+FunctionInvocationExpression ::= "-"? Identifier "(" (FunctionArgument | (FunctionArgument ("," FunctionArgument)*))? ")"
+
 CallbackExpression ::= "(" (Identifier | (Identifier ("," Identifier)*))? ")" "->" Expression
 ```
 

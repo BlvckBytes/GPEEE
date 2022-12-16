@@ -55,6 +55,9 @@ public class Main {
 
     Think about how functions would access a minecraft server for example, if they're in isolated modules...
     Some sort of dependency registry which the GPEEE keeps?
+
+    Think about how functions in separate jars would be tested... Each in their own project with their own artifact when compiling?
+    That would... work, I guess?
    */
 
   public static void main(String[] args) {

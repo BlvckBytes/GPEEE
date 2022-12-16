@@ -25,8 +25,10 @@
 package me.blvckbytes.gpeee.parser.expression;
 
 import lombok.Getter;
+import me.blvckbytes.gpeee.Tuple;
 import me.blvckbytes.gpeee.tokenizer.Token;
 import me.blvckbytes.gpeee.tokenizer.TokenType;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 
@@ -34,9 +36,9 @@ import java.util.List;
 public class FunctionInvocationExpression extends AExpression {
 
   private final IdentifierExpression name;
-  private final List<AExpression> arguments;
+  private final List<Tuple<AExpression, @Nullable IdentifierExpression>> arguments;
 
-  public FunctionInvocationExpression(IdentifierExpression name, List<AExpression> arguments, Token head, Token tail, String fullContainingExpression) {
+  public FunctionInvocationExpression(IdentifierExpression name, List<Tuple<AExpression, @Nullable IdentifierExpression>> arguments, Token head, Token tail, String fullContainingExpression) {
     super(head, tail, fullContainingExpression);
 
     this.name = name;
@@ -48,8 +50,15 @@ public class FunctionInvocationExpression extends AExpression {
     StringBuilder argExpression = new StringBuilder();
 
     for (int i = 0; i < arguments.size(); i++) {
-      AExpression argument = arguments.get(i);
-      argExpression.append(i == 0 ? "" : ", ").append(argument.expressionify());
+      Tuple<AExpression, @Nullable IdentifierExpression> argument = arguments.get(i);
+
+      argExpression.append(i == 0 ? "" : ", ");
+
+      // Prepend the named argument expression, if available
+      if (argument.getB() != null)
+        argExpression.append(argument.getB().expressionify()).append(TokenType.ASSIGN.getRepresentation());
+
+      argExpression.append(argument.getA().expressionify());
     }
 
     return (
