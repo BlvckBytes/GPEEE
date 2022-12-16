@@ -26,17 +26,14 @@ package me.blvckbytes.gpeee;
 
 import me.blvckbytes.gpeee.error.AEvaluatorError;
 import me.blvckbytes.gpeee.functions.AExpressionFunction;
-import me.blvckbytes.gpeee.functions.FExpressionFunctionBuilder;
 import me.blvckbytes.gpeee.interpreter.IEvaluationEnvironment;
 import me.blvckbytes.gpeee.interpreter.IValueInterpreter;
 import me.blvckbytes.gpeee.parser.expression.AExpression;
-import org.jetbrains.annotations.Nullable;
 
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -71,39 +68,7 @@ public class Main {
 
         @Override
         public Map<String, AExpressionFunction> getFunctions() {
-          // iter_cat(items, (it, ind) -> (..), "separator", "no items fallback")
-          return Map.of(
-            "iter_cat",
-            new FExpressionFunctionBuilder()
-              .withArg("items", true, Collection.class)
-              .withArg("mapper", true, AExpressionFunction.class)
-              .withArg("separator", true, String.class)
-              .withArg("fallback", false, String.class)
-              .build((env, args) -> {
-                // Retrieve arguments
-                Collection<?> items = (Collection<?>) args.get(0);
-                AExpressionFunction mapper = (AExpressionFunction) args.get(1);
-                String separator = env.getValueInterpreter().asString(args.get(2));
-                @Nullable String fallback = env.getValueInterpreter().asString(args.get(3));
-
-                StringBuilder result = new StringBuilder();
-
-                // Loop all items with their indices
-                int c = 0;
-                for (Object item : items) {
-                  result.append(result.length() == 0 ? "" : separator).append(
-                    mapper.apply(env, List.of(item, c++))
-                  );
-                }
-
-                // No items available but a fallback string has been supplied
-                if (items.size() == 0 && fallback != null)
-                  return fallback;
-
-                // Respond with the built-up result
-                return result.toString();
-              })
-          );
+          return Map.of();
         }
 
         @Override

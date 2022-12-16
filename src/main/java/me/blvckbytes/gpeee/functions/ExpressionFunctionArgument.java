@@ -24,7 +24,6 @@
 
 package me.blvckbytes.gpeee.functions;
 
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 import org.jetbrains.annotations.Nullable;
 
@@ -32,11 +31,17 @@ import java.util.Arrays;
 import java.util.stream.Collectors;
 
 @Getter
-@AllArgsConstructor
 public class ExpressionFunctionArgument {
+
   private final String name;
   private final boolean required;
   private final Class<?>[] allowedTypes;
+
+  public ExpressionFunctionArgument(String name, boolean required, Class<?>... allowedTypes) {
+    this.name = name;
+    this.required = required;
+    this.allowedTypes = allowedTypes;
+  }
 
   public boolean describesObject(@Nullable Object o) {
     // Argument value is not present but also not required

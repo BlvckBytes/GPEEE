@@ -24,13 +24,15 @@
 
 package me.blvckbytes.gpeee.interpreter;
 
-import lombok.AllArgsConstructor;
 import me.blvckbytes.gpeee.DebugLogLevel;
 import me.blvckbytes.gpeee.IDebugLogger;
 import me.blvckbytes.gpeee.error.AEvaluatorError;
 import me.blvckbytes.gpeee.error.UndefinedFunctionError;
 import me.blvckbytes.gpeee.error.UndefinedVariableError;
 import me.blvckbytes.gpeee.functions.AExpressionFunction;
+import me.blvckbytes.gpeee.functions.IStandardFunctionRegistry;
+import me.blvckbytes.gpeee.functions.std.AStandardFunction;
+import me.blvckbytes.gpeee.functions.std.IterCatFunction;
 import me.blvckbytes.gpeee.parser.ComparisonOperation;
 import me.blvckbytes.gpeee.parser.EqualityOperation;
 import me.blvckbytes.gpeee.parser.MathOperation;
@@ -42,10 +44,16 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Supplier;
 
-@AllArgsConstructor
-public class Interpreter {
+public class Interpreter implements IStandardFunctionRegistry {
 
+  private final Map<String, AStandardFunction> standardFunctions;
   private final IDebugLogger debugLogger;
+
+  public Interpreter(IDebugLogger debugLogger) {
+    this.debugLogger = debugLogger;
+    this.standardFunctions = new HashMap<>();
+    this.importStandardFunctions();
+  }
 
   public Object evaluateExpression(AExpression expression, IEvaluationEnvironment environment) throws AEvaluatorError {
     if (expression == null)
@@ -108,10 +116,15 @@ public class Interpreter {
     if (expression instanceof FunctionInvocationExpression) {
       FunctionInvocationExpression functionExpression = (FunctionInvocationExpression) expression;
 
-      // Try to look up the target function in the environment's function table
-      AExpressionFunction function = environment.getFunctions().get(functionExpression.getName().getSymbol());
-      if (function == null)
-        throw new UndefinedFunctionError(functionExpression.getName());
+      // Try to look up the target function in the standard function table first
+      AExpressionFunction function = standardFunctions.get(functionExpression.getName().getSymbol());
+      if (function == null) {
+
+        // Now, try to look up the target function in the environment's function table
+        function = environment.getFunctions().get(functionExpression.getName().getSymbol());
+        if (function == null)
+          throw new UndefinedFunctionError(functionExpression.getName());
+      }
 
       debugLogger.log(DebugLogLevel.INTERPRETER, "Evaluating arguments of function invocation " + functionExpression.getName().getSymbol());
 
@@ -304,5 +317,17 @@ public class Interpreter {
     }
 
     throw new IllegalStateException("Cannot parse unknown expression type " + expression.getClass());
+  }
+
+  @Override
+  public void register(String name, AStandardFunction function) {
+    this.standardFunctions.put(name.toLowerCase(), function);
+  }
+
+  /**
+   * Call all available standard functions in order to register themselves on this interpreter
+   */
+  private void importStandardFunctions() {
+    new IterCatFunction().registerSelf(this);
   }
 }
