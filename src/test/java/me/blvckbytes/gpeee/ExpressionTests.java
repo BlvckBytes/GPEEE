@@ -24,75 +24,94 @@
 
 package me.blvckbytes.gpeee;
 
-import me.blvckbytes.gpeee.functions.AExpressionFunction;
-import me.blvckbytes.gpeee.interpreter.IEvaluationEnvironment;
-import me.blvckbytes.gpeee.interpreter.IValueInterpreter;
-import org.junit.Before;
+import me.blvckbytes.gpeee.error.UndefinedVariableError;
+import me.blvckbytes.gpeee.error.UnknownTokenError;
+import me.blvckbytes.gpeee.error.UnterminatedStringError;
 import org.junit.Test;
-
-import java.util.Map;
-import java.util.function.Supplier;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 
 public class ExpressionTests {
 
-  private static final double MAX_DOUBLE_DELTA = .001;
+  @Test
+  public void shouldEvaluateTerminals() {
+    new EnvironmentBuilder()
+      .withStaticVariable("var_1", "contents of variable one")
+      .launch(validator -> {
+        // Long
+        validator.validate("3", 3);
+        validator.validate(".3", .3);
+        validator.validate("-3", -3);
+        validator.validateThrows("-3a", UnknownTokenError.class);
 
-  private GPEEE evaluator;
-  private IEvaluationEnvironment environment;
+        // Double
+        validator.validate("3.3", 3.3);
+        validator.validate("-3.3", -3.3);
+        validator.validateThrows("3..3", UnknownTokenError.class);
 
-  @Before
-  public void setupGPEEE() {
-    evaluator = new GPEEE(null, null);
-    environment = new IEvaluationEnvironment() {
-      @Override
-      public Map<String, AExpressionFunction> getFunctions() {
-        return Map.of();
-      }
+        // String
+        validator.validate("\"hello, world\"", "hello, world");
+        validator.validateThrows("\"no termination", UnterminatedStringError.class);
+        validator.validate("\"\\\"\"", "\"");
+        validator.validate("\"\\s\"", "'");
 
-      @Override
-      public Map<String, Supplier<Object>> getLiveVariables() {
-        return Map.of();
-      }
+        // Literal
+        validator.validate("true", true);
+        validator.validate("false", false);
+        validator.validate("null", null);
 
-      @Override
-      public Map<String, Object> getStaticVariables() {
-        return Map.of();
-      }
-
-      @Override
-      public IValueInterpreter getValueInterpreter() {
-        return GPEEE.STD_VALUE_INTERPRETER;
-      }
-
-      @Override
-      public IDependencyRegistry getDependencyRegistry() {
-        return evaluator;
-      }
-    };
+        // Variable Identifier
+        validator.validate("var_1", "{{var_1}}");
+        validator.validateThrows("var_2", UndefinedVariableError.class);
+      });
   }
 
   @Test
-  public void test() {
-    assertExpression("3^-(1/2)", 1.0 / Math.sqrt(3));
-    assertExpression("2^(1/2)", Math.sqrt(2));
+  public void shouldEvaluateMultiplicationBeforeAddition() {
+    new EnvironmentBuilder()
+      .launch(validator -> {
+        validator.validate("5 + 2 * 3", 5 + (2 * 3));
+        validator.validate("5 * 2 + 3", (5 * 2) + 3);
+        validator.validate("5 + 2 / 3 - 2", 5 + (2.0 / 3) - 2);
+      });
   }
 
-  private void assertExpression(String expression, Object result) {
-    Object value = evaluator.evaluateExpression(evaluator.parseString(expression), environment);
+  @Test
+  public void shouldEvaluateExponentiationBeforeAddition() {
+    new EnvironmentBuilder()
+      .launch(validator -> {
+        validator.validate("2^3 + 1", Math.pow(2, 3) + 1);
+        validator.validate("1 - 2^3 + 3", 1 - Math.pow(2, 3) + 3);
+      });
+  }
 
-    if (value instanceof Integer)
-      assertEquals(result, value);
+  @Test
+  public void shouldEvaluateExponentiationBeforeMultiplication() {
+    new EnvironmentBuilder()
+      .launch(validator -> {
+        validator.validate("2^3 * 1", Math.pow(2, 3) * 1);
+        validator.validate("1 / 2^3 * 3", 1 / Math.pow(2, 3) * 3);
+      });
+  }
 
-    else if (value instanceof Double)
-      assertTrue(Math.abs(((Double) result) - ((Double) value)) <= MAX_DOUBLE_DELTA);
+  @Test
+  public void shouldEvaluateParenthesesBeforeEverythingElse() {
+    new EnvironmentBuilder()
+      .launch(validator -> {
+        validator.validate("(2 + 3) * 4", (2 + 3) * 4);
+        validator.validate("4 * (2 + 3) * 2", 4 * (2 + 3) * 2);
+        validator.validate("5 / (2 * 3)", 5.0 / (2 * 3));
+        validator.validate("4^(3 + 2)", Math.pow(4, 3 + 2));
+        validator.validate("4^(3 * (3 - 1))", Math.pow(4, 3 * (3 - 1)));
+      });
+  }
 
-    else if (value instanceof String)
-      assertEquals(result, value);
-
-    else
-      throw new IllegalStateException("Not yet implemented");
+  @Test
+  public void shouldEvaluateRoots() {
+    new EnvironmentBuilder()
+      .launch(validator -> {
+        validator.validate("3^-(1/2)", 1.0 / Math.sqrt(3));
+        validator.validate("2^(1/2)", Math.sqrt(2));
+        validator.validate("22^-(1/3)", 1.0 / Math.pow(22.0, 1.0 / 3.0));
+        validator.validate("127^(1/4)", Math.pow(127.0, 1.0 / 4.0));
+      });
   }
 }
