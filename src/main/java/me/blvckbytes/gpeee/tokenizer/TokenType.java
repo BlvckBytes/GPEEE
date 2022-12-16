@@ -160,11 +160,11 @@ public enum TokenType {
   //                                Operators                                //
   //=========================================================================//
 
-  EXPONENT(TokenCategory.OPERATOR, "^", tokenizer -> tokenizer.nextChar() == '^' ? "^" : null),
-  MULTIPLICATION(TokenCategory.OPERATOR, "*", tokenizer -> tokenizer.nextChar() == '*' ? "*" : null),
-  DIVISION(TokenCategory.OPERATOR, "/", tokenizer -> tokenizer.nextChar() == '/' ? "/" : null),
-  MODULO(TokenCategory.OPERATOR, "%", tokenizer -> tokenizer.nextChar() == '%' ? "%" : null),
-  PLUS(TokenCategory.OPERATOR, "+", tokenizer -> tokenizer.nextChar() == '+' ? "+" : null),
+  EXPONENT(TokenCategory.OPERATOR, "^", tokenizer -> tryCollectSequenceWithNextCheck(tokenizer, null, '^')),
+  MULTIPLICATION(TokenCategory.OPERATOR, "*", tokenizer -> tryCollectSequenceWithNextCheck(tokenizer, null, '*')),
+  DIVISION(TokenCategory.OPERATOR, "/", tokenizer -> tryCollectSequenceWithNextCheck(tokenizer, null, '/')),
+  MODULO(TokenCategory.OPERATOR, "%", tokenizer -> tryCollectSequenceWithNextCheck(tokenizer, null, '%')),
+  PLUS(TokenCategory.OPERATOR, "+", tokenizer -> tryCollectSequenceWithNextCheck(tokenizer, null, '+')),
   MINUS(TokenCategory.OPERATOR, "-", tokenizer -> tryCollectSequenceWithNextCheck(tokenizer, '>', '-')),
 
   GREATER_THAN(TokenCategory.OPERATOR, ">", tokenizer -> tryCollectSequenceWithNextCheck(tokenizer, '=', '>')),
@@ -183,15 +183,17 @@ public enum TokenType {
   BOOL_OR(TokenCategory.KEYWORD, "or", tokenizer -> tryCollectSequenceWithNextCheck(tokenizer, null, "or".toCharArray())),
 
   ARROW(TokenCategory.OPERATOR, "->", tokenizer -> tryCollectSequenceWithNextCheck(tokenizer, null, "->".toCharArray())),
-  ASSIGN(TokenCategory.OPERATOR, "=", tokenizer -> tryCollectSequenceWithNextCheck(tokenizer, '=', "=".toCharArray())),
+  ASSIGN(TokenCategory.OPERATOR, "=", tokenizer -> tryCollectSequenceWithNextCheck(tokenizer, '=', '=')),
 
   //=========================================================================//
   //                                 Symbols                                 //
   //=========================================================================//
 
-  PARENTHESIS_OPEN(TokenCategory.SYMBOL, "(", tokenizer -> tokenizer.nextChar() == '(' ? "(" : null),
-  PARENTHESIS_CLOSE(TokenCategory.SYMBOL, ")", tokenizer -> tokenizer.nextChar() == ')' ? ")" : null),
-  COMMA(TokenCategory.SYMBOL, ",", tokenizer -> tokenizer.nextChar() == ',' ? "," : null),
+  PARENTHESIS_OPEN(TokenCategory.SYMBOL, "(", tokenizer -> tryCollectSequenceWithNextCheck(tokenizer, null, '(')),
+  PARENTHESIS_CLOSE(TokenCategory.SYMBOL, ")", tokenizer -> tryCollectSequenceWithNextCheck(tokenizer, null, ')')),
+  COMMA(TokenCategory.SYMBOL, ",", tokenizer -> tryCollectSequenceWithNextCheck(tokenizer, null, ',')),
+  BRACKET_OPEN(TokenCategory.SYMBOL, "[", tokenizer -> tryCollectSequenceWithNextCheck(tokenizer, null, '[')),
+  BRACKET_CLOSE(TokenCategory.SYMBOL, "]", tokenizer -> tryCollectSequenceWithNextCheck(tokenizer, null, ']')),
 
   //=========================================================================//
   //                                Invisible                                //

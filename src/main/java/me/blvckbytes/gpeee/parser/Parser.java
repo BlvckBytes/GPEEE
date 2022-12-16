@@ -169,6 +169,58 @@ public class Parser {
     return new CallbackExpression(signature, body, head, body.getTail(), tokenizer.getRawText());
   }
 
+  private @Nullable AExpression parseIndexExpression(ITokenizer tokenizer) throws AEvaluatorError {
+    logger.logDebug(DebugLogLevel.PARSER, "Trying to parse a index expression");
+
+    Token tk = tokenizer.peekToken();
+
+    // There's no identifier as the next token
+    if (tk == null || tk.getType() != TokenType.IDENTIFIER) {
+      logger.logDebug(DebugLogLevel.PARSER, "Not a index expression");
+      return null;
+    }
+
+    // Store before consuming the identifier
+    tokenizer.saveState(true);
+
+    // Consume the identifier
+    Token tokenIdentifier = tk;
+    tokenizer.consumeToken();
+
+    tk = tokenizer.peekToken();
+
+    // There's no opening bracket as the next token
+    if (tk == null || tk.getType() != TokenType.BRACKET_OPEN) {
+      logger.logDebug(DebugLogLevel.PARSER, "Not a index expression");
+
+      tokenizer.restoreState(true);
+      return null;
+    }
+
+    // Not going to go need to restore anymore, this has to be a index expression
+    tokenizer.discardState(true);
+
+    // Consume the opening bracket
+    tokenizer.consumeToken();
+
+    // Parse the key expression
+    logger.logDebug(DebugLogLevel.PARSER, "Parsing the indexing key expression");
+    AExpression key = precedenceLadder[0].apply(tokenizer, precedenceLadder, 0);
+
+    // Index expressions have to be terminated with a closing bracket
+    tk = tokenizer.consumeToken();
+    if (tk == null || tk.getType() != TokenType.BRACKET_CLOSE)
+      throw new UnexpectedTokenError(tokenizer, tk, TokenType.BRACKET_CLOSE);
+
+    IdentifierExpression identifierExpression = new IdentifierExpression(
+      tokenIdentifier.getValue(), tokenIdentifier, tokenIdentifier, tokenizer.getRawText()
+    );
+
+    return new IndexExpression(
+      identifierExpression, key, identifierExpression.getHead(), tk, tokenizer.getRawText()
+    );
+  }
+
   private @Nullable AExpression parseFunctionInvocationExpression(ITokenizer tokenizer) throws AEvaluatorError {
     logger.logDebug(DebugLogLevel.PARSER, "Trying to parse a function invocation expression");
 
@@ -625,6 +677,10 @@ public class Parser {
       return expression;
 
     expression = this.parseParenthesisExpression(tokenizer);
+    if (expression != null)
+      return expression;
+
+    expression = this.parseIndexExpression(tokenizer);
     if (expression != null)
       return expression;
 

@@ -43,10 +43,8 @@ import me.blvckbytes.gpeee.parser.expression.*;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.lang.reflect.Array;
+import java.util.*;
 import java.util.function.Supplier;
 
 public class Interpreter implements IStandardFunctionRegistry {
@@ -95,29 +93,8 @@ public class Interpreter implements IStandardFunctionRegistry {
 
     ////////////////////// Variable Values //////////////////////
 
-    if (expression instanceof IdentifierExpression) {
-      String symbol = ((IdentifierExpression) expression).getSymbol();
-
-      logger.logDebug(DebugLogLevel.INTERPRETER, "Looking up variable " + symbol);
-
-      Object value = environment.getStaticVariables().get(symbol);
-      if (value != null) {
-        logger.logDebug(DebugLogLevel.INTERPRETER, "Resolved static variable value: " + value);
-        return value;
-      }
-
-      Supplier<Object> valueSupplier = environment.getLiveVariables().get(symbol);
-      if (valueSupplier != null) {
-        value = valueSupplier.get();
-
-        if (value != null) {
-          logger.logDebug(DebugLogLevel.INTERPRETER, "Resolved dynamic variable value: " + value);
-          return value;
-        }
-      }
-
-      throw new UndefinedVariableError(((IdentifierExpression) expression));
-    }
+    if (expression instanceof IdentifierExpression)
+      return lookupVariable(environment, (IdentifierExpression) expression);
 
     ///////////////////////// Functions /////////////////////////
 
@@ -258,6 +235,35 @@ public class Interpreter implements IStandardFunctionRegistry {
         logger.logDebug(DebugLogLevel.INTERPRETER, "Callback result=" + result);
         return result;
       });
+    }
+
+    ///////////////////////// Indexing //////////////////////////
+
+    if (expression instanceof IndexExpression) {
+      IndexExpression indexExpression = (IndexExpression) expression;
+      Object keyV = evaluateExpression(indexExpression.getKey(), environment);
+
+      // Look up the target variable
+      Object value = lookupVariable(environment, indexExpression.getTarget());
+
+      if (value instanceof List) {
+        List<?> list = (List<?>) value;
+        int key = (int) valueInterpreter.asLong(keyV);
+        return key < list.size() ? list.get(key) : null;
+      }
+
+      if (value.getClass().isArray()) {
+        int key = (int) valueInterpreter.asLong(keyV);
+        return key < Array.getLength(value) ? Array.get(value, key) : null;
+      }
+
+      if (value instanceof Map) {
+        Map<?, ?> map = (Map<?, ?>) value;
+        return map.get(valueInterpreter.asString(keyV));
+      }
+
+      // Cannot index this type of value
+      throw new NonIndexableValueError(indexExpression, value);
     }
 
     //////////////////// Binary Expressions /////////////////////
@@ -428,5 +434,36 @@ public class Interpreter implements IStandardFunctionRegistry {
     } catch (Exception e) {
       logger.logError("Could not load functions from folder", e);
     }
+  }
+
+  /**
+   * Tries to look up a variable within the provided environment based on an identifier
+   * @param environment Environment to look in
+   * @param identifier Identifier to look up
+   * @return Variable value
+   * @throws UndefinedVariableError A variable with that identifier does not exist within the environment
+   */
+  private Object lookupVariable(IEvaluationEnvironment environment, IdentifierExpression identifier) throws UndefinedVariableError {
+    String symbol = identifier.getSymbol();
+
+    logger.logDebug(DebugLogLevel.INTERPRETER, "Looking up variable " + symbol);
+
+    Object value = environment.getStaticVariables().get(symbol);
+    if (value != null) {
+      logger.logDebug(DebugLogLevel.INTERPRETER, "Resolved static variable value: " + value);
+      return value;
+    }
+
+    Supplier<Object> valueSupplier = environment.getLiveVariables().get(symbol);
+    if (valueSupplier != null) {
+      value = valueSupplier.get();
+
+      if (value != null) {
+        logger.logDebug(DebugLogLevel.INTERPRETER, "Resolved dynamic variable value: " + value);
+        return value;
+      }
+    }
+
+    throw new UndefinedVariableError(identifier);
   }
 }

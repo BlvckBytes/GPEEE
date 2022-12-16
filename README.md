@@ -28,6 +28,7 @@ cost when comparing against a project without `GPEEE`.
   - [Parentheses](#parentheses)
   - [Function Invocation](#function-invocation)
   - [Callback Function](#callback-function)
+  - [Indexing](#indexing)
   - [Complete Definition](#complete-definition)
 
 ## Current State
@@ -465,7 +466,16 @@ noted after the arrow operator.
 CallbackExpression ::= "(" (Identifier | (Identifier ("," Identifier)*))? ")" "->" Expression
 ```
 
-![callback function](readme_images/railroad_callback_function.png)
+### Indexing
+
+Lists, Maps and Arrays may be indexed by passing an expression as a key between two brackets after the identifier
+of the target variable.
+
+```ebnf
+IndexExpression ::= Identifier "[" Expression "]"
+```
+
+![indexing](readme_images/railroad_indexing.png)
 
 ### Complete Definition
 
@@ -497,12 +507,14 @@ ConjunctionExpression ::= EqualityExpression ("and" EqualityExpression)*
 DisjunctionExpression ::= ConjunctionExpression ("or" ConjunctionExpression)*
 ConcatenationExpression ::= DisjunctionExpression ("&" DisjunctionExpression)*
 
-Expression ::= ConcatenationExpression | ("-" | "not")? "(" Expression ")" | FunctionInvocationExpression | CallbackExpression
+Expression ::= ConcatenationExpression | ("-" | "not")? "(" Expression ")" | FunctionInvocationExpression | CallbackExpression | IndexExpression
 
 FunctionArgument ::= (Identifier "=")? Expression
 FunctionInvocationExpression ::= "-"? Identifier "(" (FunctionArgument | (FunctionArgument ("," FunctionArgument)*))? ")"
 
 CallbackExpression ::= "(" (Identifier | (Identifier ("," Identifier)*))? ")" "->" Expression
+
+IndexExpression ::= Identifier "[" Expression "]"
 ```
 
 ![expression](readme_images/railroad_expression.png)
