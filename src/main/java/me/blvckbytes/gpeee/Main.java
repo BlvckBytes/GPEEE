@@ -25,10 +25,12 @@
 package me.blvckbytes.gpeee;
 
 import me.blvckbytes.gpeee.error.AEvaluatorError;
-import me.blvckbytes.gpeee.functions.FExpressionFunction;
+import me.blvckbytes.gpeee.functions.AExpressionFunction;
+import me.blvckbytes.gpeee.functions.FExpressionFunctionBuilder;
 import me.blvckbytes.gpeee.interpreter.IEvaluationEnvironment;
 import me.blvckbytes.gpeee.interpreter.IValueInterpreter;
 import me.blvckbytes.gpeee.parser.expression.AExpression;
+import org.jetbrains.annotations.Nullable;
 
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
@@ -44,12 +46,9 @@ public class Main {
 
   // TODO:
   /*
-    Create some kind of utility-set to properly interface between expressions and java without having
-    to perform a thousand checks for null or for I/O types.
-
-    A function builder would be cool (but how would that look like?)
-
     Come up with an easy-to-use testing environment and create a hell load of tests for all kind of cases
+
+    Somehow linking live generated javadoc into the readme?
    */
 
   public static void main(String[] args) {
@@ -71,44 +70,39 @@ public class Main {
       IEvaluationEnvironment env = new IEvaluationEnvironment() {
 
         @Override
-        public Map<String, FExpressionFunction> getFunctions() {
+        public Map<String, AExpressionFunction> getFunctions() {
           // iter_cat(items, (it, ind) -> (..), "separator", "no items fallback")
           return Map.of(
-            "iter_cat", (env, args) -> {
-              // Invalid call: Not enough arguments provided
-              if (args.size() < 3)
-                return null;
+            "iter_cat",
+            new FExpressionFunctionBuilder()
+              .withArg("items", true, Collection.class)
+              .withArg("mapper", true, AExpressionFunction.class)
+              .withArg("separator", true, String.class)
+              .withArg("fallback", false, String.class)
+              .build((env, args) -> {
+                // Retrieve arguments
+                Collection<?> items = (Collection<?>) args.get(0);
+                AExpressionFunction mapper = (AExpressionFunction) args.get(1);
+                String separator = env.getValueInterpreter().asString(args.get(2));
+                @Nullable String fallback = env.getValueInterpreter().asString(args.get(3));
 
-              // Invalid call: Cannot iterate over non-collections
-              if (!(args.get(0) instanceof Collection))
-                return null;
+                StringBuilder result = new StringBuilder();
 
-              // Invalid call: Cannot invoke a non-function type
-              if (!(args.get(1) instanceof FExpressionFunction))
-                return null;
+                // Loop all items with their indices
+                int c = 0;
+                for (Object item : items) {
+                  result.append(result.length() == 0 ? "" : separator).append(
+                    mapper.apply(env, List.of(item, c++))
+                  );
+                }
 
-              FExpressionFunction formatter = (FExpressionFunction) args.get(1);
+                // No items available but a fallback string has been supplied
+                if (items.size() == 0 && fallback != null)
+                  return fallback;
 
-              Collection<?> items = (Collection<?>) args.get(0);
-              String separator = env.getValueInterpreter().asString(args.get(2));
-
-              // Loop all items
-              StringBuilder result = new StringBuilder();
-
-              int c = 0;
-              for (Object item : items) {
-                result.append(result.length() == 0 ? "" : separator).append(
-                  formatter.apply(env, List.of(item, c++))
-                );
-              }
-
-              // No items available but a fallback string has been supplied
-              if (items.size() == 0 && args.size() >= 4)
-                return args.get(3);
-
-              // Respond with the built-up result
-              return result.toString();
-            }
+                // Respond with the built-up result
+                return result.toString();
+              })
           );
         }
 

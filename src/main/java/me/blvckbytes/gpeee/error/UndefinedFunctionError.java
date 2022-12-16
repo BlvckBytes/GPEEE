@@ -24,16 +24,16 @@
 
 package me.blvckbytes.gpeee.error;
 
-import me.blvckbytes.gpeee.parser.expression.AExpression;
+import me.blvckbytes.gpeee.parser.expression.IdentifierExpression;
 
 public class UndefinedFunctionError extends AEvaluatorError {
 
-  public UndefinedFunctionError(AExpression identifier) {
+  public UndefinedFunctionError(IdentifierExpression identifier) {
     super(
       identifier.getHead().getRow(),
       identifier.getHead().getCol(),
       identifier.getFullContainingExpression(),
-      "This function identifier has not been defined within the current environment"
+      "The function >" + identifier.getSymbol() + "< has not been defined within the current environment"
     );
   }
 }

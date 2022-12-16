@@ -22,22 +22,26 @@
  * SOFTWARE.
  */
 
-package me.blvckbytes.gpeee.functions;
+package me.blvckbytes.gpeee.error;
 
-import me.blvckbytes.gpeee.interpreter.IEvaluationEnvironment;
+import me.blvckbytes.gpeee.functions.ExpressionFunctionArgument;
+import me.blvckbytes.gpeee.parser.expression.FunctionInvocationExpression;
 
-import java.util.List;
+public class InvalidFunctionArgumentError extends AEvaluatorError {
 
-@FunctionalInterface
-public interface FExpressionFunction {
-
-  /**
-   * Called whenever a function call to the registered corresponding
-   * identifier is performed within an expression
-   * @param environment A reference to the current environment
-   * @param args Arguments supplied by the invocation
-   * @return Return value of this function
-   */
-  Object apply(IEvaluationEnvironment environment, List<Object> args);
-
+  public InvalidFunctionArgumentError(
+    FunctionInvocationExpression function,
+    ExpressionFunctionArgument definition,
+    int argumentIndex,
+    Object argumentValue
+  ) {
+    super(
+      // Point to the position of the argument causing trouble
+      function.getArguments().get(argumentIndex).getHead().getRow(),
+      function.getArguments().get(argumentIndex).getHead().getCol(),
+      function.getFullContainingExpression(),
+      "Invalid function argument, expected value of type " + definition.stringifyAllowedTypes() +
+      " but got " + (argumentValue == null ? "<null>" : argumentValue.getClass().getName())
+    );
+  }
 }

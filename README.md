@@ -50,6 +50,13 @@ Result:
 my prefix: (0 -> 1)|(1 -> 3)|(2 -> 5)|(3 -> 21)|(4 -> 49)
 ```
 
+On argument type mismatches:
+
+```
+5: "my prefix: " & iter_cat(4, (it, ind) -> "(" & ind & " -> " & it & ")", "|", "no items available")
+                            ^ Invalid function argument, expected value of type java.util.Collection but got java.lang.Long
+```
+
 Environment:
 
 ```java

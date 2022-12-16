@@ -24,16 +24,16 @@
 
 package me.blvckbytes.gpeee.error;
 
-import me.blvckbytes.gpeee.parser.expression.AExpression;
+import me.blvckbytes.gpeee.parser.expression.IdentifierExpression;
 
 public class UndefinedVariableError extends AEvaluatorError {
 
-  public UndefinedVariableError(AExpression identifier) {
+  public UndefinedVariableError(IdentifierExpression identifier) {
     super(
       identifier.getHead().getRow(),
       identifier.getHead().getCol(),
       identifier.getFullContainingExpression(),
-      "This variable identifier has not been defined within the current environment"
+      "This variable >" + identifier.getSymbol() + "< has not been defined within the current environment"
     );
   }
 }

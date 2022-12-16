@@ -30,7 +30,7 @@ import me.blvckbytes.gpeee.IDebugLogger;
 import me.blvckbytes.gpeee.error.AEvaluatorError;
 import me.blvckbytes.gpeee.error.UndefinedFunctionError;
 import me.blvckbytes.gpeee.error.UndefinedVariableError;
-import me.blvckbytes.gpeee.functions.FExpressionFunction;
+import me.blvckbytes.gpeee.functions.AExpressionFunction;
 import me.blvckbytes.gpeee.parser.ComparisonOperation;
 import me.blvckbytes.gpeee.parser.EqualityOperation;
 import me.blvckbytes.gpeee.parser.MathOperation;
@@ -100,7 +100,7 @@ public class Interpreter {
         }
       }
 
-      throw new UndefinedVariableError(expression);
+      throw new UndefinedVariableError(((IdentifierExpression) expression));
     }
 
     ///////////////////////// Functions /////////////////////////
@@ -109,9 +109,9 @@ public class Interpreter {
       FunctionInvocationExpression functionExpression = (FunctionInvocationExpression) expression;
 
       // Try to look up the target function in the environment's function table
-      FExpressionFunction function = environment.getFunctions().get(functionExpression.getName().getSymbol());
+      AExpressionFunction function = environment.getFunctions().get(functionExpression.getName().getSymbol());
       if (function == null)
-        throw new UndefinedFunctionError(expression);
+        throw new UndefinedFunctionError(functionExpression.getName());
 
       debugLogger.log(DebugLogLevel.INTERPRETER, "Evaluating arguments of function invocation " + functionExpression.getName().getSymbol());
 
@@ -123,6 +123,9 @@ public class Interpreter {
         // Evaluate and collect all arguments
         arguments.add(evaluateExpression(argument, environment));
       }
+
+      // Let the function validate the arguments of it's invocation before actually performing the call
+      function.validateArguments(functionExpression, arguments);
 
       // Invoke and return that function's result
       Object result = function.apply(environment, arguments);
@@ -136,7 +139,7 @@ public class Interpreter {
       debugLogger.log(DebugLogLevel.INTERPRETER, "Setting up the java endpoint for a callback expression");
 
       // This lambda function will be called by java every time the callback is invoked
-      return (FExpressionFunction) (env, args) -> {
+      return AExpressionFunction.makeUnchecked((env, args) -> {
 
         // Copy the static variable table and extend it below
         Map<String, Object> combinedVariables = new HashMap<>(environment.getStaticVariables());
@@ -158,7 +161,7 @@ public class Interpreter {
         Object result = evaluateExpression(callbackExpression.getBody(), new IEvaluationEnvironment() {
 
           @Override
-          public Map<String, FExpressionFunction> getFunctions() {
+          public Map<String, AExpressionFunction> getFunctions() {
             return environment.getFunctions();
           }
 
@@ -180,7 +183,7 @@ public class Interpreter {
 
         debugLogger.log(DebugLogLevel.INTERPRETER, "Callback result=" + result);
         return result;
-      };
+      });
     }
 
     //////////////////// Binary Expressions /////////////////////

@@ -24,7 +24,7 @@
 
 package me.blvckbytes.gpeee;
 
-import me.blvckbytes.gpeee.functions.FExpressionFunction;
+import me.blvckbytes.gpeee.functions.AExpressionFunction;
 import me.blvckbytes.gpeee.interpreter.IEvaluationEnvironment;
 import me.blvckbytes.gpeee.interpreter.IValueInterpreter;
 import org.junit.Before;
@@ -33,7 +33,8 @@ import org.junit.Test;
 import java.util.Map;
 import java.util.function.Supplier;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 public class ExpressionTests {
 
@@ -47,7 +48,7 @@ public class ExpressionTests {
     evaluator = new GPEEE(null);
     environment = new IEvaluationEnvironment() {
       @Override
-      public Map<String, FExpressionFunction> getFunctions() {
+      public Map<String, AExpressionFunction> getFunctions() {
         return Map.of();
       }
 
