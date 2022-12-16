@@ -31,6 +31,6 @@ import me.blvckbytes.gpeee.tokenizer.ITokenizer;
 @FunctionalInterface
 public interface FExpressionParser {
 
-  AExpression apply(ITokenizer tokenizer, FExpressionParser[] precedenceLadder, int selfPrecedence) throws AEvaluatorError;
+  AExpression apply(ITokenizer tokenizer, int selfPrecedence) throws AEvaluatorError;
 
 }
