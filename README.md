@@ -168,14 +168,14 @@ public interface IExpressionEvaluator {
 }
 ```
 
-This interface is implemented by the `GPEEE` class, which can be quickly instantiated with an optional debug logger:
+This interface is implemented by the `GPEEE` class, which can be quickly instantiated with an optional logger and a path to the function folder:
 
 ```java
-public GPEEE(@Nullable IDebugLogger debugLogger);
+public GPEEE(@Nullable ILogger logger, @Nullable String functionFolder);
 ```
 
-The `debugLogger` will get called with many internal debug messages which can help you to understand how the inner workings
-of this state machine operate. In production, it's advised to keep this value at `null`.
+The `logger` will get called with many internal debug messages which can help you to understand how the inner workings
+of this state machine operate. It also logs errors when loading functions.
 
 ### The Evaluation Environment
 

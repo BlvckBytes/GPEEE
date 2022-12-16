@@ -45,7 +45,7 @@ public class ExpressionTests {
 
   @Before
   public void setupGPEEE() {
-    evaluator = new GPEEE(null);
+    evaluator = new GPEEE(null, null);
     environment = new IEvaluationEnvironment() {
       @Override
       public Map<String, AExpressionFunction> getFunctions() {

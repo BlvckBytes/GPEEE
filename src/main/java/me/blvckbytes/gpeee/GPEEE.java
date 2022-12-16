@@ -29,6 +29,8 @@ import me.blvckbytes.gpeee.interpreter.IEvaluationEnvironment;
 import me.blvckbytes.gpeee.interpreter.IValueInterpreter;
 import me.blvckbytes.gpeee.interpreter.Interpreter;
 import me.blvckbytes.gpeee.interpreter.StandardValueInterpreter;
+import me.blvckbytes.gpeee.logging.ILogger;
+import me.blvckbytes.gpeee.logging.NullLogger;
 import me.blvckbytes.gpeee.parser.Parser;
 import me.blvckbytes.gpeee.parser.expression.AExpression;
 import me.blvckbytes.gpeee.tokenizer.Tokenizer;
@@ -40,17 +42,17 @@ public class GPEEE implements IExpressionEvaluator {
 
   private final Parser parser;
   private final Interpreter interpreter;
-  private final IDebugLogger debugLogger;
+  private final ILogger logger;
 
-  public GPEEE(@Nullable IDebugLogger debugLogger) {
-    this.debugLogger = debugLogger == null ? (l, m) -> {} : debugLogger;
-    this.parser = new Parser(this.debugLogger);
-    this.interpreter = new Interpreter(this.debugLogger);
+  public GPEEE(@Nullable ILogger logger, @Nullable String functionFolder) {
+    this.logger = logger == null ? new NullLogger() : logger;
+    this.parser = new Parser(this.logger);
+    this.interpreter = new Interpreter(this.logger, functionFolder);
   }
 
   @Override
   public AExpression parseString(String input) throws AEvaluatorError {
-    return parser.parse(new Tokenizer(this.debugLogger, input));
+    return parser.parse(new Tokenizer(this.logger, input));
   }
 
   @Override

@@ -28,7 +28,10 @@ import me.blvckbytes.gpeee.error.AEvaluatorError;
 import me.blvckbytes.gpeee.functions.AExpressionFunction;
 import me.blvckbytes.gpeee.interpreter.IEvaluationEnvironment;
 import me.blvckbytes.gpeee.interpreter.IValueInterpreter;
+import me.blvckbytes.gpeee.logging.DebugLogLevel;
+import me.blvckbytes.gpeee.logging.ILogger;
 import me.blvckbytes.gpeee.parser.expression.AExpression;
+import org.jetbrains.annotations.Nullable;
 
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
@@ -46,6 +49,12 @@ public class Main {
     Come up with an easy-to-use testing environment and create a hell load of tests for all kind of cases
 
     Somehow linking live generated javadoc into the readme?
+
+    Maybe load all std functions from a folder (individual jars linking against the required API)
+    so they're user-(editable/upgradable/extendable)
+
+    Think about how functions would access a minecraft server for example, if they're in isolated modules...
+    Some sort of dependency registry which the GPEEE keeps?
    */
 
   public static void main(String[] args) {
@@ -56,8 +65,23 @@ public class Main {
         throw new IllegalStateException();
 
       String input = String.join("\n", Files.readAllLines(Paths.get(resource.toURI()), StandardCharsets.UTF_8));
-      IDebugLogger debugLogger = (level, message) -> System.out.println("[DEBUG] [" + level + "]: " + message);
-      GPEEE evaluator = new GPEEE(debugLogger);
+
+      ILogger logger = new ILogger() {
+        @Override
+        public void logDebug(DebugLogLevel level, String message) {
+          System.out.println("[DEBUG] [" + level + "]: " + message);
+        }
+
+        @Override
+        public void logError(String message, @Nullable Exception error) {
+          System.err.println(message);
+
+          if (error != null)
+            error.printStackTrace();
+        }
+      };
+
+      GPEEE evaluator = new GPEEE(logger, "/Users/blvckbytes/Desktop/StdFunctionTesting/target");
 
       AExpression expression = evaluator.parseString(input);
 

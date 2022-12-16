@@ -22,11 +22,15 @@
  * SOFTWARE.
  */
 
-package me.blvckbytes.gpeee;
+package me.blvckbytes.gpeee.logging;
 
-@FunctionalInterface
-public interface IDebugLogger {
+import org.jetbrains.annotations.Nullable;
 
-  void log(DebugLogLevel level, String message);
+public class NullLogger implements ILogger {
 
+  @Override
+  public void logDebug(DebugLogLevel level, String message) {}
+
+  @Override
+  public void logError(String message, @Nullable Exception error) {}
 }

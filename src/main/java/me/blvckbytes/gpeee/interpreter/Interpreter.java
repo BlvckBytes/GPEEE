@@ -24,12 +24,13 @@
 
 package me.blvckbytes.gpeee.interpreter;
 
-import me.blvckbytes.gpeee.DebugLogLevel;
-import me.blvckbytes.gpeee.IDebugLogger;
+import me.blvckbytes.gpeee.logging.DebugLogLevel;
+import me.blvckbytes.gpeee.logging.ILogger;
 import me.blvckbytes.gpeee.error.AEvaluatorError;
 import me.blvckbytes.gpeee.error.UndefinedFunctionError;
 import me.blvckbytes.gpeee.error.UndefinedVariableError;
 import me.blvckbytes.gpeee.functions.AExpressionFunction;
+import me.blvckbytes.gpeee.functions.FunctionJarLoader;
 import me.blvckbytes.gpeee.functions.IStandardFunctionRegistry;
 import me.blvckbytes.gpeee.functions.std.AStandardFunction;
 import me.blvckbytes.gpeee.functions.std.IterCatFunction;
@@ -37,7 +38,9 @@ import me.blvckbytes.gpeee.parser.ComparisonOperation;
 import me.blvckbytes.gpeee.parser.EqualityOperation;
 import me.blvckbytes.gpeee.parser.MathOperation;
 import me.blvckbytes.gpeee.parser.expression.*;
+import org.jetbrains.annotations.Nullable;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -47,41 +50,44 @@ import java.util.function.Supplier;
 public class Interpreter implements IStandardFunctionRegistry {
 
   private final Map<String, AStandardFunction> standardFunctions;
-  private final IDebugLogger debugLogger;
+  private final ILogger logger;
+  private final FunctionJarLoader loader;
 
-  public Interpreter(IDebugLogger debugLogger) {
-    this.debugLogger = debugLogger;
+  public Interpreter(ILogger logger, @Nullable String functionFolder) {
+    this.logger = logger;
     this.standardFunctions = new HashMap<>();
-    this.importStandardFunctions();
+    this.loader = new FunctionJarLoader();
+
+    this.importStandardFunctions(functionFolder);
   }
 
   public Object evaluateExpression(AExpression expression, IEvaluationEnvironment environment) throws AEvaluatorError {
     if (expression == null)
       return null;
 
-    debugLogger.log(DebugLogLevel.INTERPRETER, "Evaluating " + expression.getClass().getSimpleName() + ": " + expression.expressionify());
+    logger.logDebug( DebugLogLevel.INTERPRETER, "Evaluating " + expression.getClass().getSimpleName() + ": " + expression.expressionify());
 
     IValueInterpreter valueInterpreter = environment.getValueInterpreter();
 
     /////////////////////// Static Values ///////////////////////
 
     if (expression instanceof LongExpression) {
-      debugLogger.log(DebugLogLevel.INTERPRETER, "Taking the immediate long value");
+      logger.logDebug( DebugLogLevel.INTERPRETER, "Taking the immediate long value");
       return ((LongExpression) expression).getNumber();
     }
 
     if (expression instanceof DoubleExpression) {
-      debugLogger.log(DebugLogLevel.INTERPRETER, "Taking the immediate double value");
+      logger.logDebug( DebugLogLevel.INTERPRETER, "Taking the immediate double value");
       return ((DoubleExpression) expression).getValue();
     }
 
     if (expression instanceof LiteralExpression) {
-      debugLogger.log(DebugLogLevel.INTERPRETER, "Taking the immediate literal value");
+      logger.logDebug( DebugLogLevel.INTERPRETER, "Taking the immediate literal value");
       return ((LiteralExpression) expression).getValue();
     }
 
     if (expression instanceof StringExpression) {
-      debugLogger.log(DebugLogLevel.INTERPRETER, "Taking the immediate string value");
+      logger.logDebug( DebugLogLevel.INTERPRETER, "Taking the immediate string value");
       return ((StringExpression) expression).getValue();
     }
 
@@ -90,11 +96,11 @@ public class Interpreter implements IStandardFunctionRegistry {
     if (expression instanceof IdentifierExpression) {
       String symbol = ((IdentifierExpression) expression).getSymbol();
 
-      debugLogger.log(DebugLogLevel.INTERPRETER, "Looking up variable " + symbol);
+      logger.logDebug( DebugLogLevel.INTERPRETER, "Looking up variable " + symbol);
 
       Object value = environment.getStaticVariables().get(symbol);
       if (value != null) {
-        debugLogger.log(DebugLogLevel.INTERPRETER, "Resolved static variable value: " + value);
+        logger.logDebug( DebugLogLevel.INTERPRETER, "Resolved static variable value: " + value);
         return value;
       }
 
@@ -103,7 +109,7 @@ public class Interpreter implements IStandardFunctionRegistry {
         value = valueSupplier.get();
 
         if (value != null) {
-          debugLogger.log(DebugLogLevel.INTERPRETER, "Resolved dynamic variable value: " + value);
+          logger.logDebug( DebugLogLevel.INTERPRETER, "Resolved dynamic variable value: " + value);
           return value;
         }
       }
@@ -126,13 +132,13 @@ public class Interpreter implements IStandardFunctionRegistry {
           throw new UndefinedFunctionError(functionExpression.getName());
       }
 
-      debugLogger.log(DebugLogLevel.INTERPRETER, "Evaluating arguments of function invocation " + functionExpression.getName().getSymbol());
+      logger.logDebug( DebugLogLevel.INTERPRETER, "Evaluating arguments of function invocation " + functionExpression.getName().getSymbol());
 
       // Evaluate and collect all arguments
       int c = 0;
       List<Object> arguments = new ArrayList<>();
       for (AExpression argument : functionExpression.getArguments()) {
-        debugLogger.log(DebugLogLevel.INTERPRETER, "Evaluating argument " + (++c));
+        logger.logDebug( DebugLogLevel.INTERPRETER, "Evaluating argument " + (++c));
         // Evaluate and collect all arguments
         arguments.add(evaluateExpression(argument, environment));
       }
@@ -142,14 +148,14 @@ public class Interpreter implements IStandardFunctionRegistry {
 
       // Invoke and return that function's result
       Object result = function.apply(environment, arguments);
-      debugLogger.log(DebugLogLevel.INTERPRETER, "Invoked function, result: " + result);
+      logger.logDebug( DebugLogLevel.INTERPRETER, "Invoked function, result: " + result);
       return result;
     }
 
     if (expression instanceof CallbackExpression) {
       CallbackExpression callbackExpression = (CallbackExpression) expression;
 
-      debugLogger.log(DebugLogLevel.INTERPRETER, "Setting up the java endpoint for a callback expression");
+      logger.logDebug( DebugLogLevel.INTERPRETER, "Setting up the java endpoint for a callback expression");
 
       // This lambda function will be called by java every time the callback is invoked
       return AExpressionFunction.makeUnchecked((env, args) -> {
@@ -163,11 +169,11 @@ public class Interpreter implements IStandardFunctionRegistry {
           String variableIdentifier = callbackExpression.getSignature().get(i).getSymbol();
           Object variableValue = i < args.size() ? args.get(i) : null;
 
-          debugLogger.log(DebugLogLevel.INTERPRETER, "Adding " + variableIdentifier + "=" + variableValue + " to a callback's environment");
+          logger.logDebug( DebugLogLevel.INTERPRETER, "Adding " + variableIdentifier + "=" + variableValue + " to a callback's environment");
           combinedVariables.put(variableIdentifier, variableValue);
         }
 
-        debugLogger.log(DebugLogLevel.INTERPRETER, "Evaluating a callback's body");
+        logger.logDebug( DebugLogLevel.INTERPRETER, "Evaluating a callback's body");
 
         // Callback expressions are evaluated within their own environment, which extends the current environment
         // by the additional variables coming from the arguments passed by the callback caller
@@ -194,7 +200,7 @@ public class Interpreter implements IStandardFunctionRegistry {
           }
         });
 
-        debugLogger.log(DebugLogLevel.INTERPRETER, "Callback result=" + result);
+        logger.logDebug( DebugLogLevel.INTERPRETER, "Callback result=" + result);
         return result;
       });
     }
@@ -202,7 +208,7 @@ public class Interpreter implements IStandardFunctionRegistry {
     //////////////////// Binary Expressions /////////////////////
 
     if (expression instanceof BinaryExpression) {
-      debugLogger.log(DebugLogLevel.INTERPRETER, "Evaluating LHS and RHS of a binary expression");
+      logger.logDebug( DebugLogLevel.INTERPRETER, "Evaluating LHS and RHS of a binary expression");
 
       Object lhs = evaluateExpression(((BinaryExpression) expression).getLhs(), environment);
       Object rhs = evaluateExpression(((BinaryExpression) expression).getRhs(), environment);
@@ -212,7 +218,7 @@ public class Interpreter implements IStandardFunctionRegistry {
         Object result;
 
         result = valueInterpreter.performMath(lhs, rhs, operation);
-        debugLogger.log(DebugLogLevel.INTERPRETER, "Math Operation operation " + operation + " result: " + result);
+        logger.logDebug( DebugLogLevel.INTERPRETER, "Math Operation operation " + operation + " result: " + result);
         return result;
       }
 
@@ -242,7 +248,7 @@ public class Interpreter implements IStandardFunctionRegistry {
             break;
         }
 
-        debugLogger.log(DebugLogLevel.INTERPRETER, "Equality Operation operation " + operation + " result: " + result);
+        logger.logDebug( DebugLogLevel.INTERPRETER, "Equality Operation operation " + operation + " result: " + result);
         return result;
       }
 
@@ -273,25 +279,25 @@ public class Interpreter implements IStandardFunctionRegistry {
             break;
         }
 
-        debugLogger.log(DebugLogLevel.INTERPRETER, "Comparison Operation operation " + operation + " result: " + result);
+        logger.logDebug( DebugLogLevel.INTERPRETER, "Comparison Operation operation " + operation + " result: " + result);
         return result;
       }
 
       if (expression instanceof ConjunctionExpression) {
         boolean result = valueInterpreter.asBoolean(lhs) && valueInterpreter.asBoolean(rhs);
-        debugLogger.log(DebugLogLevel.INTERPRETER, "Conjunction Operation result: " + result);
+        logger.logDebug( DebugLogLevel.INTERPRETER, "Conjunction Operation result: " + result);
         return result;
       }
 
       if (expression instanceof DisjunctionExpression) {
         boolean result = valueInterpreter.asBoolean(lhs) || valueInterpreter.asBoolean(rhs);
-        debugLogger.log(DebugLogLevel.INTERPRETER, "Disjunction Operation result: " + result);
+        logger.logDebug( DebugLogLevel.INTERPRETER, "Disjunction Operation result: " + result);
         return result;
       }
 
       if (expression instanceof ConcatenationExpression) {
         String result = valueInterpreter.asString(lhs) + valueInterpreter.asString(rhs);
-        debugLogger.log(DebugLogLevel.INTERPRETER, "Concatenation Operation result: " + result);
+        logger.logDebug( DebugLogLevel.INTERPRETER, "Concatenation Operation result: " + result);
         return result;
       }
     }
@@ -299,19 +305,19 @@ public class Interpreter implements IStandardFunctionRegistry {
     ///////////////////// Unary Expressions /////////////////////
 
     if (expression instanceof UnaryExpression) {
-      debugLogger.log(DebugLogLevel.INTERPRETER, "Evaluating input of a unary expression");
+      logger.logDebug( DebugLogLevel.INTERPRETER, "Evaluating input of a unary expression");
 
       Object input = evaluateExpression(((UnaryExpression) expression).getInput(), environment);
 
       if (expression instanceof FlipSignExpression) {
         Object result = -1 * (valueInterpreter.hasDecimalPoint(input) ? valueInterpreter.asDouble(input) : valueInterpreter.asLong(input));
-        debugLogger.log(DebugLogLevel.INTERPRETER, "Flip Sign Operation result: " + result);
+        logger.logDebug( DebugLogLevel.INTERPRETER, "Flip Sign Operation result: " + result);
         return result;
       }
 
       if (expression instanceof InvertExpression) {
         boolean result = !valueInterpreter.asBoolean(input);
-        debugLogger.log(DebugLogLevel.INTERPRETER, "Invert Operation result: " + result);
+        logger.logDebug( DebugLogLevel.INTERPRETER, "Invert Operation result: " + result);
         return result;
       }
     }
@@ -326,8 +332,45 @@ public class Interpreter implements IStandardFunctionRegistry {
 
   /**
    * Call all available standard functions in order to register themselves on this interpreter
+   * @param functionFolder Folder to look for standard functions in
    */
-  private void importStandardFunctions() {
+  private void importStandardFunctions(@Nullable String functionFolder) {
     new IterCatFunction().registerSelf(this);
+
+    if (functionFolder == null)
+      return;
+
+    try {
+      File folder = new File(functionFolder);
+      File[] contents = folder.listFiles();
+
+      if (contents == null) {
+        logger.logError("Could not list files in function folder", null);
+        return;
+      }
+
+      // Loop all available files in that folder
+      for (File file : contents) {
+
+        // Not a jar file, skip
+        if (!file.getName().endsWith(".jar"))
+          continue;
+
+        try {
+          AStandardFunction function = loader.loadFunctionFromFile(file);
+
+          if (function == null) {
+            logger.logError("Could not load function at " + file.getAbsolutePath(), null);
+            continue;
+          }
+
+          function.registerSelf(this);
+        } catch (Exception e) {
+          logger.logError("Could not load function at " + file.getAbsolutePath(), e);
+        }
+      }
+    } catch (Exception e) {
+      logger.logError("Could not load functions from folder", e);
+    }
   }
 }

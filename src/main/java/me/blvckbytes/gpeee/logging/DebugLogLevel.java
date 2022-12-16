@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-package me.blvckbytes.gpeee;
+package me.blvckbytes.gpeee.logging;
 
 public enum DebugLogLevel {
   TOKENIZER,
