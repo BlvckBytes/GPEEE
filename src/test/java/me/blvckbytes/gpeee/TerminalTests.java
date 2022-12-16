@@ -29,7 +29,7 @@ import me.blvckbytes.gpeee.error.UnknownTokenError;
 import me.blvckbytes.gpeee.error.UnterminatedStringError;
 import org.junit.Test;
 
-public class ExpressionTests {
+public class TerminalTests {
 
   @Test
   public void shouldEvaluateTerminals() {
@@ -61,57 +61,6 @@ public class ExpressionTests {
         // Variable Identifier
         validator.validate("var_1", "{{var_1}}");
         validator.validateThrows("var_2", UndefinedVariableError.class);
-      });
-  }
-
-  @Test
-  public void shouldEvaluateMultiplicationBeforeAddition() {
-    new EnvironmentBuilder()
-      .launch(validator -> {
-        validator.validate("5 + 2 * 3", 5 + (2 * 3));
-        validator.validate("5 * 2 + 3", (5 * 2) + 3);
-        validator.validate("5 + 2 / 3 - 2", 5 + (2.0 / 3) - 2);
-      });
-  }
-
-  @Test
-  public void shouldEvaluateExponentiationBeforeAddition() {
-    new EnvironmentBuilder()
-      .launch(validator -> {
-        validator.validate("2^3 + 1", Math.pow(2, 3) + 1);
-        validator.validate("1 - 2^3 + 3", 1 - Math.pow(2, 3) + 3);
-      });
-  }
-
-  @Test
-  public void shouldEvaluateExponentiationBeforeMultiplication() {
-    new EnvironmentBuilder()
-      .launch(validator -> {
-        validator.validate("2^3 * 1", Math.pow(2, 3) * 1);
-        validator.validate("1 / 2^3 * 3", 1 / Math.pow(2, 3) * 3);
-      });
-  }
-
-  @Test
-  public void shouldEvaluateParenthesesBeforeEverythingElse() {
-    new EnvironmentBuilder()
-      .launch(validator -> {
-        validator.validate("(2 + 3) * 4", (2 + 3) * 4);
-        validator.validate("4 * (2 + 3) * 2", 4 * (2 + 3) * 2);
-        validator.validate("5 / (2 * 3)", 5.0 / (2 * 3));
-        validator.validate("4^(3 + 2)", Math.pow(4, 3 + 2));
-        validator.validate("4^(3 * (3 - 1))", Math.pow(4, 3 * (3 - 1)));
-      });
-  }
-
-  @Test
-  public void shouldEvaluateRoots() {
-    new EnvironmentBuilder()
-      .launch(validator -> {
-        validator.validate("3^-(1/2)", 1.0 / Math.sqrt(3));
-        validator.validate("2^(1/2)", Math.sqrt(2));
-        validator.validate("22^-(1/3)", 1.0 / Math.pow(22.0, 1.0 / 3.0));
-        validator.validate("127^(1/4)", Math.pow(127.0, 1.0 / 4.0));
       });
   }
 }

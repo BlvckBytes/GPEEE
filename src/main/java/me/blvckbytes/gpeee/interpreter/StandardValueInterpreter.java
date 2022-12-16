@@ -53,6 +53,10 @@ public class StandardValueInterpreter implements IValueInterpreter {
     if (value instanceof Long)
       return ((Long) value);
 
+    // Is a boolean, true equals one, false zero
+    if (value instanceof Boolean)
+      return ((Boolean) value) ? 1 : 0;
+
     // Is any other number, get it's value as a long
     if (value instanceof Number)
       return ((Number) value).longValue();
