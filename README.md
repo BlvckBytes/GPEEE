@@ -1,6 +1,7 @@
 # GPEEE
 
 ![tests](https://github.com/BlvckBytes/GPEEE/actions/workflows/test.yml/badge.svg)
+![coverage](.github/badges/jacoco.svg)
 
 ![logo](readme_images/logo.png)
 
