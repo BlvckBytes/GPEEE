@@ -6,4 +6,4 @@
 # lower("HeLLo WoRLd")
 # test("hello", a="LOL", c="hi")
 
-if(my_number > 50, "number is greater than 50", "number is less than or equal to 50")
+if(my_number > 50, () -> 5 + 3, "number is less than or equal to 50")

@@ -24,6 +24,7 @@
 
 package me.blvckbytes.gpeee.functions.std;
 
+import me.blvckbytes.gpeee.functions.AExpressionFunction;
 import me.blvckbytes.gpeee.functions.ExpressionFunctionArgument;
 import me.blvckbytes.gpeee.functions.IStandardFunctionRegistry;
 import me.blvckbytes.gpeee.interpreter.IEvaluationEnvironment;
@@ -41,7 +42,13 @@ public class IfFunction extends AStandardFunction {
 
   @Override
   public Object apply(IEvaluationEnvironment environment, List<@Nullable Object> args) {
-    return nonNull(args, 0) ? args.get(1) : args.get(2);
+    Object result = nonNull(args, 0) ? args.get(1) : args.get(2);
+
+    // Is a callback, call and return it's result instead
+    if (result instanceof AExpressionFunction)
+      return ((AExpressionFunction) result).apply(environment, List.of());
+
+    return result;
   }
 
   @Override

@@ -103,7 +103,7 @@ public class Main {
 
           vars.put("my_items", List.of(1, 3, 5, 21, 49));
           vars.put("no_items", List.of());
-          vars.put("my_number", 40);
+          vars.put("my_number", 60);
 
           return vars;
         }
