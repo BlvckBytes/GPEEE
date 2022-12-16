@@ -36,10 +36,14 @@ import me.blvckbytes.gpeee.parser.expression.AExpression;
 import me.blvckbytes.gpeee.tokenizer.Tokenizer;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.HashMap;
+import java.util.Map;
+
 public class GPEEE implements IExpressionEvaluator {
 
   public static final IValueInterpreter STD_VALUE_INTERPRETER = new StandardValueInterpreter();
 
+  private final Map<Class<?>, Object> dependencyMap;
   private final Parser parser;
   private final Interpreter interpreter;
   private final ILogger logger;
@@ -48,6 +52,7 @@ public class GPEEE implements IExpressionEvaluator {
     this.logger = logger == null ? new NullLogger() : logger;
     this.parser = new Parser(this.logger);
     this.interpreter = new Interpreter(this.logger, functionFolder);
+    this.dependencyMap = new HashMap<>();
   }
 
   @Override
@@ -58,5 +63,24 @@ public class GPEEE implements IExpressionEvaluator {
   @Override
   public Object evaluateExpression(AExpression expression, IEvaluationEnvironment environment) throws AEvaluatorError {
     return interpreter.evaluateExpression(expression, environment);
+  }
+
+  @Override
+  public<T> void registerDependency(Class<? extends T> type, T instance) {
+    this.dependencyMap.put(type, instance);
+  }
+
+  @Override
+  @SuppressWarnings("unchecked")
+  public<T> @Nullable T tryLookupDependency(Class<? extends T> type) {
+    Object result = this.dependencyMap.get(type);
+
+    // Just making sure!
+    if (!type.isAssignableFrom(result.getClass())) {
+      this.dependencyMap.remove(type);
+      return null;
+    }
+
+    return (T) result;
   }
 }

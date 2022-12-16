@@ -24,6 +24,7 @@
 
 package me.blvckbytes.gpeee.interpreter;
 
+import me.blvckbytes.gpeee.IDependencyRegistry;
 import me.blvckbytes.gpeee.Tuple;
 import me.blvckbytes.gpeee.error.*;
 import me.blvckbytes.gpeee.functions.ExpressionFunctionArgument;
@@ -246,6 +247,11 @@ public class Interpreter implements IStandardFunctionRegistry {
           @Override
           public IValueInterpreter getValueInterpreter() {
             return environment.getValueInterpreter();
+          }
+
+          @Override
+          public IDependencyRegistry getDependencyRegistry() {
+            return environment.getDependencyRegistry();
           }
         });
 

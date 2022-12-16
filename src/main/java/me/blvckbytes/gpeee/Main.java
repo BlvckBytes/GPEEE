@@ -50,12 +50,6 @@ public class Main {
 
     Somehow linking live generated javadoc into the readme?
 
-    Maybe load all std functions from a folder (individual jars linking against the required API)
-    so they're user-(editable/upgradable/extendable)
-
-    Think about how functions would access a minecraft server for example, if they're in isolated modules...
-    Some sort of dependency registry which the GPEEE keeps?
-
     Think about how functions in separate jars would be tested... Each in their own project with their own artifact when compiling?
     That would... work, I guess?
    */
@@ -116,6 +110,11 @@ public class Main {
         @Override
         public IValueInterpreter getValueInterpreter() {
           return GPEEE.STD_VALUE_INTERPRETER;
+        }
+
+        @Override
+        public IDependencyRegistry getDependencyRegistry() {
+          return evaluator;
         }
       };
 

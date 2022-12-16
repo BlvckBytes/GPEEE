@@ -24,6 +24,7 @@
 
 package me.blvckbytes.gpeee.interpreter;
 
+import me.blvckbytes.gpeee.IDependencyRegistry;
 import me.blvckbytes.gpeee.functions.AExpressionFunction;
 
 import java.util.Map;
@@ -54,5 +55,11 @@ public interface IEvaluationEnvironment {
    * Most of the time, you'd want to provide {@link me.blvckbytes.gpeee.GPEEE#STD_VALUE_INTERPRETER}
    */
   IValueInterpreter getValueInterpreter();
+
+  /**
+   * Get a reference of the central dependency registry used
+   * to exchange dependencies with functions
+   */
+  IDependencyRegistry getDependencyRegistry();
 
 }
