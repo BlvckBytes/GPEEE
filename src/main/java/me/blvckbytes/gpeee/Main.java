@@ -37,6 +37,7 @@ import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -52,6 +53,8 @@ public class Main {
 
     Think about how functions in separate jars would be tested... Each in their own project with their own artifact when compiling?
     That would... work, I guess?
+
+    Implement a syntax highlighter using https://plugins.jetbrains.com/docs/intellij/language-injection.html
    */
 
   public static void main(String[] args) {
@@ -80,10 +83,22 @@ public class Main {
 
       GPEEE evaluator = new GPEEE(logger);
 
-      AExpression expression = evaluator.parseString(input);
+      AExpression unoptimized = evaluator.parseString(input);
 
-      System.out.println(expression.stringify("  ", 0));
-      System.out.println("expression=" + expression.expressionify());
+      input = Arrays.stream(input.split("\n"))
+        .map(String::trim)
+        .filter(line -> !(line.isBlank() || line.startsWith("#")))
+        .findFirst()
+        .orElseThrow();
+
+      String unoptimizedExpr = unoptimized.expressionify();
+      System.out.println("input=" + input);
+      System.out.println("unoptimized=" + unoptimizedExpr);
+      System.out.println(unoptimized.stringify("  ", 0));
+
+      AExpression optimized = evaluator.optimizeExpression(unoptimized);
+      System.out.println(optimized.stringify("  ", 0));
+      System.out.println("optimized=" + optimized.expressionify());
 
       IEvaluationEnvironment env = new IEvaluationEnvironment() {
 
@@ -124,9 +139,12 @@ public class Main {
         }
       };
 
-      System.out.println("result=" + evaluator.evaluateExpression(expression, env));
-      System.out.println("expression=" + expression.expressionify());
+      Object result = evaluator.evaluateExpression(unoptimized, env);
 
+      System.out.println("input=" + input);
+      System.out.println("unoptimized=" + unoptimizedExpr);
+      System.out.println("optimized=" + optimized.expressionify());
+      System.out.println("result=" + result);
       System.out.println("Done!");
     }
     catch (AEvaluatorError e) {

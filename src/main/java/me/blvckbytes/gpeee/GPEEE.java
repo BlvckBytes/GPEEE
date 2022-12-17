@@ -35,6 +35,7 @@ import me.blvckbytes.gpeee.interpreter.Interpreter;
 import me.blvckbytes.gpeee.interpreter.StandardValueInterpreter;
 import me.blvckbytes.gpeee.logging.ILogger;
 import me.blvckbytes.gpeee.logging.NullLogger;
+import me.blvckbytes.gpeee.optimizer.Optimizer;
 import me.blvckbytes.gpeee.parser.Parser;
 import me.blvckbytes.gpeee.parser.expression.AExpression;
 import me.blvckbytes.gpeee.tokenizer.Tokenizer;
@@ -43,16 +44,24 @@ import org.jetbrains.annotations.Nullable;
 import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.Supplier;
 
 public class GPEEE implements IExpressionEvaluator, IStandardFunctionRegistry {
 
-  public static final IValueInterpreter STD_VALUE_INTERPRETER = new StandardValueInterpreter();
+  public static final IValueInterpreter STD_VALUE_INTERPRETER;
+  public static final IEvaluationEnvironment EMPTY_ENVIRONMENT;
+
+  static {
+    STD_VALUE_INTERPRETER = new StandardValueInterpreter();
+    EMPTY_ENVIRONMENT = createEmptyEnvironment();
+  }
 
   private final Map<String, AStandardFunction> standardFunctions;
   private final Map<Class<?>, Object> dependencyMap;
 
   private final Parser parser;
   private final Interpreter interpreter;
+  private final Optimizer optimizer;
   private final ILogger logger;
   private final FunctionJarLoader jarLoader;
 
@@ -61,6 +70,7 @@ public class GPEEE implements IExpressionEvaluator, IStandardFunctionRegistry {
 
     this.parser = new Parser(this.logger);
     this.interpreter = new Interpreter(this.logger, this);
+    this.optimizer = new Optimizer(this.logger, this.interpreter);
     this.jarLoader = new FunctionJarLoader();
 
     this.dependencyMap = new HashMap<>();
@@ -72,6 +82,11 @@ public class GPEEE implements IExpressionEvaluator, IStandardFunctionRegistry {
   @Override
   public AExpression parseString(String input) throws AEvaluatorError {
     return parser.parse(new Tokenizer(this.logger, input));
+  }
+
+  @Override
+  public AExpression optimizeExpression(AExpression expression) throws AEvaluatorError {
+    return optimizer.optimizeAST(expression);
   }
 
   @Override
@@ -159,5 +174,43 @@ public class GPEEE implements IExpressionEvaluator, IStandardFunctionRegistry {
     } catch (Exception e) {
       logger.logError("Could not load functions from folder", e);
     }
+  }
+
+  private static IEvaluationEnvironment createEmptyEnvironment() {
+    return new IEvaluationEnvironment() {
+      @Override
+      public Map<String, AExpressionFunction> getFunctions() {
+        return Map.of();
+      }
+
+      @Override
+      public Map<String, Supplier<Object>> getLiveVariables() {
+        return Map.of();
+      }
+
+      @Override
+      public Map<String, Object> getStaticVariables() {
+        return Map.of();
+      }
+
+      @Override
+      public IValueInterpreter getValueInterpreter() {
+        return STD_VALUE_INTERPRETER;
+      }
+
+      @Override
+      public IDependencyRegistry getDependencyRegistry() {
+        return new IDependencyRegistry() {
+
+          @Override
+          public <T> void registerDependency(Class<? extends T> type, T instance) {}
+
+          @Override
+          public <T> @Nullable T tryLookupDependency(Class<? extends T> type) {
+            return null;
+          }
+        };
+      }
+    };
   }
 }

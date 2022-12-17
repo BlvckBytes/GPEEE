@@ -40,6 +40,15 @@ public interface IExpressionEvaluator extends IDependencyRegistry {
   AExpression parseString(String input) throws AEvaluatorError;
 
   /**
+   * Optimizes the provided expression by collapsing static expressions into their result.
+   * This only makes sense if the target expression is being evaluated more than once.
+   * @param expression Expression to optimize
+   * @return Optimized expression
+   * @throws AEvaluatorError Error during the evaluation process
+   */
+  AExpression optimizeExpression(AExpression expression) throws AEvaluatorError;
+
+  /**
    * Evaluates a previously parsed expression within a provided evaluation environment.
    * @param expression Expression to evaluate
    * @return Resulting expression value

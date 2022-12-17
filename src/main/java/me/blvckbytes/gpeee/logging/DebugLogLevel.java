@@ -27,5 +27,6 @@ package me.blvckbytes.gpeee.logging;
 public enum DebugLogLevel {
   TOKENIZER,
   PARSER,
-  INTERPRETER
+  INTERPRETER,
+  OPTIMIZER
 }
