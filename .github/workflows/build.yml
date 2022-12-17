@@ -1,4 +1,4 @@
-name: Test
+name: build
 
 on: [push, pull_request]
 
@@ -17,13 +17,5 @@ jobs:
       - name: Test with Maven
         run: mvn --batch-mode --update-snapshots test
 
-      - name: Generate JaCoCo Badge
-        id: jacoco
-        uses: cicirello/jacoco-badge-generator@v2
-
-      - name: Commit and push the badge (if it changed)
-        uses: EndBug/add-and-commit@v7
-        with:
-          default_author: github_actions
-          message: 'commit badge'
-          add: '*.svg'
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v3
