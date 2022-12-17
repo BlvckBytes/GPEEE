@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-package me.blvckbytes.gpeee.optimizer;
+package me.blvckbytes.gpeee.parser;
 
 import lombok.AllArgsConstructor;
 import me.blvckbytes.gpeee.GPEEE;

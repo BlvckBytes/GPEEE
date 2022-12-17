@@ -24,6 +24,7 @@
 
 package me.blvckbytes.gpeee;
 
+import me.blvckbytes.gpeee.error.UnexpectedTokenError;
 import org.junit.Test;
 
 public class MathOperatorTests {
@@ -65,6 +66,18 @@ public class MathOperatorTests {
         validator.validate("5 / (2 * 3)", 5.0 / (2 * 3));
         validator.validate("4^(3 + 2)", Math.pow(4, 3 + 2));
         validator.validate("4^(3 * (3 - 1))", Math.pow(4, 3 * (3 - 1)));
+      });
+  }
+
+  @Test
+  public void shouldThrowOnMalformedParentheses() {
+    new EnvironmentBuilder()
+      .launch(validator -> {
+        // Parenthesis not closed
+        validator.validateThrows("3 / (2 + 3", UnexpectedTokenError.class);
+
+        // Extra token after a "completed" expression
+        validator.validateThrows("3 / (2 + 3) 5", UnexpectedTokenError.class);
       });
   }
 

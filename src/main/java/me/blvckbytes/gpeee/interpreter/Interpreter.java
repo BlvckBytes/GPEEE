@@ -91,13 +91,14 @@ public class Interpreter {
 
     if (expression instanceof FunctionInvocationExpression) {
       FunctionInvocationExpression functionExpression = (FunctionInvocationExpression) expression;
+      String name = functionExpression.getName().getSymbol().toLowerCase(Locale.ROOT);
 
       // Try to look up the target function in the standard function table first
-      AExpressionFunction function = this.standardFunctionRegistry.lookup(functionExpression.getName().getSymbol());
+      AExpressionFunction function = this.standardFunctionRegistry.lookup(name);
       if (function == null) {
 
         // Now, try to look up the target function in the environment's function table
-        function = environment.getFunctions().get(functionExpression.getName().getSymbol());
+        function = environment.getFunctions().get(name);
         if (function == null)
           throw new UndefinedFunctionError(functionExpression.getName());
       }
@@ -132,14 +133,14 @@ public class Interpreter {
           boolean foundMatch = false;
           for (int i = 0; i < argDefinitions.size(); i++) {
             ExpressionFunctionArgument argDefinition = argDefinitions.get(i);
-            String name = argument.getB().getSymbol();
+            String argName = argument.getB().getSymbol();
 
             // Argument's identifier is not matching the arg definition name
-            if (!argDefinition.getName().equalsIgnoreCase(name))
+            if (!argDefinition.getName().equalsIgnoreCase(argName))
               continue;
 
             // Found a name match, set the value at that same index
-            logger.logDebug(DebugLogLevel.INTERPRETER, "Matched named argument " + name + " to index " + i);
+            logger.logDebug(DebugLogLevel.INTERPRETER, "Matched named argument " + argName + " to index " + i);
             arguments.set(i, argumentValue);
             foundMatch = true;
             break;
@@ -390,7 +391,7 @@ public class Interpreter {
    * @throws UndefinedVariableError A variable with that identifier does not exist within the environment
    */
   private Object lookupVariable(IEvaluationEnvironment environment, IdentifierExpression identifier) throws UndefinedVariableError {
-    String symbol = identifier.getSymbol();
+    String symbol = identifier.getSymbol().toLowerCase(Locale.ROOT);
 
     logger.logDebug(DebugLogLevel.INTERPRETER, "Looking up variable " + symbol);
 

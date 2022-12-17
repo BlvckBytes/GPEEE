@@ -47,14 +47,13 @@ public class Main {
 
   // TODO:
   /*
+    FINISH TEST CASES!
     Come up with an easy-to-use testing environment and create a hell load of tests for all kind of cases
 
     Somehow linking live generated javadoc into the readme?
 
     Think about how functions in separate jars would be tested... Each in their own project with their own artifact when compiling?
     That would... work, I guess?
-
-    Use the optimizer in the testing environment and ensure that there are tests in place which really test situations that could go wrong with the optimizer
    */
 
   public static void main(String[] args) {

@@ -35,7 +35,7 @@ import me.blvckbytes.gpeee.interpreter.Interpreter;
 import me.blvckbytes.gpeee.interpreter.StandardValueInterpreter;
 import me.blvckbytes.gpeee.logging.ILogger;
 import me.blvckbytes.gpeee.logging.NullLogger;
-import me.blvckbytes.gpeee.optimizer.Optimizer;
+import me.blvckbytes.gpeee.parser.Optimizer;
 import me.blvckbytes.gpeee.parser.Parser;
 import me.blvckbytes.gpeee.parser.expression.AExpression;
 import me.blvckbytes.gpeee.tokenizer.Tokenizer;

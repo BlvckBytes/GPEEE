@@ -25,6 +25,7 @@
 package me.blvckbytes.gpeee;
 
 import me.blvckbytes.gpeee.error.UndefinedVariableError;
+import me.blvckbytes.gpeee.error.UnexpectedTokenError;
 import me.blvckbytes.gpeee.error.UnknownTokenError;
 import me.blvckbytes.gpeee.error.UnterminatedStringError;
 import org.junit.Test;
@@ -59,8 +60,22 @@ public class TerminalTests {
       validator.validate("false", false);
       validator.validate("null", (Object) null);
 
+      // Should throw on empty expressions
+      validator.validateThrows("", UnexpectedTokenError.class);
+
+      // Should ignore comments
+      validator.validate("# This is a comment\nfalse # trailing comment", false);
+
+      // Should eat tabs too
+      validator.validate("\t\tfalse\t", false);
+
       // Variable Identifier
       validator.validate("var_1", env.getVariable("var_1"));
+
+      // Ignore casing on identifiers
+      validator.validate("VaR_1", env.getVariable("var_1"));
+
+      // Throw on invalid identifier
       validator.validateThrows("var_2", UndefinedVariableError.class);
     });
   }
