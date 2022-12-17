@@ -1,7 +1,7 @@
 # GPEEE
 
-![tests](https://github.com/BlvckBytes/GPEEE/actions/workflows/test.yml/badge.svg)
-![coverage](.github/badges/jacoco.svg)
+![build](https://github.com/BlvckBytes/GPEEE/actions/workflows/build.yml/badge.svg)
+[![coverage](https://codecov.io/gh/BlvckBytes/GPEEE/branch/main/graph/badge.svg?token=WGWX8IDT00)](https://codecov.io/gh/BlvckBytes/GPEEE)
 
 ![logo](readme_images/logo.png)
 
