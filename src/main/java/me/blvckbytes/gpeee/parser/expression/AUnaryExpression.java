@@ -31,11 +31,11 @@ import org.jetbrains.annotations.Nullable;
 
 @Setter
 @Getter
-public abstract class UnaryExpression extends AExpression {
+public abstract class AUnaryExpression extends AExpression {
 
   protected AExpression input;
 
-  public UnaryExpression(AExpression input, Token head, Token tail, String fullContainingExpression) {
+  public AUnaryExpression(AExpression input, Token head, Token tail, String fullContainingExpression) {
     super(head, tail, fullContainingExpression);
 
     this.input = input;

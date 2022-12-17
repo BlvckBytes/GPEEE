@@ -31,7 +31,7 @@ import me.blvckbytes.gpeee.tokenizer.TokenType;
 import org.jetbrains.annotations.Nullable;
 
 @Getter
-public class EqualityExpression extends BinaryExpression {
+public class EqualityExpression extends ABinaryExpression {
 
   private final EqualityOperation operation;
 
@@ -42,7 +42,7 @@ public class EqualityExpression extends BinaryExpression {
   }
 
   @Override
-  public boolean operatorEquals(BinaryExpression other) {
+  public boolean operatorEquals(ABinaryExpression other) {
     if (other instanceof EqualityExpression)
       return ((EqualityExpression) other).getOperation().equals(operation);
     return false;

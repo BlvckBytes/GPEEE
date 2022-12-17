@@ -264,11 +264,11 @@ public class Interpreter {
 
     //////////////////// Binary Expressions /////////////////////
 
-    if (expression instanceof BinaryExpression) {
+    if (expression instanceof ABinaryExpression) {
       logger.logDebug(DebugLogLevel.INTERPRETER, "Evaluating LHS and RHS of a binary expression");
 
-      Object lhs = evaluateExpression(((BinaryExpression) expression).getLhs(), environment);
-      Object rhs = evaluateExpression(((BinaryExpression) expression).getRhs(), environment);
+      Object lhs = evaluateExpression(((ABinaryExpression) expression).getLhs(), environment);
+      Object rhs = evaluateExpression(((ABinaryExpression) expression).getRhs(), environment);
 
       if (expression instanceof MathExpression) {
         MathOperation operation = ((MathExpression) expression).getOperation();
@@ -361,10 +361,10 @@ public class Interpreter {
 
     ///////////////////// Unary Expressions /////////////////////
 
-    if (expression instanceof UnaryExpression) {
+    if (expression instanceof AUnaryExpression) {
       logger.logDebug(DebugLogLevel.INTERPRETER, "Evaluating input of a unary expression");
 
-      Object input = evaluateExpression(((UnaryExpression) expression).getInput(), environment);
+      Object input = evaluateExpression(((AUnaryExpression) expression).getInput(), environment);
 
       if (expression instanceof FlipSignExpression) {
         Object result = -1 * (valueInterpreter.hasDecimalPoint(input) ? valueInterpreter.asDouble(input) : valueInterpreter.asLong(input));

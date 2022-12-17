@@ -55,10 +55,10 @@ public class Optimizer {
 
   private AExpression optimizeASTSub(AExpression expression, @Nullable Consumer<AExpression> substituteParent) throws AEvaluatorError {
 
-    if (expression instanceof BinaryExpression) {
+    if (expression instanceof ABinaryExpression) {
       logger.logDebug(DebugLogLevel.OPTIMIZER, "Encountered a binary expression");
 
-      BinaryExpression binary = (BinaryExpression) expression;
+      ABinaryExpression binary = (ABinaryExpression) expression;
       boolean lhsIs = isImmediatelyResolvable(binary.getLhs()), rhsIs = isImmediatelyResolvable(binary.getRhs());
 
       // Both sides of the binary expression can be resolved immediately
@@ -100,7 +100,7 @@ public class Optimizer {
 
       // This expression's RHS is resolvable AND the LHS of this expression is also a binary expression
       if (rhsIs && binary.getClass() == binary.getLhs().getClass()) {
-        BinaryExpression lhsBinary = (BinaryExpression) binary.getLhs();
+        ABinaryExpression lhsBinary = (ABinaryExpression) binary.getLhs();
 
         if (
           // AND their operators equal
@@ -143,10 +143,10 @@ public class Optimizer {
       return binary;
     }
 
-    if (expression instanceof UnaryExpression) {
+    if (expression instanceof AUnaryExpression) {
       logger.logDebug(DebugLogLevel.OPTIMIZER, "Encountered a unary expression");
 
-      UnaryExpression unary = (UnaryExpression) expression;
+      AUnaryExpression unary = (AUnaryExpression) expression;
 
       if (isImmediatelyResolvable(unary.getInput())) {
         AExpression result = wrapValue(unary.getInput(), interpreter.evaluateExpression(unary, GPEEE.EMPTY_ENVIRONMENT));

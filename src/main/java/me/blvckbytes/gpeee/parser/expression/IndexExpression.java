@@ -30,7 +30,7 @@ import me.blvckbytes.gpeee.tokenizer.TokenType;
 import org.jetbrains.annotations.Nullable;
 
 @Getter
-public class IndexExpression extends UnaryExpression {
+public class IndexExpression extends AUnaryExpression {
 
   private final IdentifierExpression target;
 

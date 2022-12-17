@@ -30,14 +30,14 @@ import me.blvckbytes.gpeee.tokenizer.TokenType;
 import org.jetbrains.annotations.Nullable;
 
 @Getter
-public class ConjunctionExpression extends BinaryExpression {
+public class ConjunctionExpression extends ABinaryExpression {
 
   public ConjunctionExpression(AExpression lhs, AExpression rhs, Token head, Token tail, String fullContainingExpression) {
     super(lhs, rhs, head, tail, fullContainingExpression);
   }
 
   @Override
-  public boolean operatorEquals(BinaryExpression other) {
+  public boolean operatorEquals(ABinaryExpression other) {
     return other instanceof ConjunctionExpression;
   }
 

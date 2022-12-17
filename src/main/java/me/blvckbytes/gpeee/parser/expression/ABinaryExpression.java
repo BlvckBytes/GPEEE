@@ -32,12 +32,12 @@ import org.jetbrains.annotations.Nullable;
 
 @Setter
 @Getter
-public abstract class BinaryExpression extends AExpression {
+public abstract class ABinaryExpression extends AExpression {
 
   protected AExpression lhs;
   protected AExpression rhs;
 
-  public BinaryExpression(AExpression lhs, AExpression rhs, Token head, Token tail, String fullContainingExpression) {
+  public ABinaryExpression(AExpression lhs, AExpression rhs, Token head, Token tail, String fullContainingExpression) {
     super(head, tail, fullContainingExpression);
 
     this.lhs = lhs;
@@ -57,7 +57,7 @@ public abstract class BinaryExpression extends AExpression {
    * Whether the operator in this instance equals the operator of the other instance
    * @param other Instance to compare against
    */
-  public abstract boolean operatorEquals(BinaryExpression other);
+  public abstract boolean operatorEquals(ABinaryExpression other);
 
   protected abstract @Nullable String getInfixSymbol();
 }

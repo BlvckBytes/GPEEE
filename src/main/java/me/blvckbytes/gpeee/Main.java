@@ -54,7 +54,7 @@ public class Main {
     Think about how functions in separate jars would be tested... Each in their own project with their own artifact when compiling?
     That would... work, I guess?
 
-    Implement a syntax highlighter using https://plugins.jetbrains.com/docs/intellij/language-injection.html
+    Use the optimizer in the testing environment and ensure that there are tests in place which really test situations that could go wrong with the optimizer
    */
 
   public static void main(String[] args) {

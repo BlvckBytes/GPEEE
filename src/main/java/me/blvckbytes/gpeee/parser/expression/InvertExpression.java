@@ -28,7 +28,7 @@ import me.blvckbytes.gpeee.tokenizer.Token;
 import me.blvckbytes.gpeee.tokenizer.TokenType;
 import org.jetbrains.annotations.Nullable;
 
-public class InvertExpression extends UnaryExpression {
+public class InvertExpression extends AUnaryExpression {
 
   public InvertExpression(AExpression input, Token head, Token tail, String fullContainingExpression) {
     super(input, head, tail, fullContainingExpression);
