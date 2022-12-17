@@ -25,13 +25,15 @@
 package me.blvckbytes.gpeee.parser.expression;
 
 import lombok.Getter;
+import lombok.Setter;
 import me.blvckbytes.gpeee.tokenizer.Token;
 import org.jetbrains.annotations.Nullable;
 
+@Setter
 @Getter
 public abstract class UnaryExpression extends AExpression {
 
-  protected final AExpression input;
+  protected AExpression input;
 
   public UnaryExpression(AExpression input, Token head, Token tail, String fullContainingExpression) {
     super(head, tail, fullContainingExpression);

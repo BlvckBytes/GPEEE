@@ -35,6 +35,12 @@ public class FlipSignExpression extends UnaryExpression {
   }
 
   @Override
+  public String expressionify() {
+    // Negative sign is - for readability purposes - never spaced out
+    return getPrefixSymbol() + input.expressionify();
+  }
+
+  @Override
   protected @Nullable String getPrefixSymbol() {
     return TokenType.MINUS.getRepresentation();
   }

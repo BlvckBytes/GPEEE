@@ -41,6 +41,13 @@ public class MathExpression extends BinaryExpression {
   }
 
   @Override
+  public boolean operatorEquals(BinaryExpression other) {
+    if (other instanceof MathExpression)
+      return ((MathExpression) other).getOperation().equals(operation);
+    return false;
+  }
+
+  @Override
   protected @Nullable String getInfixSymbol() {
     switch (operation) {
       case ADDITION:

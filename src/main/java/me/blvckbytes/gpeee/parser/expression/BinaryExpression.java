@@ -25,15 +25,17 @@
 package me.blvckbytes.gpeee.parser.expression;
 
 import lombok.Getter;
+import lombok.Setter;
 import me.blvckbytes.gpeee.tokenizer.Token;
 import me.blvckbytes.gpeee.tokenizer.TokenType;
 import org.jetbrains.annotations.Nullable;
 
+@Setter
 @Getter
 public abstract class BinaryExpression extends AExpression {
 
-  protected final AExpression lhs;
-  protected final AExpression rhs;
+  protected AExpression lhs;
+  protected AExpression rhs;
 
   public BinaryExpression(AExpression lhs, AExpression rhs, Token head, Token tail, String fullContainingExpression) {
     super(head, tail, fullContainingExpression);
@@ -50,6 +52,12 @@ public abstract class BinaryExpression extends AExpression {
       TokenType.PARENTHESIS_CLOSE.getRepresentation()
     );
   }
+
+  /**
+   * Whether the operator in this instance equals the operator of the other instance
+   * @param other Instance to compare against
+   */
+  public abstract boolean operatorEquals(BinaryExpression other);
 
   protected abstract @Nullable String getInfixSymbol();
 }

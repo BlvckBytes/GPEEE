@@ -27,12 +27,14 @@ package me.blvckbytes.gpeee;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.Setter;
 
+@Setter
 @Getter
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class Tuple<A, B> {
-  private final A a;
-  private final B b;
+  private A a;
+  private B b;
 
   public static<A, B> Tuple<A, B> of(A a, B b) {
     return new Tuple<>(a, b);

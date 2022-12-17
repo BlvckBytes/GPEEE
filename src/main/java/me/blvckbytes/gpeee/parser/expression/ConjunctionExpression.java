@@ -37,6 +37,11 @@ public class ConjunctionExpression extends BinaryExpression {
   }
 
   @Override
+  public boolean operatorEquals(BinaryExpression other) {
+    return other instanceof ConjunctionExpression;
+  }
+
+  @Override
   protected @Nullable String getInfixSymbol() {
     return TokenType.BOOL_AND.getRepresentation();
   }

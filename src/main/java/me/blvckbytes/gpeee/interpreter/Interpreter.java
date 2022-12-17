@@ -237,7 +237,7 @@ public class Interpreter {
 
     if (expression instanceof IndexExpression) {
       IndexExpression indexExpression = (IndexExpression) expression;
-      Object keyV = evaluateExpression(indexExpression.getKey(), environment);
+      Object keyV = evaluateExpression(indexExpression.getInput(), environment);
 
       // Look up the target variable
       Object value = lookupVariable(environment, indexExpression.getTarget());

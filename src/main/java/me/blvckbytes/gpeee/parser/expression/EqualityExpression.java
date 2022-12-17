@@ -42,6 +42,13 @@ public class EqualityExpression extends BinaryExpression {
   }
 
   @Override
+  public boolean operatorEquals(BinaryExpression other) {
+    if (other instanceof EqualityExpression)
+      return ((EqualityExpression) other).getOperation().equals(operation);
+    return false;
+  }
+
+  @Override
   protected @Nullable String getInfixSymbol() {
     switch (operation) {
       case EQUAL:

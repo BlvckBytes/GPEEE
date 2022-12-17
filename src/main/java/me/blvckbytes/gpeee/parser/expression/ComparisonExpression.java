@@ -42,6 +42,13 @@ public class ComparisonExpression extends BinaryExpression {
   }
 
   @Override
+  public boolean operatorEquals(BinaryExpression other) {
+    if (other instanceof ComparisonExpression)
+      return ((ComparisonExpression) other).getOperation().equals(operation);
+    return false;
+  }
+
+  @Override
   protected @Nullable String getInfixSymbol() {
     switch (operation) {
       case LESS_THAN:

@@ -27,25 +27,30 @@ package me.blvckbytes.gpeee.parser.expression;
 import lombok.Getter;
 import me.blvckbytes.gpeee.tokenizer.Token;
 import me.blvckbytes.gpeee.tokenizer.TokenType;
+import org.jetbrains.annotations.Nullable;
 
 @Getter
-public class IndexExpression extends AExpression {
+public class IndexExpression extends UnaryExpression {
 
   private final IdentifierExpression target;
-  private final AExpression key;
 
-  public IndexExpression(IdentifierExpression target, AExpression key, Token head, Token tail, String fullContainingExpression) {
-    super(head, tail, fullContainingExpression);
+  public IndexExpression(IdentifierExpression target, AExpression input, Token head, Token tail, String fullContainingExpression) {
+    super(input, head, tail, fullContainingExpression);
 
     this.target = target;
-    this.key = key;
   }
 
   @Override
   public String expressionify() {
     return target.getSymbol() +
     TokenType.BRACKET_OPEN.getRepresentation() +
-    key.expressionify() +
+    input.expressionify() +
     TokenType.BRACKET_CLOSE.getRepresentation();
+  }
+
+  @Override
+  protected @Nullable String getPrefixSymbol() {
+    // Null, as expressionify is overridden
+    return null;
   }
 }

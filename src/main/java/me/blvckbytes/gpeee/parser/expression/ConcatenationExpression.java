@@ -37,6 +37,11 @@ public class ConcatenationExpression extends BinaryExpression {
   }
 
   @Override
+  public boolean operatorEquals(BinaryExpression other) {
+    return other instanceof ConcatenationExpression;
+  }
+
+  @Override
   protected @Nullable String getInfixSymbol() {
     return TokenType.CONCATENATE.getRepresentation();
   }
