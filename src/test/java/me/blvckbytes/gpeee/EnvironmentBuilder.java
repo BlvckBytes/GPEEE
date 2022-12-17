@@ -27,6 +27,7 @@ package me.blvckbytes.gpeee;
 import me.blvckbytes.gpeee.functions.AExpressionFunction;
 import me.blvckbytes.gpeee.interpreter.IEvaluationEnvironment;
 import me.blvckbytes.gpeee.interpreter.IValueInterpreter;
+import me.blvckbytes.gpeee.parser.expression.AExpression;
 import org.jetbrains.annotations.Nullable;
 
 import java.lang.reflect.Array;
@@ -173,7 +174,12 @@ public class EnvironmentBuilder {
 
       @Override
       public void validate(String expression, Object[] results) throws AssertionError {
-        Object value = evaluator.evaluateExpression(evaluator.parseString(expression), env);
+        AExpression ast = evaluator.parseString(expression);
+
+        // Optimize, in order to also test the optimizer with all available tests
+        ast = evaluator.optimizeExpression(ast);
+
+        Object value = evaluator.evaluateExpression(ast, env);
 
         AssertionError lastThrow = null;
         for (Object result : results) {

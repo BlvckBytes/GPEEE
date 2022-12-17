@@ -43,7 +43,7 @@ public class MathOperatorTests {
     new EnvironmentBuilder()
       .launch(validator -> {
         validator.validate("2^3 + 1", Math.pow(2, 3) + 1);
-        validator.validate("1 - 2^3 + 3", 1 - Math.pow(2, 3) + 3);
+        validator.validate("1 - 2^3 * 3 * 4 * 5", 1 - Math.pow(2, 3) * 3 * 4 * 5);
       });
   }
 
