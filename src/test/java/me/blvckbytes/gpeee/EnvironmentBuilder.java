@@ -201,6 +201,11 @@ public class EnvironmentBuilder {
   }
 
   private void validateResult(Object resultValue, Object[] results) {
+
+    // Could only stem from direct member/index access of an integer, convert for easier comparison
+    if (resultValue instanceof Integer)
+      resultValue = ((Integer) resultValue).longValue();
+
     AssertionError lastThrow = null;
     for (Object result : results) {
 

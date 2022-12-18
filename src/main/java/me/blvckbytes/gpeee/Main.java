@@ -136,7 +136,12 @@ public class Main {
           vars.put("my_map", Map.of(
             "red", "#FF0000",
             "green", "#00FF00",
-            "blue", "#0000FF"
+            "blue", "#0000FF",
+            "another_map", Map.of(
+              "red", "#FF0000",
+              "green", "#00FF00",
+              "blue", "#0000FF"
+            )
           ));
 
           return vars;
