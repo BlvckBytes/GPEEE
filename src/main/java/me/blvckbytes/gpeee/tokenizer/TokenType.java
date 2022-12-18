@@ -31,6 +31,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.Arrays;
 import java.util.Comparator;
+import java.util.function.Function;
 
 @Getter
 @AllArgsConstructor
@@ -166,14 +167,14 @@ public enum TokenType {
   DIVISION(TokenCategory.OPERATOR, "/", tokenizer -> tryCollectSequenceWithNextCheck(tokenizer, null, '/')),
   MODULO(TokenCategory.OPERATOR, "%", tokenizer -> tryCollectSequenceWithNextCheck(tokenizer, null, '%')),
   PLUS(TokenCategory.OPERATOR, "+", tokenizer -> tryCollectSequenceWithNextCheck(tokenizer, null, '+')),
-  MINUS(TokenCategory.OPERATOR, "-", tokenizer -> tryCollectSequenceWithNextCheck(tokenizer, '>', '-')),
+  MINUS(TokenCategory.OPERATOR, "-", tokenizer -> tryCollectSequenceWithNextCheck(tokenizer, c -> c == '>', '-')),
 
-  GREATER_THAN(TokenCategory.OPERATOR, ">", tokenizer -> tryCollectSequenceWithNextCheck(tokenizer, '=', '>')),
+  GREATER_THAN(TokenCategory.OPERATOR, ">", tokenizer -> tryCollectSequenceWithNextCheck(tokenizer, c -> c == '=', '>')),
   GREATER_THAN_OR_EQUAL(TokenCategory.OPERATOR, ">=", tokenizer -> tryCollectSequenceWithNextCheck(tokenizer, null, '>', '=')),
-  LESS_THAN(TokenCategory.OPERATOR, "<", tokenizer -> tryCollectSequenceWithNextCheck(tokenizer, '=', '<')),
+  LESS_THAN(TokenCategory.OPERATOR, "<", tokenizer -> tryCollectSequenceWithNextCheck(tokenizer, c -> c == '=', '<')),
   LESS_THAN_OR_EQUAL(TokenCategory.OPERATOR, "<=", tokenizer -> tryCollectSequenceWithNextCheck(tokenizer, null, '<', '=')),
-  VALUE_EQUALS(TokenCategory.OPERATOR, "==", tokenizer -> tryCollectSequenceWithNextCheck(tokenizer, '=', '=', '=')),
-  VALUE_NOT_EQUALS(TokenCategory.OPERATOR, "!=", tokenizer -> tryCollectSequenceWithNextCheck(tokenizer, '=', '!', '=')),
+  VALUE_EQUALS(TokenCategory.OPERATOR, "==", tokenizer -> tryCollectSequenceWithNextCheck(tokenizer, c -> c == '=', '=', '=')),
+  VALUE_NOT_EQUALS(TokenCategory.OPERATOR, "!=", tokenizer -> tryCollectSequenceWithNextCheck(tokenizer, c -> c == '=', '!', '=')),
   VALUE_EQUALS_EXACT(TokenCategory.OPERATOR, "===", tokenizer -> tryCollectSequenceWithNextCheck(tokenizer, null, '=', '=', '=')),
   VALUE_NOT_EQUALS_EXACT(TokenCategory.OPERATOR, "!==", tokenizer -> tryCollectSequenceWithNextCheck(tokenizer, null, '!', '=', '=')),
 
@@ -187,7 +188,7 @@ public enum TokenType {
   KW_ELSE(TokenCategory.KEYWORD, "else", tokenizer -> tryCollectSequenceWithNextCheck(tokenizer, null, "else".toCharArray())),
 
   ARROW(TokenCategory.OPERATOR, "->", tokenizer -> tryCollectSequenceWithNextCheck(tokenizer, null, "->".toCharArray())),
-  ASSIGN(TokenCategory.OPERATOR, "=", tokenizer -> tryCollectSequenceWithNextCheck(tokenizer, '=', '=')),
+  ASSIGN(TokenCategory.OPERATOR, "=", tokenizer -> tryCollectSequenceWithNextCheck(tokenizer, c -> c == '=', '=')),
 
   //=========================================================================//
   //                                 Symbols                                 //
@@ -196,7 +197,7 @@ public enum TokenType {
   PARENTHESIS_OPEN(TokenCategory.SYMBOL, "(", tokenizer -> tryCollectSequenceWithNextCheck(tokenizer, null, '(')),
   PARENTHESIS_CLOSE(TokenCategory.SYMBOL, ")", tokenizer -> tryCollectSequenceWithNextCheck(tokenizer, null, ')')),
   COMMA(TokenCategory.SYMBOL, ",", tokenizer -> tryCollectSequenceWithNextCheck(tokenizer, null, ',')),
-  DOT(TokenCategory.SYMBOL, ".", tokenizer -> tryCollectSequenceWithNextCheck(tokenizer, null, '.')),
+  DOT(TokenCategory.SYMBOL, ".", tokenizer -> tryCollectSequenceWithNextCheck(tokenizer, TokenType::isDigit, '.')),
   BRACKET_OPEN(TokenCategory.SYMBOL, "[", tokenizer -> tryCollectSequenceWithNextCheck(tokenizer, null, '[')),
   BRACKET_CLOSE(TokenCategory.SYMBOL, "]", tokenizer -> tryCollectSequenceWithNextCheck(tokenizer, null, ']')),
 
@@ -250,7 +251,7 @@ public enum TokenType {
       char c = tokenizer.nextChar();
 
       // Collect as many digits as possible
-      if (c >= '0' && c <= '9')
+      if (isDigit(c))
         result.append(c);
 
       // Whitespace or newline stops the number notation
@@ -275,13 +276,13 @@ public enum TokenType {
     return CollectorResult.READ_OKAY;
   }
 
-  private static @Nullable String tryCollectSequenceWithNextCheck(ITokenizer tokenizer, @Nullable Character notNext, char... sequence) {
+  private static @Nullable String tryCollectSequenceWithNextCheck(ITokenizer tokenizer, @Nullable Function<Character, Boolean> notNextCheck, char... sequence) {
     StringBuilder result = new StringBuilder();
 
     if (collectSequence(tokenizer, result, sequence) != CollectorResult.READ_OKAY)
       return null;
 
-    if (notNext != null && tokenizer.hasNextChar() && tokenizer.peekNextChar() == notNext)
+    if (notNextCheck != null && tokenizer.hasNextChar() && notNextCheck.apply(tokenizer.peekNextChar()))
       return null;
 
     return result.toString();
@@ -343,7 +344,15 @@ public enum TokenType {
       (c >= 'a' && c <= 'z') ||
       (c >= 'A' && c <= 'Z') ||
       // Underscores as well as numbers aren't allowed as the first character
-      (!isFirst && (c == '_' || c >= '0' && c <= '9'))
+      (!isFirst && (c == '_' || isDigit(c)))
     );
+  }
+
+  /**
+   * Checks whether the provided character is a digit
+   * @param c Character in question
+   */
+  private static boolean isDigit(char c) {
+    return c >= '0' && c <= '9';
   }
 }
