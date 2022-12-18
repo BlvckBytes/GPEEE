@@ -402,6 +402,8 @@ some of the most used operators have been implemented. Operators are listed top 
 | .                           | A.B                          | Accesses the member called B of object A             | 1          |
 | **Indexing**                |
 | []                          | my_map["my_key"], my_list[0] | Access a map key or a list index                     | 2          |
+| **Flip Sign Operator**      |
+| -                           | -A                           | Yields -1 * A                                        | 3          |
 | **Negation Operator**       |
 | not                         | not A                        | Yields the inverse of A                              | 3          |
 | **Exponentiation Operator** |

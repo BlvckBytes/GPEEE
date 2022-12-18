@@ -65,6 +65,7 @@ public class Parser {
       this::parseMultiplicativeExpression,
       this::parseExponentiationExpression,
       this::parseNegationExpression,
+      this::parseFlipSignExpression,
       this::parseIndexExpression,
       this::parseMemberAccessExpression,
 
@@ -112,7 +113,7 @@ public class Parser {
     );
   }
 
-  private @Nullable AExpression parseIfThenElseExpression(ITokenizer tokenizer, int nextPrecedence) throws AEvaluatorError {
+  private @Nullable AExpression parseIfThenElseExpression(ITokenizer tokenizer, int precedenceSelf) throws AEvaluatorError {
     //#if mvn.project.property.production != "true"
     logger.logDebug(DebugLogLevel.PARSER, "Trying to parse a if then else expression");
     //#endif
@@ -124,7 +125,7 @@ public class Parser {
       //#if mvn.project.property.production != "true"
       logger.logDebug(DebugLogLevel.PARSER, "Not a if then else expression");
       //#endif
-      return invokeNextPrecedenceParser(tokenizer, nextPrecedence);
+      return invokeNextPrecedenceParser(tokenizer, precedenceSelf);
     }
 
     // Consume if keyword
@@ -150,7 +151,7 @@ public class Parser {
     return new IfThenElseExpression(condition, positiveBody, negativeBody, head, tk, tokenizer.getRawText());
   }
 
-  private @Nullable AExpression parseCallbackExpression(ITokenizer tokenizer, int nextPrecedence) throws AEvaluatorError {
+  private @Nullable AExpression parseCallbackExpression(ITokenizer tokenizer, int precedenceSelf) throws AEvaluatorError {
     //#if mvn.project.property.production != "true"
     logger.logDebug(DebugLogLevel.PARSER, "Trying to parse a callback expression");
     //#endif
@@ -163,7 +164,7 @@ public class Parser {
       //#if mvn.project.property.production != "true"
       logger.logDebug(DebugLogLevel.PARSER, "Not a callback expression");
       //#endif
-      return invokeNextPrecedenceParser(tokenizer, nextPrecedence);
+      return invokeNextPrecedenceParser(tokenizer, precedenceSelf);
     }
 
     tk = tokenizer.peekToken();
@@ -173,7 +174,7 @@ public class Parser {
       //#if mvn.project.property.production != "true"
       logger.logDebug(DebugLogLevel.PARSER, "Not a callback expression");
       //#endif
-      return invokeNextPrecedenceParser(tokenizer, nextPrecedence);
+      return invokeNextPrecedenceParser(tokenizer, precedenceSelf);
     }
 
     // Save once before consuming anything
@@ -198,7 +199,7 @@ public class Parser {
           logger.logDebug(DebugLogLevel.PARSER, "Not a callback expression");
           //#endif
           tokenizer.restoreState(true);
-          return invokeNextPrecedenceParser(tokenizer, nextPrecedence);
+          return invokeNextPrecedenceParser(tokenizer, precedenceSelf);
         }
 
         // Consume that comma
@@ -213,7 +214,7 @@ public class Parser {
         logger.logDebug(DebugLogLevel.PARSER, "Not a callback expression");
         //#endif
         tokenizer.restoreState(true);
-        return invokeNextPrecedenceParser(tokenizer, nextPrecedence);
+        return invokeNextPrecedenceParser(tokenizer, precedenceSelf);
       }
 
       signature.add((IdentifierExpression) identifier);
@@ -242,7 +243,7 @@ public class Parser {
     );
   }
 
-  private @Nullable AExpression parseFunctionInvocationExpression(ITokenizer tokenizer, int nextPrecedence) throws AEvaluatorError {
+  private @Nullable AExpression parseFunctionInvocationExpression(ITokenizer tokenizer, int precedenceSelf) throws AEvaluatorError {
     //#if mvn.project.property.production != "true"
     logger.logDebug(DebugLogLevel.PARSER, "Trying to parse a function invocation expression");
     //#endif
@@ -254,7 +255,7 @@ public class Parser {
       //#if mvn.project.property.production != "true"
       logger.logDebug(DebugLogLevel.PARSER, "Not a function invocation expression");
       //#endif
-      return invokeNextPrecedenceParser(tokenizer, nextPrecedence);
+      return invokeNextPrecedenceParser(tokenizer, precedenceSelf);
     }
 
     boolean flipResult = false;
@@ -278,7 +279,7 @@ public class Parser {
 
         // Put back the minus
         tokenizer.restoreState(true);
-        return invokeNextPrecedenceParser(tokenizer, nextPrecedence);
+        return invokeNextPrecedenceParser(tokenizer, precedenceSelf);
       }
     }
 
@@ -299,7 +300,7 @@ public class Parser {
 
       // Put back the token
       tokenizer.restoreState(true);
-      return invokeNextPrecedenceParser(tokenizer, nextPrecedence);
+      return invokeNextPrecedenceParser(tokenizer, precedenceSelf);
     }
 
     // Not going to go need to restore anymore, this has to be a function invocation
@@ -386,6 +387,12 @@ public class Parser {
     return functionExpression;
   }
 
+  private @Nullable AExpression parseFlipSignExpression(ITokenizer tokenizer, int precedenceSelf) throws AEvaluatorError {
+    return parseUnaryExpression((input, h, t, op) -> (
+      new FlipSignExpression(input, h, t, tokenizer.getRawText())
+    ), tokenizer, precedenceSelf, TokenType.MINUS);
+  }
+
   private @Nullable AExpression parseParenthesisExpression(ITokenizer tokenizer, int nextPrecedence) throws AEvaluatorError {
     //#if mvn.project.property.production != "true"
     logger.logDebug(DebugLogLevel.PARSER, "Trying to parse a parenthesis expression");
@@ -393,48 +400,13 @@ public class Parser {
 
     Token tk = tokenizer.peekToken();
 
-    // End reached
-    if (tk == null)
-      return invokeNextPrecedenceParser(tokenizer, nextPrecedence);
-
-    Token firstToken = tk;
-    boolean consumedFirstToken = false;
-
-    // The notation -() will flip the resulting number's sign
-    // The notation !() will negate the resulting boolean
-    if (tk.getType() == TokenType.MINUS || tk.getType() == TokenType.BOOL_NOT) {
-      tokenizer.saveState(true);
-
-      tokenizer.consumeToken();
-      consumedFirstToken = true;
-
-      //#if mvn.project.property.production != "true"
-      logger.logDebug(DebugLogLevel.PARSER, "Found and consumed a parentheses modifier token");
-      //#endif
-
-      tk = tokenizer.peekToken();
-    }
-
     // Not a parenthesis expression
     if (tk == null || tk.getType() != TokenType.PARENTHESIS_OPEN) {
-
-      // Put back the consumed token which would have had an effect on these parentheses
-      if (consumedFirstToken) {
-        //#if mvn.project.property.production != "true"
-        logger.logDebug(DebugLogLevel.PARSER, "Putting the modifier token back");
-        //#endif
-        tokenizer.restoreState(true);
-      }
-
       //#if mvn.project.property.production != "true"
       logger.logDebug(DebugLogLevel.PARSER, "Not a parenthesis expression");
       //#endif
       return invokeNextPrecedenceParser(tokenizer, nextPrecedence);
     }
-
-    // Don't need to return anymore as we're now inside parentheses
-    if (consumedFirstToken)
-      tokenizer.discardState(true);
 
     // Consume the opening parenthesis
     tokenizer.consumeToken();
@@ -454,23 +426,6 @@ public class Parser {
     //#if mvn.project.property.production != "true"
     logger.logDebug(DebugLogLevel.PARSER, "Validated the closing parenthesis");
     //#endif
-
-    // Wrap the expression within a unary expression based on the first token's type
-    switch (firstToken.getType()) {
-      case MINUS:
-        //#if mvn.project.property.production != "true"
-        logger.logDebug(DebugLogLevel.PARSER, "Wrapping expression in order to flip it's sign");
-        //#endif
-        expression = new FlipSignExpression(expression, firstToken, expression.getTail(), tokenizer.getRawText());
-        break;
-
-      case BOOL_NOT:
-        //#if mvn.project.property.production != "true"
-        logger.logDebug(DebugLogLevel.PARSER, "Wrapping expression in order to invert it");
-        //#endif
-        expression = new InvertExpression(expression, firstToken, expression.getTail(), tokenizer.getRawText());
-        break;
-    }
 
     return expression;
   }
