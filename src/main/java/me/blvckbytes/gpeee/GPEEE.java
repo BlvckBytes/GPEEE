@@ -70,7 +70,7 @@ public class GPEEE implements IExpressionEvaluator, IStandardFunctionRegistry {
 
     this.parser = new Parser(this.logger);
     this.interpreter = new Interpreter(this.logger, this);
-    this.optimizer = new Optimizer(this.logger, this.interpreter);
+    this.optimizer = new Optimizer(this.logger, this.interpreter, this);
     this.jarLoader = new FunctionJarLoader();
 
     this.dependencyMap = new HashMap<>();

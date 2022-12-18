@@ -28,6 +28,7 @@ import lombok.AllArgsConstructor;
 import me.blvckbytes.gpeee.GPEEE;
 import me.blvckbytes.gpeee.Tuple;
 import me.blvckbytes.gpeee.error.AEvaluatorError;
+import me.blvckbytes.gpeee.functions.IStandardFunctionRegistry;
 import me.blvckbytes.gpeee.interpreter.Interpreter;
 import me.blvckbytes.gpeee.logging.DebugLogLevel;
 import me.blvckbytes.gpeee.logging.ILogger;
@@ -41,6 +42,7 @@ public class Optimizer {
 
   private final ILogger logger;
   private final Interpreter interpreter;
+  private final IStandardFunctionRegistry standardFunctionRegistry;
 
   /**
    * Optimizes an AST by evaluating static expressions ahead of time
@@ -214,23 +216,53 @@ public class Optimizer {
       return unary;
     }
 
+    if (expression instanceof CallbackExpression) {
+      //#if mvn.project.property.production != "true"
+      logger.logDebug(DebugLogLevel.OPTIMIZER, "Encountered a callback expression");
+      //#endif
+
+      CallbackExpression callback = (CallbackExpression) expression;
+
+      //#if mvn.project.property.production != "true"
+      logger.logDebug(DebugLogLevel.OPTIMIZER, "Trying to optimize callback body");
+      //#endif
+
+      // Try to optimize it's body
+      optimizeASTSub(callback.getBody(), callback::setBody);
+    }
+
     if (expression instanceof FunctionInvocationExpression) {
       //#if mvn.project.property.production != "true"
       logger.logDebug(DebugLogLevel.OPTIMIZER, "Encountered a function invocation expression");
       //#endif
 
       FunctionInvocationExpression invocation = (FunctionInvocationExpression) expression;
+      String name = invocation.getName().getSymbol();
 
       // Try to optimize each argument one by one
+      boolean allArgsResolvable = true;
       for (int i = 0; i < invocation.getArguments().size(); i++) {
         //#if mvn.project.property.production != "true"
         logger.logDebug(DebugLogLevel.OPTIMIZER, "Trying to optimize function argument " + (i + 1));
         //#endif
         Tuple<AExpression, @Nullable IdentifierExpression> argument = invocation.getArguments().get(i);
         optimizeASTSub(argument.getA(), argument::setA);
+
+        // Argument cannot be resolved, even after optimization
+        if (!isImmediatelyResolvable(argument.getA()))
+          allArgsResolvable = false;
       }
 
-      // Function invocations will never be optimized away
+      // This invocation targets a standard function which is available at the time of optimization
+      // And all arguments are immediately resolvable, so this is in effect another "static value"
+      if (standardFunctionRegistry.lookup(name) != null && allArgsResolvable) {
+        //#if mvn.project.property.production != "true"
+        logger.logDebug(DebugLogLevel.OPTIMIZER, "Evaluating std-function call to " + name + " with all resolvable arguments");
+        //#endif
+        return wrapValue(invocation, interpreter.evaluateExpression(invocation, GPEEE.EMPTY_ENVIRONMENT));
+      }
+
+      // Function invocation cannot be optimized away
       return expression;
     }
 

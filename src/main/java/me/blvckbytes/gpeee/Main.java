@@ -57,6 +57,8 @@ public class Main {
 
     if <expr> <expr> else <expr>
     maybe a member-operator? (really think this one through)
+
+    more std functions: listof, mapof
    */
 
   public static void main(String[] args) {

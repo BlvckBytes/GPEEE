@@ -25,6 +25,7 @@
 package me.blvckbytes.gpeee.parser.expression;
 
 import lombok.Getter;
+import lombok.Setter;
 import me.blvckbytes.gpeee.tokenizer.Token;
 import me.blvckbytes.gpeee.tokenizer.TokenType;
 
@@ -34,7 +35,9 @@ import java.util.List;
 public class CallbackExpression extends AExpression {
 
   private final List<IdentifierExpression> signature;
-  private final AExpression body;
+
+  @Setter
+  private AExpression body;
 
   public CallbackExpression(List<IdentifierExpression> signature, AExpression body, Token head, Token tail, String fullContainingExpression) {
     super(head, tail, fullContainingExpression);
