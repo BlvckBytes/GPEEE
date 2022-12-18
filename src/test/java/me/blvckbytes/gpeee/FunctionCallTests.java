@@ -26,10 +26,12 @@ package me.blvckbytes.gpeee;
 
 import me.blvckbytes.gpeee.error.InvalidFunctionArgumentTypeError;
 import me.blvckbytes.gpeee.error.NonNamedFunctionArgumentError;
+import me.blvckbytes.gpeee.functions.AExpressionFunction;
 import me.blvckbytes.gpeee.functions.FExpressionFunctionBuilder;
 import org.junit.Test;
 
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 public class FunctionCallTests {
@@ -56,10 +58,35 @@ public class FunctionCallTests {
           .withArg("number", "number to append to the hello string", true)
           .build((env, args) -> "hello " + env.getValueInterpreter().asString(args.get(0)))
       )
+      .withFunction(
+        "my_func2",
+        new FExpressionFunctionBuilder()
+          .withArg("number", "number to prepend to the callback's result", true, Long.class)
+          .withArg("cb", "callback to evaluate", false, AExpressionFunction.class)
+          .withArg("number2", "number to append to the callback result", false, Long.class)
+          .build((env, args) -> {
+            String result = env.getValueInterpreter().asString(args.get(0));
+
+            if (args.get(1) != null)
+              result += env.getValueInterpreter().asString(((AExpressionFunction) args.get(1)).apply(env, List.of(result)));
+
+            if (args.get(2) != null)
+              result += env.getValueInterpreter().asString(args.get(2));
+
+            return result;
+          })
+      )
       .launch(validator -> {
         validator.validate("my_func(2)", "hello 2");
         validator.validate("my_func(55)", "hello 55");
         validator.validateThrows("my_func()", InvalidFunctionArgumentTypeError.class);
+
+        validator.validate("my_func2(2)", "2");
+        validator.validate("my_func2(2, () -> \"callback\")", "2callback");
+        validator.validate("my_func2(2, (first) -> first & \"callback\", 3)", "22callback3");
+        validator.validate("my_func2(2, cb=() -> \"callback\", number2=3)", "2callback3");
+        validator.validate("my_func2(2, number2=3)", "23");
+        validator.validateThrows("my_func2()", InvalidFunctionArgumentTypeError.class);
       });
   }
 

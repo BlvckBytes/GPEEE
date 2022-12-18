@@ -55,8 +55,6 @@ public class Main {
     Think about how functions in separate jars would be tested... Each in their own project with their own artifact when compiling?
     That would... work, I guess?
 
-    // Test named parameter with callback: name=() -> <expr>
-
     more std functions: listof, mapof
    */
 
