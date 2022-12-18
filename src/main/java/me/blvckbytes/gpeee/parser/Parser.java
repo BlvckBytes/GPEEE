@@ -95,13 +95,17 @@ public class Parser {
   /////////////////////// Complex Expressions ///////////////////////
 
   private @Nullable AExpression parseCallbackExpression(ITokenizer tokenizer) throws AEvaluatorError {
+    //#if mvn.project.property.production != "true"
     logger.logDebug(DebugLogLevel.PARSER, "Trying to parse a callback expression");
+    //#endif
 
     Token tk = tokenizer.peekToken();
 
     // There's no opening parenthesis as the next token
     if (tk == null || tk.getType() != TokenType.PARENTHESIS_OPEN) {
+      //#if mvn.project.property.production != "true"
       logger.logDebug(DebugLogLevel.PARSER, "Not a callback expression");
+      //#endif
       return null;
     }
 
@@ -115,13 +119,17 @@ public class Parser {
 
     // As long as there is no closing parenthesis, there are still arguments left
     while ((tk = tokenizer.peekToken()) != null && tk.getType() != TokenType.PARENTHESIS_CLOSE) {
+      //#if mvn.project.property.production != "true"
       logger.logDebug(DebugLogLevel.PARSER, "Parsing argument " + signature.size());
+      //#endif
 
       if (signature.size() > 0) {
         // Arguments other than the first one need to be separated out by a comma
         // If there's no comma, this cannot be a callback expression and is more likely a parenthesis expression
         if (tk.getType() != TokenType.COMMA) {
+          //#if mvn.project.property.production != "true"
           logger.logDebug(DebugLogLevel.PARSER, "Not a callback expression");
+          //#endif
           tokenizer.restoreState(true);
           return null;
         }
@@ -134,7 +142,9 @@ public class Parser {
 
       // Anything else than an identifier cannot be within a callback's parentheses
       if (!(identifier instanceof IdentifierExpression)) {
+        //#if mvn.project.property.production != "true"
         logger.logDebug(DebugLogLevel.PARSER, "Not a callback expression");
+        //#endif
         tokenizer.restoreState(true);
         return null;
       }
@@ -159,13 +169,17 @@ public class Parser {
   }
 
   private @Nullable AExpression parseIndexExpression(ITokenizer tokenizer) throws AEvaluatorError {
+    //#if mvn.project.property.production != "true"
     logger.logDebug(DebugLogLevel.PARSER, "Trying to parse a index expression");
+    //#endif
 
     Token tk = tokenizer.peekToken();
 
     // There's no identifier as the next token
     if (tk == null || tk.getType() != TokenType.IDENTIFIER) {
+      //#if mvn.project.property.production != "true"
       logger.logDebug(DebugLogLevel.PARSER, "Not a index expression");
+      //#endif
       return null;
     }
 
@@ -180,7 +194,9 @@ public class Parser {
 
     // There's no opening bracket as the next token
     if (tk == null || tk.getType() != TokenType.BRACKET_OPEN) {
+      //#if mvn.project.property.production != "true"
       logger.logDebug(DebugLogLevel.PARSER, "Not a index expression");
+      //#endif
 
       tokenizer.restoreState(true);
       return null;
@@ -193,7 +209,9 @@ public class Parser {
     tokenizer.consumeToken();
 
     // Parse the key expression
+    //#if mvn.project.property.production != "true"
     logger.logDebug(DebugLogLevel.PARSER, "Parsing the indexing key expression");
+    //#endif
     AExpression key = invokeLowestPrecedenceParser(tokenizer);
 
     // Index expressions have to be terminated with a closing bracket
@@ -211,13 +229,17 @@ public class Parser {
   }
 
   private @Nullable AExpression parseFunctionInvocationExpression(ITokenizer tokenizer) throws AEvaluatorError {
+    //#if mvn.project.property.production != "true"
     logger.logDebug(DebugLogLevel.PARSER, "Trying to parse a function invocation expression");
+    //#endif
 
     Token tk = tokenizer.peekToken();
 
     // There's no identifier or minus as the next token
     if (tk == null || !(tk.getType() == TokenType.IDENTIFIER || tk.getType() == TokenType.MINUS)) {
+      //#if mvn.project.property.production != "true"
       logger.logDebug(DebugLogLevel.PARSER, "Not a function invocation expression");
+      //#endif
       return null;
     }
 
@@ -236,7 +258,9 @@ public class Parser {
 
       // There's no identifier as the next token, hand over to the next higher precedence parser
       if (tk == null || tk.getType() != TokenType.IDENTIFIER) {
+        //#if mvn.project.property.production != "true"
         logger.logDebug(DebugLogLevel.PARSER, "Not a function invocation expression");
+        //#endif
 
         // Put back the minus
         tokenizer.restoreState(true);
@@ -255,7 +279,9 @@ public class Parser {
 
     // There's no opening parenthesis as the next token
     if (tk == null || tk.getType() != TokenType.PARENTHESIS_OPEN) {
+      //#if mvn.project.property.production != "true"
       logger.logDebug(DebugLogLevel.PARSER, "Not a function invocation expression");
+      //#endif
 
       // Put back the token
       tokenizer.restoreState(true);
@@ -276,7 +302,9 @@ public class Parser {
 
     // As long as there is no closing parenthesis, there are still arguments left
     while ((tk = tokenizer.peekToken()) != null && tk.getType() != TokenType.PARENTHESIS_CLOSE) {
+      //#if mvn.project.property.production != "true"
       logger.logDebug(DebugLogLevel.PARSER, "Parsing argument " + arguments.size());
+      //#endif
 
       if (arguments.size() > 0) {
         // Arguments other than the first one need to be separated out by a comma
@@ -289,7 +317,9 @@ public class Parser {
 
       Token identifier = null;
       if ((tk = tokenizer.peekToken()) != null && tk.getType() == TokenType.IDENTIFIER) {
+        //#if mvn.project.property.production != "true"
         logger.logDebug(DebugLogLevel.PARSER, "Trying to parse a named argument");
+        //#endif
 
         // Save before consuming so the next token can be peeked too
         tokenizer.saveState(true);
@@ -297,7 +327,9 @@ public class Parser {
 
         // There's no assign token following this identifier, it cannot be a named argument
         if ((tk = tokenizer.peekToken()) == null || tk.getType() != TokenType.ASSIGN) {
+          //#if mvn.project.property.production != "true"
           logger.logDebug(DebugLogLevel.PARSER, "Not a named argument");
+          //#endif
 
           // Put the identifier back
           tokenizer.restoreState(true);
@@ -342,7 +374,9 @@ public class Parser {
   }
 
   private @Nullable AExpression parseParenthesisExpression(ITokenizer tokenizer) throws AEvaluatorError {
+    //#if mvn.project.property.production != "true"
     logger.logDebug(DebugLogLevel.PARSER, "Trying to parse a parenthesis expression");
+    //#endif
 
     Token tk = tokenizer.peekToken();
 
@@ -361,7 +395,9 @@ public class Parser {
       tokenizer.consumeToken();
       consumedFirstToken = true;
 
+      //#if mvn.project.property.production != "true"
       logger.logDebug(DebugLogLevel.PARSER, "Found and consumed a parentheses modifier token");
+      //#endif
 
       tk = tokenizer.peekToken();
     }
@@ -371,11 +407,15 @@ public class Parser {
 
       // Put back the consumed token which would have had an effect on these parentheses
       if (consumedFirstToken) {
+        //#if mvn.project.property.production != "true"
         logger.logDebug(DebugLogLevel.PARSER, "Putting the modifier token back");
+        //#endif
         tokenizer.restoreState(true);
       }
 
+      //#if mvn.project.property.production != "true"
       logger.logDebug(DebugLogLevel.PARSER, "Not a parenthesis expression");
+      //#endif
       return null;
     }
 
@@ -386,7 +426,9 @@ public class Parser {
     // Consume the opening parenthesis
     tokenizer.consumeToken();
 
+    //#if mvn.project.property.production != "true"
     logger.logDebug(DebugLogLevel.PARSER, "Trying to parse the inner expression");
+    //#endif
 
     // Parse the expression within the parentheses (start climbing the ladder all over again)
     AExpression expression = invokeLowestPrecedenceParser(tokenizer);
@@ -397,17 +439,23 @@ public class Parser {
     if (tk == null || tk.getType() != TokenType.PARENTHESIS_CLOSE)
       throw new UnexpectedTokenError(tokenizer, tk, TokenType.PARENTHESIS_CLOSE);
 
+    //#if mvn.project.property.production != "true"
     logger.logDebug(DebugLogLevel.PARSER, "Validated the closing parenthesis");
+    //#endif
 
     // Wrap the expression within a unary expression based on the first token's type
     switch (firstToken.getType()) {
       case MINUS:
+        //#if mvn.project.property.production != "true"
         logger.logDebug(DebugLogLevel.PARSER, "Wrapping expression in order to flip it's sign");
+        //#endif
         expression = new FlipSignExpression(expression, firstToken, expression.getTail(), tokenizer.getRawText());
         break;
 
       case BOOL_NOT:
+        //#if mvn.project.property.production != "true"
         logger.logDebug(DebugLogLevel.PARSER, "Wrapping expression in order to invert it");
+        //#endif
         expression = new InvertExpression(expression, firstToken, expression.getTail(), tokenizer.getRawText());
         break;
     }
@@ -560,7 +608,9 @@ public class Parser {
   //////////////////////// Main Expressions ////////////////////////
 
   private AExpression parseExpression(ITokenizer tokenizer, int precedenceSelf) throws AEvaluatorError {
+    //#if mvn.project.property.production != "true"
     logger.logDebug(DebugLogLevel.PARSER, "Trying to parse an expression");
+    //#endif
     AExpression expression;
 
     // Try to parse a callback expression before a parenthesis expression, as it's way easier
@@ -587,7 +637,9 @@ public class Parser {
   }
 
   private AExpression parsePrimaryExpression(ITokenizer tokenizer) throws AEvaluatorError {
+    //#if mvn.project.property.production != "true"
     logger.logDebug(DebugLogLevel.PARSER, "Trying to parse a primary expression");
+    //#endif
 
     Token tk = tokenizer.consumeToken();
 
@@ -614,33 +666,47 @@ public class Parser {
 
     switch (tk.getType()) {
       case LONG:
+        //#if mvn.project.property.production != "true"
         logger.logDebug(DebugLogLevel.PARSER, "Found an integer");
+        //#endif
         return new LongExpression((isNegative ? -1 : 1) * Integer.parseInt(tk.getValue()), head, tk, tokenizer.getRawText());
 
       case DOUBLE:
+        //#if mvn.project.property.production != "true"
         logger.logDebug(DebugLogLevel.PARSER, "Found a double");
+        //#endif
         return new DoubleExpression((isNegative ? -1 : 1) * Double.parseDouble(tk.getValue()), head, tk, tokenizer.getRawText());
 
       case STRING:
+        //#if mvn.project.property.production != "true"
         logger.logDebug(DebugLogLevel.PARSER, "Found a string");
+        //#endif
         return new StringExpression(tk.getValue(), head, tk, tokenizer.getRawText());
 
       case IDENTIFIER: {
+        //#if mvn.project.property.production != "true"
         logger.logDebug(DebugLogLevel.PARSER, "Found an identifier");
+        //#endif
         IdentifierExpression identifier = new IdentifierExpression(tk.getValue(), tk, tk, tokenizer.getRawText());
         return isNegative ? new FlipSignExpression(identifier, head, tk, tokenizer.getRawText()) : identifier;
       }
 
       case TRUE:
+        //#if mvn.project.property.production != "true"
         logger.logDebug(DebugLogLevel.PARSER, "Found the true literal");
+        //#endif
         return new LiteralExpression(LiteralType.TRUE, tk, tk, tokenizer.getRawText());
 
       case FALSE:
+        //#if mvn.project.property.production != "true"
         logger.logDebug(DebugLogLevel.PARSER, "Found the false literal");
+        //#endif
       return new LiteralExpression(LiteralType.FALSE, tk, tk, tokenizer.getRawText());
 
       case NULL:
+        //#if mvn.project.property.production != "true"
         logger.logDebug(DebugLogLevel.PARSER, "Found the null literal");
+        //#endif
       return new LiteralExpression(LiteralType.NULL, tk, tk, tokenizer.getRawText());
 
       default:
@@ -680,13 +746,17 @@ public class Parser {
   }
 
   private AExpression parseUnaryExpression(FUnaryExpressionWrapper wrapper, ITokenizer tokenizer, int precedenceSelf, TokenType... operators) {
+    //#if mvn.project.property.production != "true"
     logger.logDebug(DebugLogLevel.PARSER, "Trying to parse a unary expression for the operator " + Arrays.stream(operators).map(Enum::name).collect(Collectors.joining("|")));
+    //#endif
 
     Token tk = tokenizer.peekToken();
 
     // There's no not operator as the next token, hand over to the next higher precedence parser
     if (tk == null || !isOperator(operators, tk)) {
+      //#if mvn.project.property.production != "true"
       logger.logDebug(DebugLogLevel.PARSER, "Not a negotiation expression");
+      //#endif
       return invokeNextPrecedenceParser(tokenizer, precedenceSelf);
     }
 
@@ -694,14 +764,18 @@ public class Parser {
     Token operator = tokenizer.consumeToken();
 
     // Parse the following expression
+    //#if mvn.project.property.production != "true"
     logger.logDebug(DebugLogLevel.PARSER, "Trying to parse an input for this expression");
+    //#endif
     AExpression expression = invokeNextPrecedenceParser(tokenizer, precedenceSelf);
 
     return wrapper.apply(expression, operator, expression.getTail(), operator);
   }
 
   private AExpression parseBinaryExpression(FBinaryExpressionWrapper wrapper, ITokenizer tokenizer, int precedenceSelf, TokenType... operators) throws AEvaluatorError {
+    //#if mvn.project.property.production != "true"
     logger.logDebug(DebugLogLevel.PARSER, "Trying to parse a binary expression for the operator " + Arrays.stream(operators).map(Enum::name).collect(Collectors.joining("|")));
+    //#endif
 
     AExpression lhs = invokeNextPrecedenceParser(tokenizer, precedenceSelf);
     Token tk, head = lhs.getHead();
@@ -713,7 +787,9 @@ public class Parser {
       // Consume the operator
       tokenizer.consumeToken();
 
+      //#if mvn.project.property.production != "true"
       logger.logDebug(DebugLogLevel.PARSER, "Trying to parse a rhs for this operation");
+      //#endif
       AExpression rhs = invokeNextPrecedenceParser(tokenizer, precedenceSelf);
       lhs = wrapper.apply(lhs, rhs, head, rhs.getTail(), tk);
     }

@@ -71,8 +71,10 @@ public class Tokenizer implements ITokenizer {
   public void saveState(boolean debugLog) {
     this.saveStates.push(this.state.copy());
 
+    //#if mvn.project.property.production != "true"
     if (debugLog)
       logger.logDebug(DebugLogLevel.TOKENIZER, "Saved state " + this.saveStates.size() + " (charIndex=" + state.charIndex + ")");
+    //#endif
   }
 
   @Override
@@ -80,8 +82,10 @@ public class Tokenizer implements ITokenizer {
     int sizeBefore = this.saveStates.size();
     this.state = this.saveStates.pop();
 
+    //#if mvn.project.property.production != "true"
     if (debugLog)
       logger.logDebug(DebugLogLevel.TOKENIZER, "Restored state " + sizeBefore + " (charIndex=" + state.charIndex + ")");
+    //#endif
   }
 
   @Override
@@ -89,8 +93,10 @@ public class Tokenizer implements ITokenizer {
     int sizeBefore = this.saveStates.size();
     TokenizerState state = this.saveStates.pop();
 
+    //#if mvn.project.property.production != "true"
     if (debugLog)
       logger.logDebug(DebugLogLevel.TOKENIZER, "Discarded state " + sizeBefore + " (charIndex=" + state.charIndex + ")");
+    //#endif
 
     return state;
   }
@@ -142,7 +148,9 @@ public class Tokenizer implements ITokenizer {
     if (state.currentToken == null)
       readNextToken();
 
+    //#if mvn.project.property.production != "true"
     logger.logDebug(DebugLogLevel.TOKENIZER, "Peeked token " + state.currentToken);
+    //#endif
     return state.currentToken;
   }
 
@@ -156,7 +164,9 @@ public class Tokenizer implements ITokenizer {
     Token result = state.currentToken;
     readNextToken();
 
+    //#if mvn.project.property.production != "true"
     logger.logDebug(DebugLogLevel.TOKENIZER, "Consumed token " + result);
+    //#endif
     return result;
   }
 
@@ -181,8 +191,10 @@ public class Tokenizer implements ITokenizer {
       ++c;
     }
 
+    //#if mvn.project.property.production != "true"
     if (c > 0)
       logger.logDebug(DebugLogLevel.TOKENIZER, "Ate " + c + " comment(s)");
+    //#endif
   }
 
   private void eatWhitespace() {
@@ -193,8 +205,10 @@ public class Tokenizer implements ITokenizer {
       nextChar();
     }
 
+    //#if mvn.project.property.production != "true"
     if (ate > 0)
       logger.logDebug(DebugLogLevel.TOKENIZER, "Ate " + ate + " character(s) of whitespace");
+    //#endif
   }
 
   /**
@@ -213,7 +227,9 @@ public class Tokenizer implements ITokenizer {
 
       // Token not yet implemented
       if (reader == null) {
+        //#if mvn.project.property.production != "true"
         logger.logDebug(DebugLogLevel.TOKENIZER, "Token not yet implemented");
+        //#endif
         continue;
       }
 
@@ -231,7 +247,9 @@ public class Tokenizer implements ITokenizer {
       TokenizerState previousState = discardState(false);
       state.currentToken = new Token(tryType, previousState.row, previousState.col, result);
 
+      //#if mvn.project.property.production != "true"
       logger.logDebug(DebugLogLevel.TOKENIZER, "Reader for " + tryType + " was successful");
+      //#endif
       return;
     }
 

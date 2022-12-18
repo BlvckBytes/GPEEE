@@ -33,10 +33,8 @@ import me.blvckbytes.gpeee.logging.ILogger;
 import me.blvckbytes.gpeee.parser.expression.AExpression;
 import org.jetbrains.annotations.Nullable;
 
-import java.net.URL;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
-import java.nio.file.Paths;
+import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -54,16 +52,16 @@ public class Main {
 
     Think about how functions in separate jars would be tested... Each in their own project with their own artifact when compiling?
     That would... work, I guess?
+
+    // Test named parameter with callback: name=() -> <expr>
+
+    if <expr> <expr> else <expr>
+    maybe a member-operator? (really think this one through)
    */
 
   public static void main(String[] args) {
     try {
-      URL resource = Thread.currentThread().getContextClassLoader().getResource("input.txt");
-
-      if (resource == null)
-        throw new IllegalStateException();
-
-      String input = String.join("\n", Files.readAllLines(Paths.get(resource.toURI()), StandardCharsets.UTF_8));
+      String input = String.join("\n", Files.readAllLines(Path.of(System.getProperty("user.home"), "Desktop/input.txt")));
 
       ILogger logger = new ILogger() {
         @Override

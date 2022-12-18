@@ -31,7 +31,6 @@ import me.blvckbytes.gpeee.error.AEvaluatorError;
 import me.blvckbytes.gpeee.interpreter.Interpreter;
 import me.blvckbytes.gpeee.logging.DebugLogLevel;
 import me.blvckbytes.gpeee.logging.ILogger;
-import me.blvckbytes.gpeee.parser.LiteralType;
 import me.blvckbytes.gpeee.parser.expression.*;
 import org.jetbrains.annotations.Nullable;
 
@@ -49,14 +48,18 @@ public class Optimizer {
    * @return Optimized result
    */
   public AExpression optimizeAST(AExpression expression) {
+    //#if mvn.project.property.production != "true"
     logger.logDebug(DebugLogLevel.OPTIMIZER, "Starting to optimize the expression " + expression.expressionify());
+    //#endif
     return optimizeASTSub(expression, null);
   }
 
   private AExpression optimizeASTSub(AExpression expression, @Nullable Consumer<AExpression> substituteParent) throws AEvaluatorError {
 
     if (expression instanceof ABinaryExpression) {
+      //#if mvn.project.property.production != "true"
       logger.logDebug(DebugLogLevel.OPTIMIZER, "Encountered a binary expression");
+      //#endif
 
       ABinaryExpression binary = (ABinaryExpression) expression;
       boolean lhsIs = isImmediatelyResolvable(binary.getLhs()), rhsIs = isImmediatelyResolvable(binary.getRhs());
@@ -64,16 +67,22 @@ public class Optimizer {
       // Both sides of the binary expression can be resolved immediately
       if (lhsIs && rhsIs) {
         AExpression result = wrapValue(binary.getLhs(), interpreter.evaluateExpression(binary, GPEEE.EMPTY_ENVIRONMENT));
+        //#if mvn.project.property.production != "true"
         logger.logDebug(DebugLogLevel.OPTIMIZER, "Resolved expression, value: " + result.expressionify());
+        //#endif
 
         // No parent to call - this is already the root node
         if (substituteParent == null) {
+          //#if mvn.project.property.production != "true"
           logger.logDebug(DebugLogLevel.OPTIMIZER, "Responding with result as root node");
+          //#endif
           return result;
         }
 
         // Substitute the parent node for the new resulting node
+        //#if mvn.project.property.production != "true"
         logger.logDebug(DebugLogLevel.OPTIMIZER, "Substituting result using provided callback");
+        //#endif
         substituteParent.accept(result);
         return null;
       }
@@ -81,12 +90,16 @@ public class Optimizer {
       // Not yet resolvable, try to optimize both LHS and RHS
 
       if (!lhsIs) {
+        //#if mvn.project.property.production != "true"
         logger.logDebug(DebugLogLevel.OPTIMIZER, "Trying to optimize it's lhs");
+        //#endif
         optimizeASTSub(binary.getLhs(), binary::setLhs);
       }
 
       if (!rhsIs) {
+        //#if mvn.project.property.production != "true"
         logger.logDebug(DebugLogLevel.OPTIMIZER, "Trying to optimize it's rhs");
+        //#endif
         optimizeASTSub(binary.getRhs(), binary::setRhs);
       }
 
@@ -94,7 +107,9 @@ public class Optimizer {
 
       // Check if it's now resolvable, if so - run through the optimizer again
       if (isImmediatelyResolvable(binary.getLhs()) && rhsIs) {
+        //#if mvn.project.property.production != "true"
         logger.logDebug(DebugLogLevel.OPTIMIZER, "Is now resolvable, optimizing whole expression");
+        //#endif
         return optimizeASTSub(binary, substituteParent);
       }
 
@@ -108,7 +123,9 @@ public class Optimizer {
           // AND the LHS' RHS is also resolvable
           isImmediatelyResolvable(lhsBinary.getRhs())
         ) {
+          //#if mvn.project.property.production != "true"
           logger.logDebug(DebugLogLevel.OPTIMIZER, "Going to combine expression's RHS with LHS' RHS");
+          //#endif
           // binary.RHS and lhsBinary.RHS are solvable, operations are equal
           // Example situation: (<lhsBinary>) + binary.RHS
 
@@ -133,60 +150,82 @@ public class Optimizer {
           // Substitute lhsBinary for lhsBinary's LHS
           binary.setLhs(lhsBinaryLhsSave);
 
+          //#if mvn.project.property.production != "true"
           logger.logDebug(DebugLogLevel.OPTIMIZER, "Done, optimized out expression's resolvable RHS");
+          //#endif
           return binary;
         }
       }
 
       // Not resolvable
+      //#if mvn.project.property.production != "true"
       logger.logDebug(DebugLogLevel.OPTIMIZER, "Whole expression is not resolvable");
+      //#endif
       return binary;
     }
 
     if (expression instanceof AUnaryExpression) {
+      //#if mvn.project.property.production != "true"
       logger.logDebug(DebugLogLevel.OPTIMIZER, "Encountered a unary expression");
+      //#endif
 
       AUnaryExpression unary = (AUnaryExpression) expression;
 
       if (isImmediatelyResolvable(unary.getInput())) {
         AExpression result = wrapValue(unary.getInput(), interpreter.evaluateExpression(unary, GPEEE.EMPTY_ENVIRONMENT));
+        //#if mvn.project.property.production != "true"
         logger.logDebug(DebugLogLevel.OPTIMIZER, "Resolved expression, value: " + result.expressionify());
+        //#endif
 
         // No parent to call - this is already the root node
         if (substituteParent == null) {
+          //#if mvn.project.property.production != "true"
           logger.logDebug(DebugLogLevel.OPTIMIZER, "Responding with result as root node");
+          //#endif
           return result;
         }
 
         // Substitute the parent node for the new resulting node
+        //#if mvn.project.property.production != "true"
         logger.logDebug(DebugLogLevel.OPTIMIZER, "Substituting result using provided callback");
+        //#endif
         substituteParent.accept(result);
         return null;
       }
 
       // Try to optimize the unary expression input
+      //#if mvn.project.property.production != "true"
       logger.logDebug(DebugLogLevel.OPTIMIZER, "Trying to optimize it's input");
+      //#endif
       optimizeASTSub(unary.getInput(), unary::setInput);
 
       // Check if it's now resolvable, if so - run through the optimizer again
       if (isImmediatelyResolvable(unary.getInput())) {
+        //#if mvn.project.property.production != "true"
         logger.logDebug(DebugLogLevel.OPTIMIZER, "Is now resolvable, optimizing whole expression");
+        //#endif
         return optimizeASTSub(unary, substituteParent);
       }
 
       // Not resolvable
+      //#if mvn.project.property.production != "true"
       logger.logDebug(DebugLogLevel.OPTIMIZER, "Whole expression is not resolvable");
+      //#endif
       return unary;
     }
 
     if (expression instanceof FunctionInvocationExpression) {
+      //#if mvn.project.property.production != "true"
       logger.logDebug(DebugLogLevel.OPTIMIZER, "Encountered a function invocation expression");
+      //#endif
 
       FunctionInvocationExpression invocation = (FunctionInvocationExpression) expression;
 
       // Try to optimize each argument one by one
       for (int i = 0; i < invocation.getArguments().size(); i++) {
+        //#if mvn.project.property.production != "true"
         logger.logDebug(DebugLogLevel.OPTIMIZER, "Trying to optimize function argument " + (i + 1));
+        //#endif
         Tuple<AExpression, @Nullable IdentifierExpression> argument = invocation.getArguments().get(i);
         optimizeASTSub(argument.getA(), argument::setA);
       }
@@ -196,7 +235,9 @@ public class Optimizer {
     }
 
     // Expression type cannot be optimized
+    //#if mvn.project.property.production != "true"
     logger.logDebug(DebugLogLevel.OPTIMIZER, "Cannot optimize node " + expression.getClass().getSimpleName());
+    //#endif
     return expression;
   }
 

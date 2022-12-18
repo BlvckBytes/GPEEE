@@ -7,24 +7,65 @@
     <groupId>me.blvckbytes</groupId>
     <artifactId>GPEEE</artifactId>
     <version>0.1-SNAPSHOT</version>
+
     <build>
         <plugins>
+
+            <!-- JAR-Plugin: Used to build an executable JAR file -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <version>3.1.0</version>
+                <configuration>
+                    <archive>
+                        <manifest>
+                            <addClasspath>true</addClasspath>
+                            <classpathPrefix>lib/</classpathPrefix>
+                            <mainClass>me.blvckbytes.gpeee.Main</mainClass>
+                        </manifest>
+                    </archive>
+                </configuration>
+            </plugin>
+
+            <!-- Compiler-Plugin: Used to invoke the source code compiler at the preprocessed path -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
                 <configuration>
                     <source>11</source>
                     <target>11</target>
+                    <compileSourceRoots>target/generated-sources/preprocessed</compileSourceRoots>
                 </configuration>
                 <version>3.10.1</version>
             </plugin>
 
+            <!-- JCP: Used for preprocessor comments -->
+            <plugin>
+                <groupId>com.igormaznitsa</groupId>
+                <artifactId>jcp</artifactId>
+                <version>7.0.5</version>
+                <executions>
+                    <execution>
+                        <id>preprocessSources</id>
+                        <phase>generate-sources</phase>
+                        <goals>
+                            <goal>preprocess</goal>
+                        </goals>
+                        <configuration>
+                            <replaceSources>false</replaceSources>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <!-- Surefire: Used to launch tests -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <version>2.22.2</version>
             </plugin>
 
+            <!-- Jacoco: Used to generate coverage reports -->
             <plugin>
                 <groupId>org.jacoco</groupId>
                 <artifactId>jacoco-maven-plugin</artifactId>
@@ -50,9 +91,15 @@
     <properties>
         <maven.compiler.source>11</maven.compiler.source>
         <maven.compiler.target>11</maven.compiler.target>
+
+        <!-- Always fall back to true (safe) -->
+        <!-- Request non-production with "-Dproduction=false" -->
+        <production>true</production>
     </properties>
 
     <dependencies>
+
+        <!-- Lombok: Used for @AllArgsConstructor, @Getter, @Setter, etc. -->
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
@@ -60,31 +107,20 @@
             <scope>provided</scope>
         </dependency>
 
+        <!-- JetBrains-Annotations: Used for @Nullable, @NotNull, etc. -->
         <dependency>
             <groupId>org.jetbrains</groupId>
             <artifactId>annotations</artifactId>
             <version>23.1.0</version>
         </dependency>
 
-        <dependency>
-            <groupId>com.google.guava</groupId>
-            <artifactId>guava-primitives</artifactId>
-            <version>r03</version>
-        </dependency>
-
-        <dependency>
-            <groupId>ch.obermuhlner</groupId>
-            <artifactId>big-math</artifactId>
-            <version>2.3.2</version>
-        </dependency>
-
+        <!-- JUnit: Used for testing -->
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
             <version>4.13.2</version>
             <scope>test</scope>
         </dependency>
-
     </dependencies>
 
 </project>
