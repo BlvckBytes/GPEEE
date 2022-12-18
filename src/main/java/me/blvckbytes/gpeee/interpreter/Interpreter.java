@@ -460,7 +460,13 @@ public class Interpreter {
       Object input = evaluateExpression(((AUnaryExpression) expression).getInput(), environment);
 
       if (expression instanceof FlipSignExpression) {
-        Object result = -1 * (valueInterpreter.hasDecimalPoint(input) ? valueInterpreter.asDouble(input) : valueInterpreter.asLong(input));
+        Object result;
+
+        if (valueInterpreter.hasDecimalPoint(input))
+          result = -1 * valueInterpreter.asDouble(input);
+        else
+          result = -1 * valueInterpreter.asLong(input);
+
         //#if mvn.project.property.production != "true"
         logger.logDebug(DebugLogLevel.INTERPRETER, "Flip Sign Operation result: " + result);
         //#endif
