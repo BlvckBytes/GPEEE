@@ -24,10 +24,7 @@
 
 package me.blvckbytes.gpeee;
 
-import me.blvckbytes.gpeee.error.UndefinedVariableError;
-import me.blvckbytes.gpeee.error.UnexpectedTokenError;
-import me.blvckbytes.gpeee.error.UnknownTokenError;
-import me.blvckbytes.gpeee.error.UnterminatedStringError;
+import me.blvckbytes.gpeee.error.*;
 import org.junit.Test;
 
 public class TerminalTests {
@@ -47,7 +44,9 @@ public class TerminalTests {
       // Double
       validator.validate("3.3", 3.3);
       validator.validate("-3.3", -3.3);
-      validator.validateThrows("3..3", UnknownTokenError.class);
+
+      // Would be parsed as a member access of the member .3 on 3
+      validator.validateThrows("3..3", UnknownMemberError.class);
 
       // String
       validator.validate("\"hello, world\"", "hello, world");
