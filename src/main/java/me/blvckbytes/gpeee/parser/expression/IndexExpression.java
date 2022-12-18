@@ -44,7 +44,9 @@ public class IndexExpression extends ABinaryExpression {
 
   @Override
   public boolean operatorEquals(ABinaryExpression other) {
-    return other instanceof IndexExpression;
+    // Index expressions never equal one another, as they're dependent on
+    // the exact order of operation and cannot be optimized away at all
+    return false;
   }
 
   @Override
