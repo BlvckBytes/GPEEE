@@ -264,10 +264,10 @@ public class Interpreter {
 
     if (expression instanceof IndexExpression) {
       IndexExpression indexExpression = (IndexExpression) expression;
-      Object keyV = evaluateExpression(indexExpression.getInput(), environment);
+      Object keyV = evaluateExpression(indexExpression.getRhs(), environment);
 
       // Look up the target variable
-      Object value = lookupVariable(environment, indexExpression.getTarget());
+      Object value = lookupVariable(environment, ((IdentifierExpression) indexExpression.getLhs()));
 
       if (value instanceof List) {
         List<?> list = (List<?>) value;

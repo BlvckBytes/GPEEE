@@ -80,7 +80,10 @@ public class Main {
 
       GPEEE evaluator = new GPEEE(logger);
 
+      long startTime = System.nanoTime();
       AExpression unoptimized = evaluator.parseString(input);
+      long endTime = System.nanoTime();
+      double parsingDuration = (endTime - startTime) / Math.pow(10, 6);
 
       input = Arrays.stream(input.split("\n"))
         .map(String::trim)
@@ -93,7 +96,11 @@ public class Main {
       System.out.println("unoptimized=" + unoptimizedExpr);
       System.out.println(unoptimized.stringify("  ", 0));
 
+      startTime = System.nanoTime();
       AExpression optimized = evaluator.optimizeExpression(unoptimized);
+      endTime = System.nanoTime();
+      double optimizingDuration = (endTime - startTime) / Math.pow(10, 6);
+
       System.out.println(optimized.stringify("  ", 0));
       System.out.println("optimized=" + optimized.expressionify());
 
@@ -136,15 +143,19 @@ public class Main {
         }
       };
 
+      startTime = System.nanoTime();
       Object result = evaluator.evaluateExpression(unoptimized, env);
+      endTime = System.nanoTime();
+      double evaluationDuration = (endTime - startTime) / Math.pow(10, 6);
 
       System.out.println("input=" + input);
       System.out.println("unoptimized=" + unoptimizedExpr);
       System.out.println("optimized=" + optimized.expressionify());
       System.out.println("result=" + result);
-      System.out.println("Done!");
+      System.out.println("Done! Evaluation " + evaluationDuration + "ms, optimization " + optimizingDuration + "ms, parsing " + parsingDuration + "ms");
     }
     catch (AEvaluatorError e) {
+      e.printStackTrace();
       System.err.println(e.getMessage());
     }
     catch (Exception e) {
