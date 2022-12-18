@@ -24,27 +24,32 @@
 
 package me.blvckbytes.gpeee.parser.expression;
 
+import lombok.Getter;
 import me.blvckbytes.gpeee.tokenizer.Token;
 import me.blvckbytes.gpeee.tokenizer.TokenType;
 import org.jetbrains.annotations.Nullable;
 
-public class IndexExpression extends ABinaryExpression {
+@Getter
+public class MemberAccessExpression extends ABinaryExpression {
 
-  public IndexExpression(AExpression target, AExpression input, Token head, Token tail, String fullContainingExpression) {
-    super(target, input, head, tail, fullContainingExpression);
+  public MemberAccessExpression(AExpression container, AExpression access, Token head, Token tail, String fullContainingExpression) {
+    super(container, access, head, tail, fullContainingExpression);
   }
 
   @Override
   public String expressionify() {
-    return lhs.expressionify() +
-    TokenType.BRACKET_OPEN.getRepresentation() +
-    rhs.expressionify() +
-    TokenType.BRACKET_CLOSE.getRepresentation();
+    return (
+      TokenType.PARENTHESIS_OPEN.getRepresentation() +
+      lhs.expressionify() +
+      TokenType.DOT.getRepresentation() +
+      rhs.expressionify() +
+      TokenType.PARENTHESIS_CLOSE.getRepresentation()
+    );
   }
 
   @Override
   public boolean operatorEquals(ABinaryExpression other) {
-    return other instanceof IndexExpression;
+    return other instanceof MemberAccessExpression;
   }
 
   @Override

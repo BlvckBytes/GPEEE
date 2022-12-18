@@ -9,6 +9,8 @@ The opensource `General Purpose Environment Expression Evaluator` which you most
 want to integrate into your next project. It's pronounced "cheapy", matching it's slim technical
 cost when comparing against a project without `GPEEE`.
 
+WARNING: This readme is out of sync... I need to get to writing a properly formatted and in-sync version soon.
+
 ## Table of Contents
 - [Current State](#current-state)
 - [Mission Statement](#mission-statement)
@@ -31,6 +33,7 @@ cost when comparing against a project without `GPEEE`.
   - [Callback Function](#callback-function)
   - [If Then Else](#if-then-else)
   - [Indexing](#indexing)
+  - [Member Access](#member-access)
   - [Complete Definition](#complete-definition)
 
 ## Current State
@@ -392,36 +395,40 @@ Identifier ::= Letter (Digit | Letter | '_')*
 In order to not have to call functions for simple operations and to improve on readability,
 some of the most used operators have been implemented. Operators are listed top to bottom, in descending precedence.
 
-| Operator                    | Example | Description                                          | Precedence |
-|-----------------------------|---------|------------------------------------------------------|------------|
-| (...)                       | (5 + 3) | Parentheses have the highest possible precedence     | 0          |
+| Operator                    | Example                      | Description                                          | Precedence |
+|-----------------------------|------------------------------|------------------------------------------------------|------------|
+| (...)                       | (5 + 3)                      | Parentheses have the highest possible precedence     | 0          |
+| **Member Access**           |
+| .                           | A.B                          | Accesses the member called B of object A             | 1          |
+| **Indexing**                |
+| []                          | my_map["my_key"], my_list[0] | Access a map key or a list index                     | 2          |
 | **Negation Operator**       |
-| not                         | not A   | Yields the inverse of A                              | 1          |
+| not                         | not A                        | Yields the inverse of A                              | 3          |
 | **Exponentiation Operator** |
-| ^                           | A ^ B   | Yields A to the power of B                           | 2          |
+| ^                           | A ^ B                        | Yields A to the power of B                           | 4          |
 | **Multiplicative Operator** |
-| *                           | A * B   | Yields the product of A and B                        | 3          |
-| /                           | A / B   | Yields the quotient of A and B                       | 3          |
-| %                           | A % B   | Yields the remainder of dividing A by B              | 3          |
+| *                           | A * B                        | Yields the product of A and B                        | 5          |
+| /                           | A / B                        | Yields the quotient of A and B                       | 5          |
+| %                           | A % B                        | Yields the remainder of dividing A by B              | 5          |
 | **Additive Operator**       |
-| +                           | A + B   | Yields the sum of A and B                            | 4          |
-| -                           | A - B   | Yields the difference of A and B                     | 4          |
+| +                           | A + B                        | Yields the sum of A and B                            | 6          |
+| -                           | A - B                        | Yields the difference of A and B                     | 6          |
 | **Comparison Operator**     |
-| \>                          | A \> B  | Yields `true` if A is greater than B                 | 5          |
-| <                           | A < B   | Yields `true` if A is less than B                    | 5          |
-| \>=                         | A \>= B | Yields `true` if A is greater than or equal to B     | 5          |
-| <=                          | A <= B  | Yields `true` if A is less than or equal to B        | 5          |
+| \>                          | A \> B                       | Yields `true` if A is greater than B                 | 7          |
+| <                           | A < B                        | Yields `true` if A is less than B                    | 7          |
+| \>=                         | A \>= B                      | Yields `true` if A is greater than or equal to B     | 7          |
+| <=                          | A <= B                       | Yields `true` if A is less than or equal to B        | 7          |
 | **Equality Operator**       |
-| ==                          | A == B  | Yields `true` if A and B equal ignoring casing       | 6          |
-| ===                         | A === B | Yields `true` if A and B equal exactly               | 6          |
-| !=                          | A != B  | Yields `true` if A and B don't equal ignoring casing | 6          |
-| !==                         | A !== B | Yields `true` if A and B don't equal exactly         | 6          |
+| ==                          | A == B                       | Yields `true` if A and B equal ignoring casing       | 8          |
+| ===                         | A === B                      | Yields `true` if A and B equal exactly               | 8          |
+| !=                          | A != B                       | Yields `true` if A and B don't equal ignoring casing | 8          |
+| !==                         | A !== B                      | Yields `true` if A and B don't equal exactly         | 8          |
 | **Conjunction Operator**    |
-| and                         | A and B | Yields `true` if both A and B yield `true`           | 7          |
+| and                         | A and B                      | Yields `true` if both A and B yield `true`           | 9          |
 | **Disjunction Operator**    |
-| or                          | A or B  | Yields `true` if either A or B yields `true`         | 8          |
+| or                          | A or B                       | Yields `true` if either A or B yields `true`         | 10         |
 | **Concatenation Operator**  |
-| &                           | A & B   | Concatenates the contents of A and B                 | 9          |
+| &                           | A & B                        | Concatenates the contents of A and B                 | 11         |
 
 ### Parentheses
 
@@ -486,14 +493,30 @@ Lists, Maps and Arrays may be indexed by passing an expression as a key between 
 of the target variable.
 
 ```ebnf
-IndexExpression ::= Identifier "[" Expression "]"
+IndexExpression ::= Expression "[" Expression "]"
 ```
 
 ![indexing](readme_images/railroad_indexing.png)
 
+### Member Access
+
+If the value at hand is an object with it's own fields, it's member can be accessed using the member access notation. Specify
+the identifier of the target object, followed by a dot `.`, followed by it's target field. These access notations can be chained
+as often as necessary to reach deep into the object.
+
+The target field's name may also be an expression, allowing for quick dynamic field access.
+
+```ebnf
+MemberAccessExpression ::= (Expression | MemberAccessExpression) "." Expression
+```
+
+![member_access](readme_images/railroad_member_access.png)
+
 ### Complete Definition
 
 The following [EBNF](https://www.w3.org/2001/06/blindfold/grammar) defines the whole grammar which this parser understands:
+
+This EBNF is badly out of sync... don't try to read it.
 
 ```ebnf
 Digit ::= [0-9]
@@ -511,15 +534,27 @@ EqualityOperator ::= "==" | "!=" | "===" | "!=="
 ComparisonOperator ::= ">" | "<" | ">=" | "<="
 
 PrimaryExpression ::= Long | Double | String | Identifier | Literal
-NegationExpression ::= "not"? PrimaryExpression
-ExponentiationExpression ::= NegationExpression ("^" NegationExpression)*
-MultiplicativeExpression ::= ExponentiationExpression (MultiplicativeOperator ExponentiationExpression)*
-AdditiveExpression ::= MultiplicativeExpression (AdditiveOperator MultiplicativeExpression)*
-ComparisonExpression ::= AdditiveExpression (ComparisonOperator AdditiveExpression)*
-EqualityExpression ::= ComparisonExpression (EqualityOperator ComparisonExpression)*
-ConjunctionExpression ::= EqualityExpression ("and" EqualityExpression)*
-DisjunctionExpression ::= ConjunctionExpression ("or" ConjunctionExpression)*
-ConcatenationExpression ::= DisjunctionExpression ("&" DisjunctionExpression)*
+
+IfThenElseExpression ::= "if" Expression "then" Expression "else" Expression
+
+FunctionArgument ::= (Identifier "=")? Expression
+FunctionInvocationExpression ::= "-"? Identifier "(" (FunctionArgument | (FunctionArgument ("," FunctionArgument)*))? ")"
+
+CallbackExpression ::= "(" (Identifier | (Identifier ("," Identifier)*))? ")" "->" Expression
+
+MemberAccessExpression ::= Expression "." Expression
+
+IndexExpression ::= Expression "[" Expression "]"
+
+NegationExpression ::= "not"? Expression
+ExponentiationExpression ::= NegationExpression ("^" Expression)*
+MultiplicativeExpression ::= ExponentiationExpression (MultiplicativeOperator Expression)*
+AdditiveExpression ::= MultiplicativeExpression (AdditiveOperator Expression)*
+ComparisonExpression ::= AdditiveExpression (ComparisonOperator Expression)*
+EqualityExpression ::= ComparisonExpression (EqualityOperator Expression)*
+ConjunctionExpression ::= EqualityExpression ("and" Expression)*
+DisjunctionExpression ::= ConjunctionExpression ("or" Expression)*
+ConcatenationExpression ::= DisjunctionExpression ("&" Expression)*
 
 Expression ::= ConcatenationExpression
                 | ("-" | "not")? "(" Expression ")"
@@ -527,15 +562,9 @@ Expression ::= ConcatenationExpression
                 | CallbackExpression
                 | IndexExpression
                 | IfThenElseExpression
+                | MemberAccessExpression
 
-FunctionArgument ::= (Identifier "=")? Expression
-FunctionInvocationExpression ::= "-"? Identifier "(" (FunctionArgument | (FunctionArgument ("," FunctionArgument)*))? ")"
 
-CallbackExpression ::= "(" (Identifier | (Identifier ("," Identifier)*))? ")" "->" Expression
-
-IndexExpression ::= Identifier "[" Expression "]"
-
-IfThenElseExpression ::= "if" Expression "then" Expression "else" Expression
 ```
 
 ![expression](readme_images/railroad_expression.png)

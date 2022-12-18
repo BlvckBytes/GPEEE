@@ -24,8 +24,10 @@
 
 package me.blvckbytes.gpeee;
 
+import lombok.AllArgsConstructor;
 import me.blvckbytes.gpeee.error.AEvaluatorError;
 import me.blvckbytes.gpeee.functions.AExpressionFunction;
+import me.blvckbytes.gpeee.functions.FExpressionFunctionBuilder;
 import me.blvckbytes.gpeee.interpreter.IEvaluationEnvironment;
 import me.blvckbytes.gpeee.interpreter.IValueInterpreter;
 import me.blvckbytes.gpeee.logging.DebugLogLevel;
@@ -55,11 +57,14 @@ public class Main {
 
     // Test named parameter with callback: name=() -> <expr>
 
-    if <expr> <expr> else <expr>
-    maybe a member-operator? (really think this one through)
-
     more std functions: listof, mapof
    */
+
+  @AllArgsConstructor
+  private static class Test {
+    private String text;
+    private Long number;
+  }
 
   public static void main(String[] args) {
     try {
@@ -110,7 +115,10 @@ public class Main {
 
         @Override
         public Map<String, AExpressionFunction> getFunctions() {
-          return Map.of();
+          return Map.of(
+            "get_map", new FExpressionFunctionBuilder()
+              .build((env, args) -> Map.of("hello", "it works"))
+          );
         }
 
         @Override
@@ -124,6 +132,8 @@ public class Main {
 
           vars.put("my_items", List.of(1, 3, -5, 21, 49));
           vars.put("no_items", List.of());
+          vars.put("my_object", new Test("Hey there!", 5L));
+          vars.put("my_field_name", "number");
           vars.put("my_number", 40);
           vars.put("my_map", Map.of(
             "red", "#FF0000",

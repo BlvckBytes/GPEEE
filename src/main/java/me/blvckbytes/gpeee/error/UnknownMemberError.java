@@ -22,34 +22,21 @@
  * SOFTWARE.
  */
 
-package me.blvckbytes.gpeee.parser.expression;
+package me.blvckbytes.gpeee.error;
 
-import me.blvckbytes.gpeee.tokenizer.Token;
-import me.blvckbytes.gpeee.tokenizer.TokenType;
+import me.blvckbytes.gpeee.parser.expression.AExpression;
 import org.jetbrains.annotations.Nullable;
 
-public class IndexExpression extends ABinaryExpression {
+public class UnknownMemberError extends AEvaluatorError {
 
-  public IndexExpression(AExpression target, AExpression input, Token head, Token tail, String fullContainingExpression) {
-    super(target, input, head, tail, fullContainingExpression);
-  }
-
-  @Override
-  public String expressionify() {
-    return lhs.expressionify() +
-    TokenType.BRACKET_OPEN.getRepresentation() +
-    rhs.expressionify() +
-    TokenType.BRACKET_CLOSE.getRepresentation();
-  }
-
-  @Override
-  public boolean operatorEquals(ABinaryExpression other) {
-    return other instanceof IndexExpression;
-  }
-
-  @Override
-  protected @Nullable String getInfixSymbol() {
-    // Null, as expressionify is overridden
-    return null;
+  public UnknownMemberError(AExpression access, @Nullable Object value, String target) {
+    super(
+      access.getHead().getRow(),
+      access.getHead().getCol(),
+      access.getFullContainingExpression(),
+      "The object of type >" +
+      (value == null ? "<null>" : value.getClass().getName()) +
+      "< owns no member called >" + target + "<"
+    );
   }
 }

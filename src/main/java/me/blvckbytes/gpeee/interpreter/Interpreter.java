@@ -39,6 +39,7 @@ import me.blvckbytes.gpeee.parser.expression.*;
 import org.jetbrains.annotations.Nullable;
 
 import java.lang.reflect.Array;
+import java.lang.reflect.Field;
 import java.util.*;
 import java.util.function.Supplier;
 
@@ -277,12 +278,46 @@ public class Interpreter {
 
     ///////////////////////// Indexing //////////////////////////
 
+    if (expression instanceof MemberAccessExpression) {
+      MemberAccessExpression memberExpression = (MemberAccessExpression) expression;
+
+      // Look up the container's value
+      Object value = evaluateExpression(memberExpression.getLhs(), environment);
+      AExpression access = memberExpression.getRhs();
+
+      String fieldName;
+
+      // Already an identifier, use it's symbol
+      if (access instanceof IdentifierExpression)
+        fieldName = ((IdentifierExpression) access).getSymbol();
+
+      // Evaluate the name expression as a string
+      else
+        fieldName = valueInterpreter.asString(evaluateExpression(access, environment));
+
+      // Look through all available fields within the container
+      for (Field f : value.getClass().getDeclaredFields()) {
+        // Not the target field
+        if (!f.getName().equalsIgnoreCase(fieldName))
+          continue;
+
+        try {
+          f.setAccessible(true);
+          return f.get(value);
+        } catch (Exception e) {
+          logger.logError("Could not access an object's member", e);
+          return "<error>";
+        }
+      }
+
+      // Found no field with the required name
+      throw new UnknownMemberError(memberExpression, value, fieldName);
+    }
+
     if (expression instanceof IndexExpression) {
       IndexExpression indexExpression = (IndexExpression) expression;
       Object keyV = evaluateExpression(indexExpression.getRhs(), environment);
-
-      // Look up the target variable
-      Object value = lookupVariable(environment, ((IdentifierExpression) indexExpression.getLhs()));
+      Object value = evaluateExpression(indexExpression.getLhs(), environment);
 
       if (value instanceof List) {
         List<?> list = (List<?>) value;
