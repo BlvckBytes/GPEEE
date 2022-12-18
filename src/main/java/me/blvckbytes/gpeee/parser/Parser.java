@@ -460,7 +460,7 @@ public class Parser {
     return parseBinaryExpression(
       (lhs, rhs, h, t, op) -> new DisjunctionExpression(lhs, rhs, h, t, tokenizer.getRawText()),
       tokenizer, PrecedenceMode.HIGHER, precedenceSelf,
-      new TokenType[] { TokenType.BOOL_AND }, null
+      new TokenType[] { TokenType.BOOL_OR }, null
     );
   }
 
@@ -468,7 +468,7 @@ public class Parser {
     return parseBinaryExpression(
       (lhs, rhs, h, t, op) -> new ConjunctionExpression(lhs, rhs, h, t, tokenizer.getRawText()),
       tokenizer, PrecedenceMode.HIGHER, precedenceSelf,
-      new TokenType[] { TokenType.BOOL_OR }, null
+      new TokenType[] { TokenType.BOOL_AND }, null
     );
   }
 

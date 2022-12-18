@@ -175,61 +175,16 @@ public class EnvironmentBuilder {
       @Override
       public void validate(String expression, Object[] results) throws AssertionError {
         AExpression ast = evaluator.parseString(expression);
+        Object unoptimizedResult = evaluator.evaluateExpression(ast, env);
 
         // Optimize, in order to also test the optimizer with all available tests
         ast = evaluator.optimizeExpression(ast);
 
-        Object value = evaluator.evaluateExpression(ast, env);
+        Object optimizedResult = evaluator.evaluateExpression(ast, env);
 
-        AssertionError lastThrow = null;
-        for (Object result : results) {
-
-          // Integers are longs in this language
-          if (result instanceof Integer)
-            result = ((Integer) result).longValue();
-
-          // Floats are doubles in this language
-          if (result instanceof Float)
-            result = ((Float) result).doubleValue();
-
-          // Result had no decimals but was a double, convert to long
-          if (result instanceof Double) {
-            Double dV = (Double) result;
-            if (dV - dV.intValue() == 0)
-              result = dV.longValue();
-          }
-
-          // Double comparison using max delta
-          if (value instanceof Double && result instanceof Double) {
-            if (!(Math.abs(((Double) result) - ((Double) value)) <= MAX_DOUBLE_DELTA)) {
-              try {
-                assertEquals(result, value);
-              } catch (AssertionError e) {
-                lastThrow = e;
-                continue;
-              }
-            }
-
-            // Success exit
-            return;
-          }
-
-          // Compare everything else
-
-          try {
-            assertEquals(result, value);
-          } catch (AssertionError e) {
-            lastThrow = e;
-            continue;
-          }
-
-          // Success exit
-          return;
-        }
-
-        // There was no success exit but an error has been thrown, rethrow
-        if (lastThrow != null)
-          throw lastThrow;
+        // Validate both the unoptimized as well as the optimized AST results
+        validateResult(unoptimizedResult, results);
+        validateResult(optimizedResult, results);
       }
 
       @Override
@@ -243,6 +198,58 @@ public class EnvironmentBuilder {
       }
     });
 
+  }
+
+  private void validateResult(Object resultValue, Object[] results) {
+    AssertionError lastThrow = null;
+    for (Object result : results) {
+
+      // Integers are longs in this language
+      if (result instanceof Integer)
+        result = ((Integer) result).longValue();
+
+      // Floats are doubles in this language
+      if (result instanceof Float)
+        result = ((Float) result).doubleValue();
+
+      // Result had no decimals but was a double, convert to long
+      if (result instanceof Double) {
+        Double dV = (Double) result;
+        if (dV - dV.intValue() == 0)
+          result = dV.longValue();
+      }
+
+      // Double comparison using max delta
+      if (resultValue instanceof Double && result instanceof Double) {
+        if (!(Math.abs(((Double) result) - ((Double) resultValue)) <= MAX_DOUBLE_DELTA)) {
+          try {
+            assertEquals(result, resultValue);
+          } catch (AssertionError e) {
+            lastThrow = e;
+            continue;
+          }
+        }
+
+        // Success exit
+        return;
+      }
+
+      // Compare everything else
+
+      try {
+        assertEquals(result, resultValue);
+      } catch (AssertionError e) {
+        lastThrow = e;
+        continue;
+      }
+
+      // Success exit
+      return;
+    }
+
+    // There was no success exit but an error has been thrown, rethrow
+    if (lastThrow != null)
+      throw lastThrow;
   }
 
   private IEvaluationEnvironment buildEnvironment() {
