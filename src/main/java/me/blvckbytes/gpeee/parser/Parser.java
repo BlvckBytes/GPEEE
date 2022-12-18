@@ -108,7 +108,7 @@ public class Parser {
   private @Nullable AExpression parseMemberAccessExpression(ITokenizer tokenizer, int precedenceSelf) throws AEvaluatorError {
     return parseBinaryExpression(
       (lhs, rhs, h, t, op) -> new MemberAccessExpression(lhs, rhs, h, t, tokenizer.getRawText()),
-      tokenizer, precedenceSelf,
+      tokenizer, PrecedenceMode.HIGHER, precedenceSelf,
       new TokenType[] { TokenType.DOT }, null
     );
   }
@@ -238,7 +238,7 @@ public class Parser {
   private @Nullable AExpression parseIndexExpression(ITokenizer tokenizer, int precedenceSelf) throws AEvaluatorError {
     return parseBinaryExpression(
       (lhs, rhs, h, t, op) -> new IndexExpression(lhs, rhs, h, t, tokenizer.getRawText()),
-      tokenizer, precedenceSelf,
+      tokenizer, PrecedenceMode.RESET, precedenceSelf,
       new TokenType[] { TokenType.BRACKET_OPEN }, new TokenType[] { TokenType.BRACKET_CLOSE }
     );
   }
@@ -388,55 +388,29 @@ public class Parser {
   }
 
   private @Nullable AExpression parseFlipSignExpression(ITokenizer tokenizer, int precedenceSelf) throws AEvaluatorError {
-    return parseUnaryExpression((input, h, t, op) -> (
-      new FlipSignExpression(input, h, t, tokenizer.getRawText())
-    ), tokenizer, precedenceSelf, TokenType.MINUS);
+    return parseUnaryExpression(
+      (input, h, t, op) -> new FlipSignExpression(input, h, t, tokenizer.getRawText()),
+      tokenizer, precedenceSelf,
+      new TokenType[] { TokenType.MINUS }, null
+    );
   }
 
-  private @Nullable AExpression parseParenthesisExpression(ITokenizer tokenizer, int nextPrecedence) throws AEvaluatorError {
-    //#if mvn.project.property.production != "true"
-    logger.logDebug(DebugLogLevel.PARSER, "Trying to parse a parenthesis expression");
-    //#endif
-
-    Token tk = tokenizer.peekToken();
-
-    // Not a parenthesis expression
-    if (tk == null || tk.getType() != TokenType.PARENTHESIS_OPEN) {
-      //#if mvn.project.property.production != "true"
-      logger.logDebug(DebugLogLevel.PARSER, "Not a parenthesis expression");
-      //#endif
-      return invokeNextPrecedenceParser(tokenizer, nextPrecedence);
-    }
-
-    // Consume the opening parenthesis
-    tokenizer.consumeToken();
-
-    //#if mvn.project.property.production != "true"
-    logger.logDebug(DebugLogLevel.PARSER, "Trying to parse the inner expression");
-    //#endif
-
-    AExpression expression = invokeLowestPrecedenceParser(tokenizer);
-
-    tk = tokenizer.consumeToken();
-
-    // A previously opened parenthesis has to be closed again
-    if (tk == null || tk.getType() != TokenType.PARENTHESIS_CLOSE)
-      throw new UnexpectedTokenError(tokenizer, tk, TokenType.PARENTHESIS_CLOSE);
-
-    //#if mvn.project.property.production != "true"
-    logger.logDebug(DebugLogLevel.PARSER, "Validated the closing parenthesis");
-    //#endif
-
-    return expression;
+  private @Nullable AExpression parseParenthesisExpression(ITokenizer tokenizer, int precedenceSelf) throws AEvaluatorError {
+    return parseUnaryExpression(
+      (input, h, t, op) -> input,
+      tokenizer, precedenceSelf,
+      new TokenType[] { TokenType.PARENTHESIS_OPEN }, new TokenType[] { TokenType.PARENTHESIS_CLOSE }
+    );
   }
-
 
   /////////////////////// Unary Expressions ///////////////////////
 
   private AExpression parseNegationExpression(ITokenizer tokenizer, int precedenceSelf) throws AEvaluatorError {
-    return parseUnaryExpression((input, h, t, op) -> (
-      new InvertExpression(input, h, t, tokenizer.getRawText())
-    ), tokenizer, precedenceSelf, TokenType.BOOL_NOT);
+    return parseUnaryExpression(
+      (input, h, t, op) -> new InvertExpression(input, h, t, tokenizer.getRawText()),
+      tokenizer, precedenceSelf,
+      new TokenType[] { TokenType.BOOL_NOT }, null
+    );
   }
 
   /////////////////////// Binary Expressions ///////////////////////
@@ -469,7 +443,7 @@ public class Parser {
 
         return new ComparisonExpression(lhs, rhs, operator, h, t, tokenizer.getRawText());
       },
-      tokenizer, precedenceSelf,
+      tokenizer, PrecedenceMode.HIGHER, precedenceSelf,
       new TokenType[] { TokenType.GREATER_THAN, TokenType.GREATER_THAN_OR_EQUAL, TokenType.LESS_THAN, TokenType.LESS_THAN_OR_EQUAL }, null
     );
   }
@@ -477,7 +451,7 @@ public class Parser {
   private AExpression parseConcatenationExpression(ITokenizer tokenizer, int precedenceSelf) throws AEvaluatorError {
     return parseBinaryExpression(
       (lhs, rhs, h, t, op) -> new ConcatenationExpression(lhs, rhs, h, t, tokenizer.getRawText()),
-      tokenizer, precedenceSelf,
+      tokenizer, PrecedenceMode.HIGHER, precedenceSelf,
       new TokenType[] { TokenType.CONCATENATE }, null
     );
   }
@@ -485,7 +459,7 @@ public class Parser {
   private AExpression parseDisjunctionExpression(ITokenizer tokenizer, int precedenceSelf) throws AEvaluatorError {
     return parseBinaryExpression(
       (lhs, rhs, h, t, op) -> new DisjunctionExpression(lhs, rhs, h, t, tokenizer.getRawText()),
-      tokenizer, precedenceSelf,
+      tokenizer, PrecedenceMode.HIGHER, precedenceSelf,
       new TokenType[] { TokenType.BOOL_AND }, null
     );
   }
@@ -493,7 +467,7 @@ public class Parser {
   private AExpression parseConjunctionExpression(ITokenizer tokenizer, int precedenceSelf) throws AEvaluatorError {
     return parseBinaryExpression(
       (lhs, rhs, h, t, op) -> new ConjunctionExpression(lhs, rhs, h, t, tokenizer.getRawText()),
-      tokenizer, precedenceSelf,
+      tokenizer, PrecedenceMode.HIGHER, precedenceSelf,
       new TokenType[] { TokenType.BOOL_OR }, null
     );
   }
@@ -526,7 +500,7 @@ public class Parser {
 
         return new EqualityExpression(lhs, rhs, operator, h, t, tokenizer.getRawText());
       },
-      tokenizer, precedenceSelf,
+      tokenizer, PrecedenceMode.HIGHER, precedenceSelf,
       new TokenType[] { TokenType.VALUE_EQUALS, TokenType.VALUE_NOT_EQUALS, TokenType.VALUE_EQUALS_EXACT, TokenType.VALUE_NOT_EQUALS_EXACT }, null
     );
   }
@@ -541,7 +515,7 @@ public class Parser {
 
         return new MathExpression(lhs, rhs, operator, h, t, tokenizer.getRawText());
       },
-      tokenizer, precedenceSelf,
+      tokenizer, PrecedenceMode.HIGHER, precedenceSelf,
       new TokenType[] { TokenType.PLUS, TokenType.MINUS }, null
     );
   }
@@ -559,7 +533,7 @@ public class Parser {
 
         return new MathExpression(lhs, rhs, operator, h, t, tokenizer.getRawText());
       },
-      tokenizer, precedenceSelf,
+      tokenizer, PrecedenceMode.HIGHER, precedenceSelf,
       new TokenType[] { TokenType.MULTIPLICATION, TokenType.DIVISION, TokenType.MODULO }, null
     );
   }
@@ -567,7 +541,7 @@ public class Parser {
   private AExpression parseExponentiationExpression(ITokenizer tokenizer, int precedenceSelf) throws AEvaluatorError {
     return parseBinaryExpression(
       (lhs, rhs, h, t, op) -> new MathExpression(lhs, rhs, MathOperation.POWER, h, t, tokenizer.getRawText()),
-      tokenizer, precedenceSelf,
+      tokenizer, PrecedenceMode.HIGHER, precedenceSelf,
       new TokenType[] { TokenType.EXPONENT }, null
     );
   }
@@ -690,16 +664,20 @@ public class Parser {
     return -1;
   }
 
-  private AExpression parseUnaryExpression(FUnaryExpressionWrapper wrapper, ITokenizer tokenizer, int precedenceSelf, TokenType... operators) {
+  private AExpression parseUnaryExpression(
+    FUnaryExpressionWrapper wrapper, ITokenizer tokenizer,
+    int precedenceSelf, TokenType[] operators, @Nullable TokenType[] terminators
+  ) {
     //#if mvn.project.property.production != "true"
     String requiredOperatorsString = Arrays.stream(operators).map(Enum::name).collect(Collectors.joining("|"));
     logger.logDebug(DebugLogLevel.PARSER, "Trying to parse a unary expression for the operator " + requiredOperatorsString);
     //#endif
 
     Token tk = tokenizer.peekToken();
+    int opInd;
 
     // There's no not operator as the next token, hand over to the next higher precedence parser
-    if (tk == null || matchingTypeIndex(operators, tk) < 0) {
+    if (tk == null || (opInd = matchingTypeIndex(operators, tk)) < 0) {
       //#if mvn.project.property.production != "true"
       logger.logDebug(DebugLogLevel.PARSER, "Doesn't match any required operators of " + requiredOperatorsString);
       //#endif
@@ -714,17 +692,29 @@ public class Parser {
     logger.logDebug(DebugLogLevel.PARSER, "Trying to parse an input for this expression");
     //#endif
 
-    AExpression expression = invokeLowestPrecedenceParser(tokenizer);
+    // Always reset precedence on unary operator inputs
+    AExpression input = invokeLowestPrecedenceParser(tokenizer);
 
-    return wrapper.apply(expression, operator, expression.getTail(), operator);
+    // Terminator requested, expect and eat it, fail otherwise
+    if (terminators != null && opInd < terminators.length) {
+      if ((tk = tokenizer.consumeToken()) == null || tk.getType() != terminators[opInd])
+        throw new UnexpectedTokenError(tokenizer, tk, terminators[opInd]);
+    }
+
+    return wrapper.apply(input, operator, input.getTail(), operator);
   }
 
-  private AExpression parseBinaryExpression(FBinaryExpressionWrapper wrapper, ITokenizer tokenizer, int precedenceSelf, TokenType[] operators, @Nullable TokenType[] terminators) throws AEvaluatorError {
+  private AExpression parseBinaryExpression(
+    FBinaryExpressionWrapper wrapper, ITokenizer tokenizer,
+    PrecedenceMode rhsPrecedence, int precedenceSelf,
+    TokenType[] operators, @Nullable TokenType[] terminators
+  ) throws AEvaluatorError {
     //#if mvn.project.property.production != "true"
     logger.logDebug(DebugLogLevel.PARSER, "Trying to parse a binary expression for the operator " + Arrays.stream(operators).map(Enum::name).collect(Collectors.joining("|")));
     //#endif
 
     AExpression lhs = invokeNextPrecedenceParser(tokenizer, precedenceSelf);
+
     Token tk, head = lhs.getHead();
     int opInd;
 
@@ -739,7 +729,15 @@ public class Parser {
       logger.logDebug(DebugLogLevel.PARSER, "Trying to parse a rhs for this operation");
       //#endif
 
-      AExpression rhs = invokeLowestPrecedenceParser(tokenizer);
+      AExpression rhs;
+
+      if (rhsPrecedence == PrecedenceMode.HIGHER)
+        rhs = invokeNextPrecedenceParser(tokenizer, precedenceSelf);
+      else if (rhsPrecedence == PrecedenceMode.RESET)
+        rhs = invokeLowestPrecedenceParser(tokenizer);
+      else
+        throw new IllegalStateException("Unimplemented precedence mode");
+
       Token operator = tk;
 
       // Terminator requested, expect and eat it, fail otherwise
