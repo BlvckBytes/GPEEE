@@ -266,6 +266,47 @@ public class Optimizer {
       return expression;
     }
 
+    if (expression instanceof IfThenElseExpression) {
+      //#if mvn.project.property.production != "true"
+      logger.logDebug(DebugLogLevel.OPTIMIZER, "Encountered a if then else expression");
+      //#endif
+
+      IfThenElseExpression ifExpression = (IfThenElseExpression) expression;
+
+      // Condition not resolvable, try to optimize
+      if (!isImmediatelyResolvable(ifExpression.getCondition())) {
+        //#if mvn.project.property.production != "true"
+        logger.logDebug(DebugLogLevel.OPTIMIZER, "Trying to optimize it's condition");
+        //#endif
+        optimizeASTSub(ifExpression.getCondition(), ifExpression::setCondition);
+      }
+
+      // Condition is resolvable now, resolve
+      if (isImmediatelyResolvable(ifExpression.getCondition())) {
+        //#if mvn.project.property.production != "true"
+        logger.logDebug(DebugLogLevel.OPTIMIZER, "Condition has been evaluated, substituting body");
+        //#endif
+
+        Object condition = interpreter.evaluateExpression(ifExpression.getCondition(), GPEEE.EMPTY_ENVIRONMENT);
+        AExpression result = GPEEE.STD_VALUE_INTERPRETER.asBoolean(condition) ? ifExpression.getPositiveBody() : ifExpression.getNegativeBody();
+
+        // Result is not resolvable, try to optimize
+        if (!isImmediatelyResolvable(result)) {
+          //#if mvn.project.property.production != "true"
+          logger.logDebug(DebugLogLevel.OPTIMIZER, "Trying to optimize it's result");
+          //#endif
+          result = optimizeASTSub(result, null);
+        }
+
+        // Result is resolvable now, resolve before substituting
+        if (isImmediatelyResolvable(result))
+          return wrapValue(result, interpreter.evaluateExpression(result, GPEEE.EMPTY_ENVIRONMENT));
+
+        // Result cannot be evaluated further
+        return result;
+      }
+    }
+
     // Expression type cannot be optimized
     //#if mvn.project.property.production != "true"
     logger.logDebug(DebugLogLevel.OPTIMIZER, "Cannot optimize node " + expression.getClass().getSimpleName());

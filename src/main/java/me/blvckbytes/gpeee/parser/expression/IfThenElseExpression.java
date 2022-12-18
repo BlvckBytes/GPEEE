@@ -22,33 +22,37 @@
  * SOFTWARE.
  */
 
-package me.blvckbytes.gpeee.error;
+package me.blvckbytes.gpeee.parser.expression;
 
-import me.blvckbytes.gpeee.tokenizer.ITokenizer;
+import lombok.Getter;
+import lombok.Setter;
 import me.blvckbytes.gpeee.tokenizer.Token;
 import me.blvckbytes.gpeee.tokenizer.TokenType;
-import org.jetbrains.annotations.Nullable;
 
-import java.util.Arrays;
-import java.util.stream.Collectors;
+@Setter
+@Getter
+public class IfThenElseExpression extends AExpression {
 
-public class UnexpectedTokenError extends AEvaluatorError {
+  private AExpression condition;
+  private AExpression positiveBody;
+  private AExpression negativeBody;
 
-  public UnexpectedTokenError(ITokenizer tokenizer, @Nullable Token actual, TokenType... expected) {
-    super(
-      actual == null ? tokenizer.getCurrentRow() : actual.getRow(),
-      actual == null ? tokenizer.getCurrentCol() : actual.getCol(),
-      tokenizer.getRawText(),
-      "Expected token " + formatTokenNames(expected) + ", found " + (actual == null ? "nothing" : actual.getType().name())
-    );
+  public IfThenElseExpression(AExpression condition, AExpression positiveBody, AExpression negativeBody, Token head, Token tail, String fullContainingExpression) {
+    super(head, tail, fullContainingExpression);
+
+    this.condition = condition;
+    this.positiveBody = positiveBody;
+    this.negativeBody = negativeBody;
   }
 
-  private static String formatTokenNames(TokenType[] tokens) {
-    if (tokens.length == 0)
-      return "EOF";
-
-    return Arrays.stream(tokens)
-      .map(TokenType::getRepresentation)
-      .collect(Collectors.joining("|"));
+  @Override
+  public String expressionify() {
+    return (
+      TokenType.PARENTHESIS_OPEN.getRepresentation() +
+      TokenType.KW_IF.getRepresentation() + " " + condition.expressionify() + " " +
+      TokenType.KW_THEN.getRepresentation() + " " + positiveBody.expressionify() + " " +
+      TokenType.KW_ELSE.getRepresentation() + " " + negativeBody.expressionify() +
+      TokenType.PARENTHESIS_CLOSE.getRepresentation()
+    );
   }
 }

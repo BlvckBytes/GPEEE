@@ -260,6 +260,21 @@ public class Interpreter {
       });
     }
 
+    /////////////////////// Control Flow ////////////////////////
+
+    if (expression instanceof IfThenElseExpression) {
+      IfThenElseExpression ifExpression = (IfThenElseExpression) expression;
+
+      // Evaluate the if statement's condition expression
+      Object condition = evaluateExpression(ifExpression.getCondition(), environment);
+
+      // Interpret the result as a boolean and evaluate the body accordingly
+      if (environment.getValueInterpreter().asBoolean(condition))
+        return evaluateExpression(ifExpression.getPositiveBody(), environment);
+
+      return evaluateExpression(ifExpression.getNegativeBody(), environment);
+    }
+
     ///////////////////////// Indexing //////////////////////////
 
     if (expression instanceof IndexExpression) {

@@ -94,6 +94,44 @@ public class Parser {
 
   /////////////////////// Complex Expressions ///////////////////////
 
+  private @Nullable AExpression parseIfThenElseExpression(ITokenizer tokenizer) throws AEvaluatorError {
+    //#if mvn.project.property.production != "true"
+    logger.logDebug(DebugLogLevel.PARSER, "Trying to parse a if then else expression");
+    //#endif
+
+    Token tk = tokenizer.peekToken();
+
+    // There's no if keyword as the next token
+    if (tk == null || tk.getType() != TokenType.KW_IF) {
+      //#if mvn.project.property.production != "true"
+      logger.logDebug(DebugLogLevel.PARSER, "Not a if then else expression");
+      //#endif
+      return null;
+    }
+
+    // Consume if keyword
+    Token head = tokenizer.consumeToken();
+
+    // Parse condition
+    AExpression condition = invokeLowestPrecedenceParser(tokenizer);
+
+    // Has to be followed by the then keyword
+    if ((tk = tokenizer.consumeToken()) == null || tk.getType() != TokenType.KW_THEN)
+      throw new UnexpectedTokenError(tokenizer, tk, TokenType.KW_ELSE);
+
+    // Parse positive body expression
+    AExpression positiveBody = invokeLowestPrecedenceParser(tokenizer);
+
+    // Has to be followed by the else keyword
+    if ((tk = tokenizer.consumeToken()) == null || tk.getType() != TokenType.KW_ELSE)
+      throw new UnexpectedTokenError(tokenizer, tk, TokenType.KW_ELSE);
+
+    // Parse negative body expression
+    AExpression negativeBody = invokeLowestPrecedenceParser(tokenizer);
+
+    return new IfThenElseExpression(condition, positiveBody, negativeBody, head, tk, tokenizer.getRawText());
+  }
+
   private @Nullable AExpression parseCallbackExpression(ITokenizer tokenizer) throws AEvaluatorError {
     //#if mvn.project.property.production != "true"
     logger.logDebug(DebugLogLevel.PARSER, "Trying to parse a callback expression");
@@ -629,6 +667,10 @@ public class Parser {
       return expression;
 
     expression = this.parseFunctionInvocationExpression(tokenizer);
+    if (expression != null)
+      return expression;
+
+    expression = this.parseIfThenElseExpression(tokenizer);
     if (expression != null)
       return expression;
 

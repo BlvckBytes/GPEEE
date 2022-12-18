@@ -122,7 +122,7 @@ public class Main {
         public Map<String, Object> getStaticVariables() {
           Map<String, Object> vars = new HashMap<>();
 
-          vars.put("my_items", List.of(1, 3, 5, 21, 49));
+          vars.put("my_items", List.of(1, 3, -5, 21, 49));
           vars.put("no_items", List.of());
           vars.put("my_number", 40);
           vars.put("my_map", Map.of(
