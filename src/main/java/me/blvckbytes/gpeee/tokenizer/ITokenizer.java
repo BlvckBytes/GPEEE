@@ -48,7 +48,10 @@ public interface ITokenizer {
   TokenizerState discardState(boolean debugLog);
 
   @Nullable Token peekToken() throws AEvaluatorError;
+
   @Nullable Token consumeToken() throws AEvaluatorError;
+
+  @Nullable Token previousToken() throws AEvaluatorError;
 
   int getCurrentRow();
 

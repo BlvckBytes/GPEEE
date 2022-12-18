@@ -24,13 +24,15 @@
 
 package me.blvckbytes.gpeee.tokenizer;
 
+import org.jetbrains.annotations.Nullable;
+
 import java.util.Stack;
 
 public class TokenizerState {
 
   public int row, col, charIndex;
   public Stack<Integer> colStack;
-  public Token currentToken;
+  public @Nullable Token currentToken, previousToken;
 
   public TokenizerState() {
     this.colStack = new Stack<>();
@@ -44,6 +46,7 @@ public class TokenizerState {
     copy.charIndex = this.charIndex;
     copy.colStack = this.colStack;
     copy.currentToken = this.currentToken;
+    copy.previousToken = this.previousToken;
 
     return copy;
   }

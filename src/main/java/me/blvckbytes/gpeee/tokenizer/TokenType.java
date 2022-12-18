@@ -196,6 +196,7 @@ public enum TokenType {
   PARENTHESIS_OPEN(TokenCategory.SYMBOL, "(", tokenizer -> tryCollectSequenceWithNextCheck(tokenizer, null, '(')),
   PARENTHESIS_CLOSE(TokenCategory.SYMBOL, ")", tokenizer -> tryCollectSequenceWithNextCheck(tokenizer, null, ')')),
   COMMA(TokenCategory.SYMBOL, ",", tokenizer -> tryCollectSequenceWithNextCheck(tokenizer, null, ',')),
+  DOT(TokenCategory.SYMBOL, ".", tokenizer -> tryCollectSequenceWithNextCheck(tokenizer, null, '.')),
   BRACKET_OPEN(TokenCategory.SYMBOL, "[", tokenizer -> tryCollectSequenceWithNextCheck(tokenizer, null, '[')),
   BRACKET_CLOSE(TokenCategory.SYMBOL, "]", tokenizer -> tryCollectSequenceWithNextCheck(tokenizer, null, ']')),
 

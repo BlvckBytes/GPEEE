@@ -151,11 +151,13 @@ public class Tokenizer implements ITokenizer {
     //#if mvn.project.property.production != "true"
     logger.logDebug(DebugLogLevel.TOKENIZER, "Peeked token " + state.currentToken);
     //#endif
+
     return state.currentToken;
   }
 
   @Override
   public @Nullable Token consumeToken() throws AEvaluatorError {
+    state.previousToken = state.currentToken;
     eatComments();
 
     if (state.currentToken == null)
@@ -167,7 +169,13 @@ public class Tokenizer implements ITokenizer {
     //#if mvn.project.property.production != "true"
     logger.logDebug(DebugLogLevel.TOKENIZER, "Consumed token " + result);
     //#endif
+
     return result;
+  }
+
+  @Override
+  public @Nullable Token previousToken() throws AEvaluatorError {
+    return state.previousToken;
   }
 
   @Override
