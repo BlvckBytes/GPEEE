@@ -34,29 +34,29 @@
                 <configuration>
                     <source>11</source>
                     <target>11</target>
-                    <compileSourceRoots>target/generated-sources/preprocessed</compileSourceRoots>
+<!--                    <compileSourceRoots>target/generated-sources/preprocessed</compileSourceRoots>-->
                 </configuration>
                 <version>3.10.1</version>
             </plugin>
 
             <!-- JCP: Used for preprocessor comments -->
-            <plugin>
-                <groupId>com.igormaznitsa</groupId>
-                <artifactId>jcp</artifactId>
-                <version>7.0.5</version>
-                <executions>
-                    <execution>
-                        <id>preprocessSources</id>
-                        <phase>generate-sources</phase>
-                        <goals>
-                            <goal>preprocess</goal>
-                        </goals>
-                        <configuration>
-                            <replaceSources>false</replaceSources>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
+<!--            <plugin>-->
+<!--                <groupId>com.igormaznitsa</groupId>-->
+<!--                <artifactId>jcp</artifactId>-->
+<!--                <version>7.0.5</version>-->
+<!--                <executions>-->
+<!--                    <execution>-->
+<!--                        <id>preprocessSources</id>-->
+<!--                        <phase>generate-sources</phase>-->
+<!--                        <goals>-->
+<!--                            <goal>preprocess</goal>-->
+<!--                        </goals>-->
+<!--                        <configuration>-->
+<!--                            <replaceSources>false</replaceSources>-->
+<!--                        </configuration>-->
+<!--                    </execution>-->
+<!--                </executions>-->
+<!--            </plugin>-->
 
             <!-- Surefire: Used to launch tests -->
             <plugin>
