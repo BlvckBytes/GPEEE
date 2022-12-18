@@ -105,15 +105,7 @@ public class Parser {
 
   /////////////////////// Complex Expressions ///////////////////////
 
-  private @Nullable AExpression parseMemberAccessExpression(ITokenizer tokenizer, int precedenceSelf) throws AEvaluatorError {
-    return parseBinaryExpression(
-      (lhs, rhs, h, t, op) -> new MemberAccessExpression(lhs, rhs, h, t, tokenizer.getRawText()),
-      tokenizer, PrecedenceMode.HIGHER, precedenceSelf,
-      new TokenType[] { TokenType.DOT }, null
-    );
-  }
-
-  private @Nullable AExpression parseIfThenElseExpression(ITokenizer tokenizer, int precedenceSelf) throws AEvaluatorError {
+  private AExpression parseIfThenElseExpression(ITokenizer tokenizer, int precedenceSelf) throws AEvaluatorError {
     //#if mvn.project.property.production != "true"
     logger.logDebug(DebugLogLevel.PARSER, "Trying to parse a if then else expression");
     //#endif
@@ -151,7 +143,7 @@ public class Parser {
     return new IfThenElseExpression(condition, positiveBody, negativeBody, head, tk, tokenizer.getRawText());
   }
 
-  private @Nullable AExpression parseCallbackExpression(ITokenizer tokenizer, int precedenceSelf) throws AEvaluatorError {
+  private AExpression parseCallbackExpression(ITokenizer tokenizer, int precedenceSelf) throws AEvaluatorError {
     //#if mvn.project.property.production != "true"
     logger.logDebug(DebugLogLevel.PARSER, "Trying to parse a callback expression");
     //#endif
@@ -235,15 +227,7 @@ public class Parser {
     return new CallbackExpression(signature, body, head, body.getTail(), tokenizer.getRawText());
   }
 
-  private @Nullable AExpression parseIndexExpression(ITokenizer tokenizer, int precedenceSelf) throws AEvaluatorError {
-    return parseBinaryExpression(
-      (lhs, rhs, h, t, op) -> new IndexExpression(lhs, rhs, h, t, tokenizer.getRawText()),
-      tokenizer, PrecedenceMode.RESET, precedenceSelf,
-      new TokenType[] { TokenType.BRACKET_OPEN }, new TokenType[] { TokenType.BRACKET_CLOSE }
-    );
-  }
-
-  private @Nullable AExpression parseFunctionInvocationExpression(ITokenizer tokenizer, int precedenceSelf) throws AEvaluatorError {
+  private AExpression parseFunctionInvocationExpression(ITokenizer tokenizer, int precedenceSelf) throws AEvaluatorError {
     //#if mvn.project.property.production != "true"
     logger.logDebug(DebugLogLevel.PARSER, "Trying to parse a function invocation expression");
     //#endif
@@ -387,22 +371,6 @@ public class Parser {
     return functionExpression;
   }
 
-  private @Nullable AExpression parseFlipSignExpression(ITokenizer tokenizer, int precedenceSelf) throws AEvaluatorError {
-    return parseUnaryExpression(
-      (input, h, t, op) -> new FlipSignExpression(input, h, t, tokenizer.getRawText()),
-      tokenizer, precedenceSelf,
-      new TokenType[] { TokenType.MINUS }, null
-    );
-  }
-
-  private @Nullable AExpression parseParenthesisExpression(ITokenizer tokenizer, int precedenceSelf) throws AEvaluatorError {
-    return parseUnaryExpression(
-      (input, h, t, op) -> input,
-      tokenizer, precedenceSelf,
-      new TokenType[] { TokenType.PARENTHESIS_OPEN }, new TokenType[] { TokenType.PARENTHESIS_CLOSE }
-    );
-  }
-
   /////////////////////// Unary Expressions ///////////////////////
 
   private AExpression parseNegationExpression(ITokenizer tokenizer, int precedenceSelf) throws AEvaluatorError {
@@ -413,7 +381,39 @@ public class Parser {
     );
   }
 
+  private AExpression parseParenthesisExpression(ITokenizer tokenizer, int precedenceSelf) throws AEvaluatorError {
+    return parseUnaryExpression(
+      (input, h, t, op) -> input,
+      tokenizer, precedenceSelf,
+      new TokenType[] { TokenType.PARENTHESIS_OPEN }, new TokenType[] { TokenType.PARENTHESIS_CLOSE }
+    );
+  }
+
+  private AExpression parseFlipSignExpression(ITokenizer tokenizer, int precedenceSelf) throws AEvaluatorError {
+    return parseUnaryExpression(
+      (input, h, t, op) -> new FlipSignExpression(input, h, t, tokenizer.getRawText()),
+      tokenizer, precedenceSelf,
+      new TokenType[] { TokenType.MINUS }, null
+    );
+  }
+
   /////////////////////// Binary Expressions ///////////////////////
+
+  private AExpression parseMemberAccessExpression(ITokenizer tokenizer, int precedenceSelf) throws AEvaluatorError {
+    return parseBinaryExpression(
+      (lhs, rhs, h, t, op) -> new MemberAccessExpression(lhs, rhs, h, t, tokenizer.getRawText()),
+      tokenizer, PrecedenceMode.HIGHER, precedenceSelf,
+      new TokenType[] { TokenType.DOT }, null
+    );
+  }
+
+  private AExpression parseIndexExpression(ITokenizer tokenizer, int precedenceSelf) throws AEvaluatorError {
+    return parseBinaryExpression(
+      (lhs, rhs, h, t, op) -> new IndexExpression(lhs, rhs, h, t, tokenizer.getRawText()),
+      tokenizer, PrecedenceMode.RESET, precedenceSelf,
+      new TokenType[] { TokenType.BRACKET_OPEN }, new TokenType[] { TokenType.BRACKET_CLOSE }
+    );
+  }
 
   private AExpression parseComparisonExpression(ITokenizer tokenizer, int precedenceSelf) throws AEvaluatorError {
     return parseBinaryExpression(
@@ -664,6 +664,16 @@ public class Parser {
     return -1;
   }
 
+  /**
+   * Parses an expression with the unary expression pattern by first matching an operator, then parsing an
+   * expression (with reset precedence levels) and checking for an optional following terminator
+   * @param wrapper Expression wrapper which wraps the input expression and the operator into a matching expression type
+   * @param tokenizer Current parsing context's tokenizer reference
+   * @param precedenceSelf Precedence of the current expression parser wanting to invoke the next
+   * @param operators Operators which represent this type of expression (match one)
+   * @param terminators Optional terminator for each operator
+   * @return Parsed expression after invoking the wrapper on it or the result of the next precedence parser if the operators didn't match
+   */
   private AExpression parseUnaryExpression(
     FUnaryExpressionWrapper wrapper, ITokenizer tokenizer,
     int precedenceSelf, TokenType[] operators, @Nullable TokenType[] terminators
@@ -704,6 +714,20 @@ public class Parser {
     return wrapper.apply(input, operator, input.getTail(), operator);
   }
 
+  /**
+   * Parses an expression with the binary expression pattern by first invoking the next precedence parser to
+   * parse the left hand side, then matching an operator as well as a right hand side with the specified
+   * right hand side precedence parser. This action of parsing an operator and a right hand side will happen
+   * as often as there are matching operators available. The results will be chained together to the right. After
+   * each right hand side, the optional terminator will be expected, if provided.
+   * @param wrapper Expression wrapper which wraps the input expression and the operator into a matching expression type
+   * @param tokenizer Current parsing context's tokenizer reference
+   * @param rhsPrecedence Precedence mode to use when parsing right hand side expressions
+   * @param precedenceSelf Precedence of the current expression parser wanting to invoke the next
+   * @param operators Operators which represent this type of expression (match one)
+   * @param terminators Optional terminator for each operator
+   * @return Parsed expression after invoking the wrapper on it or the result of the next precedence parser if the operators didn't match
+   */
   private AExpression parseBinaryExpression(
     FBinaryExpressionWrapper wrapper, ITokenizer tokenizer,
     PrecedenceMode rhsPrecedence, int precedenceSelf,
