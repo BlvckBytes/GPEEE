@@ -48,7 +48,7 @@ public class UnexpectedTokenError extends AEvaluatorError {
       return "EOF";
 
     return Arrays.stream(tokens)
-      .map(TokenType::getRepresentation)
-      .collect(Collectors.joining("|"));
+      .map(tk -> tk.getRepresentation() == null ? tk.name() : tk.getRepresentation())
+      .collect(Collectors.joining(" | "));
   }
 }

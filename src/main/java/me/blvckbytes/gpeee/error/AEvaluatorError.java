@@ -30,7 +30,7 @@ import lombok.Getter;
 public abstract class AEvaluatorError extends RuntimeException {
 
   public AEvaluatorError(int row, int col, String rawInput, String text) {
-    super(generateWarning(row, col, rawInput, text));
+    super("\n" + generateWarning(row, col, rawInput, text));
   }
 
   private static String generateWarning(int row, int col, String rawInput, String text) {
