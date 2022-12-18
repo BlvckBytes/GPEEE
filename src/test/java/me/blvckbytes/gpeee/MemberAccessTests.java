@@ -26,6 +26,7 @@ package me.blvckbytes.gpeee;
 
 import lombok.AllArgsConstructor;
 import me.blvckbytes.gpeee.error.UnknownMemberError;
+import me.blvckbytes.gpeee.functions.FExpressionFunctionBuilder;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -90,6 +91,47 @@ public class MemberAccessTests {
         validator.validate("my_object.self.str(second_field)", testObject.self.number);
         validator.validate("my_object.self.str(self_field)", testObject.self.self);
         validator.validateThrows("my_object.self.str(invalid_field)", UnknownMemberError.class);
+      });
+  }
+
+  @Test
+  public void shouldAccessMembersFromFunctionReturns() {
+    new EnvironmentBuilder()
+      .withFunction("get_my_object", new FExpressionFunctionBuilder().build((e, args) -> testObject))
+      .withStaticVariable("first_field", "text")
+      .withStaticVariable("second_field", "number")
+      .withStaticVariable("self_field", "self")
+      .withStaticVariable("invalid_field", "invalid")
+      .launch(validator -> {
+        validator.validate("get_my_object().text", testObject.text);
+        validator.validate("get_my_object().number", testObject.number);
+        validator.validateThrows("get_my_object().invalid", UnknownMemberError.class);
+
+        validator.validate("get_my_object().self.text", testObject.self.text);
+        validator.validate("get_my_object().self.number", testObject.self.number);
+        validator.validate("get_my_object().self.self", testObject.self.self);
+        validator.validateThrows("get_my_object().self.invalid", UnknownMemberError.class);
+
+        validator.validateThrows("get_my_object().self.invalid", UnknownMemberError.class);
+
+        validator.validate("get_my_object().\"text\"", testObject.text);
+        validator.validate("get_my_object().\"number\"", testObject.number);
+        validator.validateThrows("get_my_object().\"invalid\"", UnknownMemberError.class);
+
+        validator.validate("get_my_object().str(first_field)", testObject.text);
+        validator.validate("get_my_object().str(second_field)", testObject.number);
+        validator.validate("get_my_object().str(self_field)", testObject.self);
+        validator.validateThrows("get_my_object().str(invalid_field)", UnknownMemberError.class);
+
+        validator.validate("get_my_object().self.\"text\"", testObject.self.text);
+        validator.validate("get_my_object().self.\"number\"", testObject.self.number);
+        validator.validate("get_my_object().self.\"self\"", testObject.self.self);
+        validator.validateThrows("get_my_object().self.\"invalid\"", UnknownMemberError.class);
+
+        validator.validate("get_my_object().self.str(first_field)", testObject.self.text);
+        validator.validate("get_my_object().self.str(second_field)", testObject.self.number);
+        validator.validate("get_my_object().self.str(self_field)", testObject.self.self);
+        validator.validateThrows("get_my_object().self.str(invalid_field)", UnknownMemberError.class);
       });
   }
 }
