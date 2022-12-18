@@ -276,7 +276,7 @@ public class Interpreter {
       return evaluateExpression(ifExpression.getNegativeBody(), environment);
     }
 
-    ///////////////////////// Indexing //////////////////////////
+    /////////////////////// Member Access ////////////////////////
 
     if (expression instanceof MemberAccessExpression) {
       MemberAccessExpression memberExpression = (MemberAccessExpression) expression;
@@ -312,31 +312,6 @@ public class Interpreter {
 
       // Found no field with the required name
       throw new UnknownMemberError(memberExpression, value, fieldName);
-    }
-
-    if (expression instanceof IndexExpression) {
-      IndexExpression indexExpression = (IndexExpression) expression;
-      Object keyV = evaluateExpression(indexExpression.getRhs(), environment);
-      Object value = evaluateExpression(indexExpression.getLhs(), environment);
-
-      if (value instanceof List) {
-        List<?> list = (List<?>) value;
-        int key = (int) valueInterpreter.asLong(keyV);
-        return key < list.size() ? list.get(key) : null;
-      }
-
-      if (value.getClass().isArray()) {
-        int key = (int) valueInterpreter.asLong(keyV);
-        return key < Array.getLength(value) ? Array.get(value, key) : null;
-      }
-
-      if (value instanceof Map) {
-        Map<?, ?> map = (Map<?, ?>) value;
-        return map.get(valueInterpreter.asString(keyV));
-      }
-
-      // Cannot index this type of value
-      throw new NonIndexableValueError(indexExpression, value);
     }
 
     //////////////////// Binary Expressions /////////////////////
@@ -448,6 +423,47 @@ public class Interpreter {
         //#endif
         return result;
       }
+
+      if (expression instanceof IndexExpression) {
+        if (lhs instanceof List) {
+          List<?> list = (List<?>) lhs;
+          int key = (int) valueInterpreter.asLong(rhs);
+          Object result = key < list.size() ? list.get(key) : null;
+
+          //#if mvn.project.property.production != "true"
+          logger.logDebug(DebugLogLevel.INTERPRETER, "Indexing a list at " + key + ": " + result);
+          //#endif
+
+          return result;
+        }
+
+        if (lhs.getClass().isArray()) {
+          int key = (int) valueInterpreter.asLong(rhs);
+          Object result = key < Array.getLength(lhs) ? Array.get(lhs, key) : null;
+
+          //#if mvn.project.property.production != "true"
+          logger.logDebug(DebugLogLevel.INTERPRETER, "Indexing an array at " + key + ": " + result);
+          //#endif
+
+          return result;
+        }
+
+        if (lhs instanceof Map) {
+          Map<?, ?> map = (Map<?, ?>) lhs;
+          String key = valueInterpreter.asString(rhs);
+          Object result = map.get(key);
+
+          //#if mvn.project.property.production != "true"
+          logger.logDebug(DebugLogLevel.INTERPRETER, "Indexing a map at " + key + ": " + result);
+          //#endif
+
+          return result;
+        }
+
+        // Cannot index this type of value
+        throw new NonIndexableValueError((IndexExpression) expression, lhs);
+      }
+
     }
 
     ///////////////////// Unary Expressions /////////////////////
