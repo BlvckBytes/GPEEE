@@ -43,6 +43,9 @@ public class IndexingTests {
       validator.validate("my_list[0]", 1);
       validator.validate("my_list[1]", 2);
       validator.validate("my_list[2]", 3);
+
+      // Out of range access should result in null
+      validator.validate("my_list[3]", (Object) null);
     });
   }
 
@@ -55,6 +58,9 @@ public class IndexingTests {
       validator.validate("my_array[0]", 7);
       validator.validate("my_array[1]", 8);
       validator.validate("my_array[2]", 9);
+
+      // Out of range access should result in null
+      validator.validate("my_array[3]", (Object) null);
     });
   }
 
@@ -79,6 +85,9 @@ public class IndexingTests {
       validator.validate("my_map[\"AnotherMap\"][\"One\"]", 1);
       validator.validate("my_map[\"AnotherMap\"][\"Two\"]", 2);
       validator.validate("my_map[\"AnotherMap\"][\"Three\"]", 3);
+
+      // Unknown key access should result in null
+      validator.validate("my_map[\"unknown\"]", (Object) null);
     });
   }
 
