@@ -56,4 +56,9 @@ public class ValueFunction extends AStandardFunction {
   public void registerSelf(IStandardFunctionRegistry registry) {
     registry.register("value", this);
   }
+
+  @Override
+  public boolean returnsPrimaryResult() {
+    return false;
+  }
 }

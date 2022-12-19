@@ -29,6 +29,7 @@ import me.blvckbytes.gpeee.GPEEE;
 import me.blvckbytes.gpeee.Tuple;
 import me.blvckbytes.gpeee.error.AEvaluatorError;
 import me.blvckbytes.gpeee.functions.IStandardFunctionRegistry;
+import me.blvckbytes.gpeee.functions.std.AStandardFunction;
 import me.blvckbytes.gpeee.interpreter.Interpreter;
 import me.blvckbytes.gpeee.logging.DebugLogLevel;
 import me.blvckbytes.gpeee.logging.ILogger;
@@ -254,8 +255,10 @@ public class Optimizer {
       }
 
       // This invocation targets a standard function which is available at the time of optimization
+      // And it only returns a primary result in all cases
       // And all arguments are immediately resolvable, so this is in effect another "static value"
-      if (standardFunctionRegistry.lookup(name) != null && allArgsResolvable) {
+      AStandardFunction standardFunction = standardFunctionRegistry.lookup(name);
+      if (standardFunction != null && standardFunction.returnsPrimaryResult() && allArgsResolvable) {
         //#if mvn.project.property.production != "true"
         logger.logDebug(DebugLogLevel.OPTIMIZER, "Evaluating std-function call to " + name + " with all resolvable arguments");
         //#endif

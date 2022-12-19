@@ -31,4 +31,11 @@ public abstract class AStandardFunction extends AExpressionFunction {
 
   public abstract void registerSelf(IStandardFunctionRegistry registry);
 
+  /**
+   * Whether this function *only* returns a primary type result, which is either
+   * a long, a double, a string, a boolean or null. This indicates whether or not
+   * the function can be evaluated during optimization-stage.
+   */
+  public abstract boolean returnsPrimaryResult();
+
 }

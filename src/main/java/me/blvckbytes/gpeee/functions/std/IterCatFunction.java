@@ -52,7 +52,7 @@ public class IterCatFunction extends AStandardFunction {
 
     // Fall back on a sensible default
     if (separator == null)
-      return ", ";
+      separator = ", ";
 
     StringBuilder result = new StringBuilder();
 
@@ -86,5 +86,10 @@ public class IterCatFunction extends AStandardFunction {
   @Override
   public void registerSelf(IStandardFunctionRegistry registry) {
     registry.register("iter_cat", this);
+  }
+
+  @Override
+  public boolean returnsPrimaryResult() {
+    return true;
   }
 }

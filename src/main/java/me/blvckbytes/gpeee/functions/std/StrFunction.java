@@ -54,4 +54,9 @@ public class StrFunction extends AStandardFunction {
   public void registerSelf(IStandardFunctionRegistry registry) {
     registry.register("str", this);
   }
+
+  @Override
+  public boolean returnsPrimaryResult() {
+    return true;
+  }
 }

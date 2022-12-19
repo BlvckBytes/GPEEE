@@ -31,6 +31,6 @@ public interface IStandardFunctionRegistry {
 
   void register(String name, AStandardFunction function);
 
-  @Nullable AExpressionFunction lookup(String name);
+  @Nullable AStandardFunction lookup(String name);
 
 }

@@ -119,7 +119,7 @@ public class GPEEE implements IExpressionEvaluator, IStandardFunctionRegistry {
   }
 
   @Override
-  public @Nullable AExpressionFunction lookup(String name) {
+  public @Nullable AStandardFunction lookup(String name) {
     return this.standardFunctions.get(name);
   }
 

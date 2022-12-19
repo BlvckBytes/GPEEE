@@ -57,4 +57,9 @@ public class KeyFunction extends AStandardFunction {
   public void registerSelf(IStandardFunctionRegistry registry) {
     registry.register("key", this);
   }
+
+  @Override
+  public boolean returnsPrimaryResult() {
+    return false;
+  }
 }
