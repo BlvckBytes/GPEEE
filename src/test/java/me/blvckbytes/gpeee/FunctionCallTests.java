@@ -26,6 +26,7 @@ package me.blvckbytes.gpeee;
 
 import me.blvckbytes.gpeee.error.InvalidFunctionArgumentTypeError;
 import me.blvckbytes.gpeee.error.NonNamedFunctionArgumentError;
+import me.blvckbytes.gpeee.error.UndefinedFunctionError;
 import me.blvckbytes.gpeee.functions.AExpressionFunction;
 import me.blvckbytes.gpeee.functions.FExpressionFunctionBuilder;
 import org.junit.Test;
@@ -280,5 +281,13 @@ public class FunctionCallTests {
       validator.validate("boolean_func(my_list_empty)", false);
       validator.validate("boolean_func(my_map_empty)", false);
     });
+  }
+
+  @Test
+  public void shouldNotCallAnUndefinedFunction() {
+    new EnvironmentBuilder()
+      .launch(validator -> {
+        validator.validateThrows("unknown_func()", UndefinedFunctionError.class);
+      });
   }
 }
