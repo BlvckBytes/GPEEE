@@ -41,7 +41,7 @@ public class MathExpression extends ABinaryExpression {
   }
 
   @Override
-  public boolean operatorEquals(ABinaryExpression other) {
+  public boolean canBeCombinedToOptimize(ABinaryExpression other) {
     if (other instanceof MathExpression)
       return ((MathExpression) other).getOperation().equals(operation);
     return false;

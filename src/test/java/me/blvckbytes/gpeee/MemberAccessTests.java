@@ -86,11 +86,19 @@ public class MemberAccessTests {
         validator.validate("my_object.self.\"number\"", testObject.self.number);
         validator.validate("my_object.self.\"self\"", testObject.self.self);
         validator.validateThrows("my_object.self.\"invalid\"", UnknownMemberError.class);
+        validator.validate("my_object.\"self\".\"text\"", testObject.self.text);
+        validator.validate("my_object.\"self\".\"number\"", testObject.self.number);
+        validator.validate("my_object.\"self\".\"self\"", testObject.self.self);
+        validator.validateThrows("my_object.\"self\".\"invalid\"", UnknownMemberError.class);
 
         validator.validate("my_object.self.str(first_field)", testObject.self.text);
         validator.validate("my_object.self.str(second_field)", testObject.self.number);
         validator.validate("my_object.self.str(self_field)", testObject.self.self);
         validator.validateThrows("my_object.self.str(invalid_field)", UnknownMemberError.class);
+        validator.validate("my_object.str(self_field).str(first_field)", testObject.self.text);
+        validator.validate("my_object.str(self_field).str(second_field)", testObject.self.number);
+        validator.validate("my_object.str(self_field).str(self_field)", testObject.self.self);
+        validator.validateThrows("my_object.str(self_field).str(invalid_field)", UnknownMemberError.class);
       });
   }
 

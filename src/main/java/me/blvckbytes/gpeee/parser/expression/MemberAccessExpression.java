@@ -48,8 +48,10 @@ public class MemberAccessExpression extends ABinaryExpression {
   }
 
   @Override
-  public boolean operatorEquals(ABinaryExpression other) {
-    return other instanceof MemberAccessExpression;
+  public boolean canBeCombinedToOptimize(ABinaryExpression other) {
+    // Member access expressions never equal one another, as they're dependent
+    // on the exact order of operation and cannot be optimized away at all
+    return false;
   }
 
   @Override

@@ -37,7 +37,7 @@ public class DisjunctionExpression extends ABinaryExpression {
   }
 
   @Override
-  public boolean operatorEquals(ABinaryExpression other) {
+  public boolean canBeCombinedToOptimize(ABinaryExpression other) {
     return other instanceof DisjunctionExpression;
   }
 

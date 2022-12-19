@@ -57,7 +57,7 @@ public abstract class ABinaryExpression extends AExpression {
    * Whether the operator in this instance equals the operator of the other instance
    * @param other Instance to compare against
    */
-  public abstract boolean operatorEquals(ABinaryExpression other);
+  public abstract boolean canBeCombinedToOptimize(ABinaryExpression other);
 
   protected abstract @Nullable String getInfixSymbol();
 }

@@ -42,7 +42,7 @@ public class ComparisonExpression extends ABinaryExpression {
   }
 
   @Override
-  public boolean operatorEquals(ABinaryExpression other) {
+  public boolean canBeCombinedToOptimize(ABinaryExpression other) {
     if (other instanceof ComparisonExpression)
       return ((ComparisonExpression) other).getOperation().equals(operation);
     return false;

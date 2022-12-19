@@ -43,7 +43,7 @@ public class IndexExpression extends ABinaryExpression {
   }
 
   @Override
-  public boolean operatorEquals(ABinaryExpression other) {
+  public boolean canBeCombinedToOptimize(ABinaryExpression other) {
     // Index expressions never equal one another, as they're dependent on
     // the exact order of operation and cannot be optimized away at all
     return false;

@@ -120,15 +120,15 @@ public class Optimizer {
         ABinaryExpression lhsBinary = (ABinaryExpression) binary.getLhs();
 
         if (
-          // AND their operators equal
-          binary.operatorEquals(lhsBinary) &&
+          // AND they can be combined (same operators, order of operation doesn't matter)
+          binary.canBeCombinedToOptimize(lhsBinary) &&
           // AND the LHS' RHS is also resolvable
           isImmediatelyResolvable(lhsBinary.getRhs())
         ) {
           //#if mvn.project.property.production != "true"
           logger.logDebug(DebugLogLevel.OPTIMIZER, "Going to combine expression's RHS with LHS' RHS");
           //#endif
-          // binary.RHS and lhsBinary.RHS are solvable, operations are equal
+          // binary.RHS and lhsBinary.RHS are solvable, operators are combinable
           // Example situation: (<lhsBinary>) + binary.RHS
 
           // Substitute into lhsBinary, evaluate, set as binary.RHS and then substitute lhsBinary for

@@ -42,7 +42,7 @@ public class EqualityExpression extends ABinaryExpression {
   }
 
   @Override
-  public boolean operatorEquals(ABinaryExpression other) {
+  public boolean canBeCombinedToOptimize(ABinaryExpression other) {
     if (other instanceof EqualityExpression)
       return ((EqualityExpression) other).getOperation().equals(operation);
     return false;
