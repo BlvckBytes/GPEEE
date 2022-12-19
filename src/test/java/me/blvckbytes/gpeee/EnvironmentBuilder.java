@@ -202,31 +202,12 @@ public class EnvironmentBuilder {
 
   private void validateResult(Object resultValue, Object[] results) {
 
-    // Could only stem from direct member/index access of an integer, convert for easier comparison
-    if (resultValue instanceof Integer)
-      resultValue = ((Integer) resultValue).longValue();
-
     AssertionError lastThrow = null;
     for (Object result : results) {
 
-      // Integers are longs in this language
-      if (result instanceof Integer)
-        result = ((Integer) result).longValue();
-
-      // Floats are doubles in this language
-      if (result instanceof Float)
-        result = ((Float) result).doubleValue();
-
-      // Result had no decimals but was a double, convert to long
-      if (result instanceof Double) {
-        Double dV = (Double) result;
-        if (dV - dV.intValue() == 0)
-          result = dV.longValue();
-      }
-
-      // Double comparison using max delta
-      if (resultValue instanceof Double && result instanceof Double) {
-        if (!(Math.abs(((Double) result) - ((Double) resultValue)) <= MAX_DOUBLE_DELTA)) {
+      // Number comparison using max delta
+      if (resultValue instanceof Number && result instanceof Number) {
+        if (!(Math.abs(((Number) result).doubleValue() - ((Number) resultValue).doubleValue()) <= MAX_DOUBLE_DELTA)) {
           try {
             assertEquals(result, resultValue);
           } catch (AssertionError e) {
