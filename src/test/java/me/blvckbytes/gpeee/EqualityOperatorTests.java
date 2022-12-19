@@ -87,9 +87,16 @@ public class EqualityOperatorTests {
 
         // Should ignore unnecessary decimal points
         validator.validate("7.0 == \"7\"", true);
+        validator.validate("7.0 == \"7.2\"", false);
+        validator.validate("7.2 == \"7\"", false);
 
         // But should allow for checking against them, even if unnecessary
         validator.validate("7 == \"7.0\"", true);
+        validator.validate("7.2 == \"7.0\"", false);
+        validator.validate("7 == \"7.2\"", false);
+
+        // Malformed numbers should never equal
+        validator.validate("7 == \"7.abc\"", false);
 
         validator.validate("5.2 != \"3.4\"", true);
         validator.validate("2.1 != \"2.1\"", false);
