@@ -161,24 +161,6 @@ public class FunctionInvocationTests {
       });
   }
 
-  @Test
-  public void testIterCatAndKeyValue() {
-    new EnvironmentBuilder()
-      .withLiveVariable("my_map", () -> {
-        Map<String, String> map = new LinkedHashMap<>();
-        map.put("red", "#FF0000");
-        map.put("green", "#00FF00");
-        map.put("blue", "#0000FF");
-        return map;
-      })
-      .launch(validator -> {
-        validator.validate(
-          "iter_cat(my_map, (it, ind) -> \"(\" & ind & \" -> \" & key(it) & \"-\" & value(it) & \")\", \", \")",
-          "(0 -> red-#FF0000), (1 -> green-#00FF00), (2 -> blue-#0000FF)"
-        );
-      });
-  }
-
   /**
    * Builds an expression function which only returns the input if the first
    * passed argument is an instance of the specified type and which requires

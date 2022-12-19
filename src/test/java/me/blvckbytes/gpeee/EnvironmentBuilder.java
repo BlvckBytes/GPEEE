@@ -220,6 +220,23 @@ public class EnvironmentBuilder {
         return;
       }
 
+      // Collection comparison, compare the contents
+      if (resultValue instanceof Collection && result instanceof Collection) {
+        Collection<?> collectionA = (Collection<?>) resultValue, collectionB = (Collection<?>) result;
+
+        assertEquals(collectionA.size(), collectionB.size());
+
+        Iterator<?> iterA = collectionA.iterator(), iterB = collectionB.iterator();
+
+        while (iterA.hasNext()) {
+          Object a = iterA.next(), b = iterB.next();
+          validateResult(a, new Object[]{ b });
+        }
+
+        // Success exit
+        return;
+      }
+
       // Compare everything else
 
       try {

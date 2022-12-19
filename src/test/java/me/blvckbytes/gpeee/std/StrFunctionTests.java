@@ -22,15 +22,16 @@
  * SOFTWARE.
  */
 
-package me.blvckbytes.gpeee;
+package me.blvckbytes.gpeee.std;
 
+import me.blvckbytes.gpeee.EnvironmentBuilder;
 import org.junit.Test;
 
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-public class ValueStringificationTests {
+public class StrFunctionTests {
 
   @Test
   public void shouldStringifyValues() {
