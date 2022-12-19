@@ -449,7 +449,7 @@ public class Interpreter {
           return result;
         }
 
-        if (lhs.getClass().isArray()) {
+        if (lhs != null && lhs.getClass().isArray()) {
           int key = (int) valueInterpreter.asLong(rhs);
           Object result = key < Array.getLength(lhs) ? Array.get(lhs, key) : null;
 
@@ -527,24 +527,25 @@ public class Interpreter {
     logger.logDebug(DebugLogLevel.INTERPRETER, "Looking up variable " + symbol);
     //#endif
 
-    Object value = environment.getStaticVariables().get(symbol);
-    if (value != null) {
+    if (environment.getStaticVariables().containsKey(symbol)) {
+      Object value = environment.getStaticVariables().get(symbol);
+
       //#if mvn.project.property.production != "true"
       logger.logDebug(DebugLogLevel.INTERPRETER, "Resolved static variable value: " + value);
       //#endif
+
       return value;
     }
 
     Supplier<Object> valueSupplier = environment.getLiveVariables().get(symbol);
     if (valueSupplier != null) {
-      value = valueSupplier.get();
+      Object value = valueSupplier.get();
 
-      if (value != null) {
-        //#if mvn.project.property.production != "true"
-        logger.logDebug(DebugLogLevel.INTERPRETER, "Resolved dynamic variable value: " + value);
-        //#endif
-        return value;
-      }
+      //#if mvn.project.property.production != "true"
+      logger.logDebug(DebugLogLevel.INTERPRETER, "Resolved dynamic variable value: " + value);
+      //#endif
+
+      return value;
     }
 
     throw new UndefinedVariableError(identifier);

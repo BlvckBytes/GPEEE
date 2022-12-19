@@ -105,11 +105,16 @@ public class IndexingTests {
     new EnvironmentBuilder()
       .withStaticVariable("my_number", 5)
       .withStaticVariable("my_string", "hello world")
+      .withStaticVariable("my_null", null)
       .launch(validator -> {
         validator.validateThrows("my_number[\"unknown\"]", NonIndexableValueError.class);
         validator.validateThrows("my_string[1]", NonIndexableValueError.class);
         validator.validateThrows("my_number[\"unknown\"][2]", NonIndexableValueError.class);
         validator.validateThrows("my_string[1][\"unknown\"]", NonIndexableValueError.class);
+        validator.validateThrows("my_null[\"unknown\"]", NonIndexableValueError.class);
+        validator.validateThrows("my_null[1]", NonIndexableValueError.class);
+        validator.validateThrows("my_null[\"unknown\"][2]", NonIndexableValueError.class);
+        validator.validateThrows("my_null[1][\"unknown\"]", NonIndexableValueError.class);
       });
   }
 }
