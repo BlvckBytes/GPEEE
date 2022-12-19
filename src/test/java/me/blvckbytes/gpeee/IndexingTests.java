@@ -25,6 +25,7 @@
 package me.blvckbytes.gpeee;
 
 import me.blvckbytes.gpeee.error.NonIndexableValueError;
+import me.blvckbytes.gpeee.error.UnexpectedTokenError;
 import me.blvckbytes.gpeee.functions.FExpressionFunctionBuilder;
 import org.junit.Test;
 
@@ -115,6 +116,16 @@ public class IndexingTests {
         validator.validateThrows("my_null[1]", NonIndexableValueError.class);
         validator.validateThrows("my_null[\"unknown\"][2]", NonIndexableValueError.class);
         validator.validateThrows("my_null[1][\"unknown\"]", NonIndexableValueError.class);
+      });
+  }
+
+  @Test
+  public void shouldThrowIfMalformed() {
+    new EnvironmentBuilder()
+      .withStaticVariable("my_map", Map.of())
+      .launch(validator -> {
+        // Expected terminator token ]
+        validator.validateThrows("my_map[\"test\"", UnexpectedTokenError.class);
       });
   }
 }
