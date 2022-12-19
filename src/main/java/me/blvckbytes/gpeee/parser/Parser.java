@@ -38,7 +38,6 @@ import org.jetbrains.annotations.Nullable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
@@ -236,36 +235,11 @@ public class Parser {
     Token tk = tokenizer.peekToken();
 
     // There's no identifier or minus as the next token
-    if (tk == null || !(tk.getType() == TokenType.IDENTIFIER || tk.getType() == TokenType.MINUS)) {
+    if (tk == null || tk.getType() != TokenType.IDENTIFIER) {
       //#if mvn.project.property.production != "true"
       logger.logDebug(DebugLogLevel.PARSER, "Not a function invocation expression");
       //#endif
       return invokeNextPrecedenceParser(tokenizer, precedenceSelf);
-    }
-
-    boolean flipResult = false;
-    Token tokenMinus = null;
-
-    // The function return value's sign should be flipped
-    if (tk.getType() == TokenType.MINUS) {
-      flipResult = true;
-
-      // Store before consuming the minus
-      tokenizer.saveState(true);
-      tokenMinus = tokenizer.consumeToken();
-
-      tk = tokenizer.peekToken();
-
-      // There's no identifier as the next token, hand over to the next higher precedence parser
-      if (tk == null || tk.getType() != TokenType.IDENTIFIER) {
-        //#if mvn.project.property.production != "true"
-        logger.logDebug(DebugLogLevel.PARSER, "Not a function invocation expression");
-        //#endif
-
-        // Put back the minus
-        tokenizer.restoreState(true);
-        return invokeNextPrecedenceParser(tokenizer, precedenceSelf);
-      }
     }
 
     // Store before consuming the identifier
@@ -290,10 +264,6 @@ public class Parser {
 
     // Not going to go need to restore anymore, this has to be a function invocation
     tokenizer.discardState(true);
-
-    // Also discard the save from parsing the minus
-    if (flipResult)
-      tokenizer.discardState(true);
 
     // Consume the opening parenthesis
     tokenizer.consumeToken();
@@ -361,15 +331,9 @@ public class Parser {
       tokenIdentifier.getValue(), tokenIdentifier, tokenIdentifier, tokenizer.getRawText()
     );
 
-    FunctionInvocationExpression functionExpression = new FunctionInvocationExpression(
-      identifierExpression, arguments, tokenMinus == null ? tokenIdentifier : tokenMinus, tk, tokenizer.getRawText()
+    return new FunctionInvocationExpression(
+      identifierExpression, arguments, tokenIdentifier, tk, tokenizer.getRawText()
     );
-
-    // Wrap the function in a sign flipping expression
-    if (flipResult)
-      return new FlipSignExpression(functionExpression, tokenMinus, functionExpression.getTail(), tokenizer.getRawText());
-
-    return functionExpression;
   }
 
   /////////////////////// Unary Expressions ///////////////////////
