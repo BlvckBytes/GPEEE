@@ -67,6 +67,10 @@ public class StandardValueInterpreter implements IValueInterpreter {
     if (value instanceof Collection)
       return ((Collection<?>) value).size() == 0 ? 0 : 1;
 
+    // A map will be zero if empty and one otherwise
+    if (value instanceof Map)
+      return ((Map<?, ?>) value).size() == 0 ? 0 : 1;
+
     // An array will be zero if empty and one otherwise
     if (value.getClass().isArray())
       return Array.getLength(value) == 0 ? 0 : 1;
