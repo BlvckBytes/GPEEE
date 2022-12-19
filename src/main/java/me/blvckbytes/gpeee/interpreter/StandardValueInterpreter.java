@@ -28,10 +28,7 @@ import me.blvckbytes.gpeee.parser.MathOperation;
 import org.jetbrains.annotations.Nullable;
 
 import java.lang.reflect.Array;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.Map;
+import java.util.*;
 
 public class StandardValueInterpreter implements IValueInterpreter {
 
@@ -139,6 +136,27 @@ public class StandardValueInterpreter implements IValueInterpreter {
     }
 
     return value.toString();
+  }
+
+  @Override
+  public List<Object> asCollection(@Nullable Object value) {
+    // Collections are just wrapped in arraylists
+    if (value instanceof Collection<?>)
+      return new ArrayList<>((Collection<?>) value);
+
+    // Maps get converted to a list of their entries
+    if (value instanceof Map)
+      return new ArrayList<>(((Map<?, ?>) value).entrySet());
+
+    List<Object> result = new ArrayList<>();
+
+    // Null corresponds to the empty list
+    if (value == null)
+      return result;
+
+    // Create a list containing the input value
+    result.add(value);
+    return result;
   }
 
   @Override

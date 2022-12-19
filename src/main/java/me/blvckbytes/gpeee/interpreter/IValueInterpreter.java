@@ -27,6 +27,8 @@ package me.blvckbytes.gpeee.interpreter;
 import me.blvckbytes.gpeee.parser.MathOperation;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.List;
+
 public interface IValueInterpreter {
 
   boolean asBoolean(@Nullable Object value);
@@ -36,6 +38,8 @@ public interface IValueInterpreter {
   double asDouble(@Nullable Object value);
 
   String asString(@Nullable Object value);
+
+  List<Object> asCollection(@Nullable Object value);
 
   boolean hasDecimalPoint(@Nullable Object value);
 
