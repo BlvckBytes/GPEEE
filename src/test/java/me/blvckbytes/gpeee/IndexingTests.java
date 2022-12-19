@@ -24,6 +24,7 @@
 
 package me.blvckbytes.gpeee;
 
+import me.blvckbytes.gpeee.error.NonIndexableValueError;
 import me.blvckbytes.gpeee.functions.FExpressionFunctionBuilder;
 import org.junit.Test;
 
@@ -97,5 +98,18 @@ public class IndexingTests {
       validator.validate("get_my_map()[\"Two\"]", 2);
       validator.validate("get_my_map()[\"Three\"]", 3);
     });
+  }
+
+  @Test
+  public void shouldNotIndexNonIndexableValues() {
+    new EnvironmentBuilder()
+      .withStaticVariable("my_number", 5)
+      .withStaticVariable("my_string", "hello world")
+      .launch(validator -> {
+        validator.validateThrows("my_number[\"unknown\"]", NonIndexableValueError.class);
+        validator.validateThrows("my_string[1]", NonIndexableValueError.class);
+        validator.validateThrows("my_number[\"unknown\"][2]", NonIndexableValueError.class);
+        validator.validateThrows("my_string[1][\"unknown\"]", NonIndexableValueError.class);
+      });
   }
 }
