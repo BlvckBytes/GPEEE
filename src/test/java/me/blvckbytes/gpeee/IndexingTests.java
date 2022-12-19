@@ -27,7 +27,7 @@ package me.blvckbytes.gpeee;
 import me.blvckbytes.gpeee.error.NonIndexableValueError;
 import me.blvckbytes.gpeee.error.UnexpectedTokenError;
 import me.blvckbytes.gpeee.functions.FExpressionFunctionBuilder;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.util.List;
 import java.util.Map;

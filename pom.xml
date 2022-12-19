@@ -116,9 +116,9 @@
 
         <!-- JUnit: Used for testing -->
         <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-            <version>4.13.2</version>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-engine</artifactId>
+            <version>5.9.0</version>
             <scope>test</scope>
         </dependency>
     </dependencies>

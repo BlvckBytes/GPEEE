@@ -25,7 +25,7 @@
 package me.blvckbytes.gpeee.std;
 
 import me.blvckbytes.gpeee.EnvironmentBuilder;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.util.List;
 import java.util.Map;

@@ -27,8 +27,8 @@ package me.blvckbytes.gpeee;
 import lombok.AllArgsConstructor;
 import me.blvckbytes.gpeee.error.UnknownMemberError;
 import me.blvckbytes.gpeee.functions.FExpressionFunctionBuilder;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 public class MemberAccessTests {
 
@@ -41,7 +41,7 @@ public class MemberAccessTests {
 
   private TestObject testObject;
 
-  @Before
+  @BeforeEach
   public void initializeTestObject() {
     this.testObject = new TestObject("Hello, world", 21, new TestObject("Yet another", 22, null));
   }

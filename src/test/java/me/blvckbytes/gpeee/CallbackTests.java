@@ -27,7 +27,7 @@ package me.blvckbytes.gpeee;
 import me.blvckbytes.gpeee.error.*;
 import me.blvckbytes.gpeee.functions.AExpressionFunction;
 import me.blvckbytes.gpeee.functions.FExpressionFunctionBuilder;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.util.*;
 

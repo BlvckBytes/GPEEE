@@ -26,7 +26,7 @@ package me.blvckbytes.gpeee.std;
 
 import me.blvckbytes.gpeee.EnvironmentBuilder;
 import me.blvckbytes.gpeee.error.InvalidFunctionArgumentTypeError;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.util.LinkedHashMap;
 import java.util.List;

@@ -25,7 +25,7 @@
 package me.blvckbytes.gpeee;
 
 import me.blvckbytes.gpeee.error.*;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 public class TerminalTests {
 
