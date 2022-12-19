@@ -128,7 +128,6 @@ public class GPEEE implements IExpressionEvaluator, IStandardFunctionRegistry {
    */
   private void loadStandardFunctions() {
     new IterCatFunction().registerSelf(this);
-    new IfFunction().registerSelf(this);
     new StrFunction().registerSelf(this);
     new KeyFunction().registerSelf(this);
     new ValueFunction().registerSelf(this);
