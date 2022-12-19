@@ -26,6 +26,7 @@ package me.blvckbytes.gpeee;
 
 import me.blvckbytes.gpeee.error.InvalidFunctionArgumentTypeError;
 import me.blvckbytes.gpeee.error.NonNamedFunctionArgumentError;
+import me.blvckbytes.gpeee.error.UndefinedFunctionArgumentNameError;
 import me.blvckbytes.gpeee.error.UndefinedFunctionError;
 import me.blvckbytes.gpeee.functions.AExpressionFunction;
 import me.blvckbytes.gpeee.functions.FExpressionFunctionBuilder;
@@ -118,6 +119,9 @@ public class FunctionCallTests {
 
         // Cannot use non-named arguments after named arguments
         validator.validateThrows("my_func(1, b=2, d=1, 2)", NonNamedFunctionArgumentError.class);
+
+        // Cannot specify a named argument which the function itself doesn't define
+        validator.validateThrows("my_func(1, unknown=2)", UndefinedFunctionArgumentNameError.class);
       });
   }
 
