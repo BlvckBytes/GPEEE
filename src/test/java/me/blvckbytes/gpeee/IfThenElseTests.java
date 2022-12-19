@@ -58,8 +58,10 @@ public class IfThenElseTests {
         validator.validateThrows("if", UnexpectedTokenError.class);
         validator.validateThrows("if 1", UnexpectedTokenError.class);
         validator.validateThrows("if 1 then", UnexpectedTokenError.class);
+        validator.validateThrows("if 1 \"string token\"", UnexpectedTokenError.class);
         validator.validateThrows("if 1 then 2", UnexpectedTokenError.class);
         validator.validateThrows("if 1 then 2 else", UnexpectedTokenError.class);
+        validator.validateThrows("if 1 then 2 \"string token\"", UnexpectedTokenError.class);
       });
   }
 }

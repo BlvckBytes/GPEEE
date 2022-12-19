@@ -34,7 +34,7 @@ import org.junit.Test;
 
 import java.util.*;
 
-public class FunctionCallTests {
+public class FunctionInvocationTests {
 
   @Test
   public void shouldCallArgLessFunction() {
@@ -295,6 +295,30 @@ public class FunctionCallTests {
     new EnvironmentBuilder()
       .launch(validator -> {
         validator.validateThrows("unknown_func()", UndefinedFunctionError.class);
+      });
+  }
+
+  @Test
+  public void shouldInvertOrNegateFunctionReturns() {
+    new EnvironmentBuilder()
+      .withFunction(
+        "get_my_number",
+        new FExpressionFunctionBuilder()
+          .build((e, a) -> 5)
+      )
+      .withFunction(
+        "get_my_boolean",
+        new FExpressionFunctionBuilder()
+          .build((e, a) -> true)
+      )
+      .launch(validator -> {
+        // Invert sign of function return
+        validator.validate("get_my_number()", 5);
+        validator.validate("-get_my_number()", -5);
+
+        // Flip function return boolean
+        validator.validate("get_my_boolean()", true);
+        validator.validate("not get_my_boolean()", false);
       });
   }
 }
