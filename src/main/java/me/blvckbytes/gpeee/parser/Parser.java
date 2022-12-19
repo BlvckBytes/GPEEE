@@ -38,6 +38,7 @@ import org.jetbrains.annotations.Nullable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
@@ -376,7 +377,7 @@ public class Parser {
   private AExpression parseNegationExpression(ITokenizer tokenizer, int precedenceSelf) throws AEvaluatorError {
     return parseUnaryExpression(
       (input, h, t, op) -> new InvertExpression(input, h, t, tokenizer.getRawText()),
-      tokenizer, precedenceSelf,
+      tokenizer, precedenceSelf, false,
       new TokenType[] { TokenType.BOOL_NOT }, null
     );
   }
@@ -384,7 +385,7 @@ public class Parser {
   private AExpression parseParenthesisExpression(ITokenizer tokenizer, int precedenceSelf) throws AEvaluatorError {
     return parseUnaryExpression(
       (input, h, t, op) -> input,
-      tokenizer, precedenceSelf,
+      tokenizer, precedenceSelf, true,
       new TokenType[] { TokenType.PARENTHESIS_OPEN }, new TokenType[] { TokenType.PARENTHESIS_CLOSE }
     );
   }
@@ -392,7 +393,7 @@ public class Parser {
   private AExpression parseFlipSignExpression(ITokenizer tokenizer, int precedenceSelf) throws AEvaluatorError {
     return parseUnaryExpression(
       (input, h, t, op) -> new FlipSignExpression(input, h, t, tokenizer.getRawText()),
-      tokenizer, precedenceSelf,
+      tokenizer, precedenceSelf, false,
       new TokenType[] { TokenType.MINUS }, null
     );
   }
@@ -670,13 +671,15 @@ public class Parser {
    * @param wrapper Expression wrapper which wraps the input expression and the operator into a matching expression type
    * @param tokenizer Current parsing context's tokenizer reference
    * @param precedenceSelf Precedence of the current expression parser wanting to invoke the next
+   * @param resetPrecedence Whether or not to reset the precedence for the parsed input expression
    * @param operators Operators which represent this type of expression (match one)
    * @param terminators Optional terminator for each operator
    * @return Parsed expression after invoking the wrapper on it or the result of the next precedence parser if the operators didn't match
    */
   private AExpression parseUnaryExpression(
     FUnaryExpressionWrapper wrapper, ITokenizer tokenizer,
-    int precedenceSelf, TokenType[] operators, @Nullable TokenType[] terminators
+    int precedenceSelf, boolean resetPrecedence,
+    TokenType[] operators, @Nullable TokenType[] terminators
   ) {
     //#if mvn.project.property.production != "true"
     String requiredOperatorsString = Arrays.stream(operators).map(Enum::name).collect(Collectors.joining("|"));
@@ -702,8 +705,12 @@ public class Parser {
     logger.logDebug(DebugLogLevel.PARSER, "Trying to parse an input for this expression");
     //#endif
 
-    // Always reset precedence on unary operator inputs
-    AExpression input = invokeLowestPrecedenceParser(tokenizer);
+    AExpression input;
+
+    if (resetPrecedence)
+      input = invokeLowestPrecedenceParser(tokenizer);
+    else
+      input = invokeNextPrecedenceParser(tokenizer, precedenceSelf);
 
     // Terminator requested, expect and eat it, fail otherwise
     if (terminators != null && opInd < terminators.length) {

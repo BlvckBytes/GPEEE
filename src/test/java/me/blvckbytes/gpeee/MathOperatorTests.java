@@ -30,6 +30,26 @@ import org.junit.Test;
 public class MathOperatorTests {
 
   @Test
+  public void shouldEvaluateSignsProperly() {
+    new EnvironmentBuilder()
+      .launch(validator -> {
+        validator.validate("5 * -3", 5 * -3);
+        validator.validate("-5 * -3", -5 * -3);
+        validator.validate("-5 * 3", -5 * 3);
+
+        validator.validate("5.2 * -3.1", 5.2 * -3.1);
+        validator.validate("-5.2 * -3.1", -5.2 * -3.1);
+        validator.validate("-5.2 * 3.1", -5.2 * 3.1);
+
+        validator.validate("2 - -2", 4);
+        validator.validate("-2 - -2", 0);
+        validator.validate("-(2 - -2)", -4);
+        validator.validate("-2 + 2", 0);
+        validator.validate("2 + 2", 4);
+      });
+  }
+
+  @Test
   public void shouldEvaluateMultiplicationBeforeAddition() {
     new EnvironmentBuilder()
       .launch(validator -> {

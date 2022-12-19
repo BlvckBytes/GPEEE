@@ -38,6 +38,9 @@ public class BooleanOperatorTests {
         validator.validate("not 0", true);
         validator.validate("not 1", false);
         validator.validate("not 2.2", false);
+        validator.validate("not 1 + 2", 2);
+        validator.validate("not 0 + 2", 3);
+        validator.validate("not (1 + 2)", false);
         validator.validate("not (3 > 1)", false);
         validator.validate("not (3 < 1)", true);
         validator.validate("not \"\"", true);
