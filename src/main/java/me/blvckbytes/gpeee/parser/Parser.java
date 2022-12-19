@@ -523,49 +523,30 @@ public class Parser {
     if (tk == null)
       throw new UnexpectedTokenError(tokenizer, null, TokenType.valueTypes);
 
-    // Whether the primary expression has been marked as negative
-    boolean isNegative = false;
-    Token negativeToken = null;
-
-    // Notation of a negative number
-    if (tk.getType() == TokenType.MINUS) {
-      tk = tokenizer.consumeToken();
-
-      // Either no token left or it's not a number, a double or an identifier
-      if (tk == null || !(tk.getType() == TokenType.LONG || tk.getType() == TokenType.DOUBLE || tk.getType() == TokenType.IDENTIFIER))
-        throw new UnexpectedTokenError(tokenizer, tk, TokenType.LONG, TokenType.DOUBLE, TokenType.IDENTIFIER);
-
-      negativeToken = tk;
-      isNegative = true;
-    }
-
-    Token head = negativeToken == null ? tk : negativeToken;
-
     switch (tk.getType()) {
       case LONG:
         //#if mvn.project.property.production != "true"
         logger.logDebug(DebugLogLevel.PARSER, "Found an integer");
         //#endif
-        return new LongExpression((isNegative ? -1 : 1) * Integer.parseInt(tk.getValue()), head, tk, tokenizer.getRawText());
+        return new LongExpression(Integer.parseInt(tk.getValue()), tk, tk, tokenizer.getRawText());
 
       case DOUBLE:
         //#if mvn.project.property.production != "true"
         logger.logDebug(DebugLogLevel.PARSER, "Found a double");
         //#endif
-        return new DoubleExpression((isNegative ? -1 : 1) * Double.parseDouble(tk.getValue()), head, tk, tokenizer.getRawText());
+        return new DoubleExpression(Double.parseDouble(tk.getValue()), tk, tk, tokenizer.getRawText());
 
       case STRING:
         //#if mvn.project.property.production != "true"
         logger.logDebug(DebugLogLevel.PARSER, "Found a string");
         //#endif
-        return new StringExpression(tk.getValue(), head, tk, tokenizer.getRawText());
+        return new StringExpression(tk.getValue(), tk, tk, tokenizer.getRawText());
 
       case IDENTIFIER: {
         //#if mvn.project.property.production != "true"
         logger.logDebug(DebugLogLevel.PARSER, "Found an identifier");
         //#endif
-        IdentifierExpression identifier = new IdentifierExpression(tk.getValue(), tk, tk, tokenizer.getRawText());
-        return isNegative ? new FlipSignExpression(identifier, head, tk, tokenizer.getRawText()) : identifier;
+        return new IdentifierExpression(tk.getValue(), tk, tk, tokenizer.getRawText());
       }
 
       case TRUE:

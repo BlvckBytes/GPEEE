@@ -24,10 +24,7 @@
 
 package me.blvckbytes.gpeee;
 
-import me.blvckbytes.gpeee.error.InvalidFunctionArgumentTypeError;
-import me.blvckbytes.gpeee.error.NonNamedFunctionArgumentError;
-import me.blvckbytes.gpeee.error.UndefinedFunctionArgumentNameError;
-import me.blvckbytes.gpeee.error.UndefinedFunctionError;
+import me.blvckbytes.gpeee.error.*;
 import me.blvckbytes.gpeee.functions.AExpressionFunction;
 import me.blvckbytes.gpeee.functions.FExpressionFunctionBuilder;
 import org.junit.Test;
@@ -207,6 +204,27 @@ public class FunctionInvocationTests {
       validator.validateThrows("my_func(2.2)", InvalidFunctionArgumentTypeError.class);
       validator.validate("my_func(my_map)", env.getVariable("my_map"));
     });
+  }
+
+  @Test
+  public void shouldThrowOnMalformedSyntax() {
+    new EnvironmentBuilder()
+      .withFunction(
+        "my_func",
+        new FExpressionFunctionBuilder()
+          .withArg("a", "test parameter", false)
+          .build((e, a) -> null)
+      )
+      .launch(validator -> {
+        // Needs to end with a closing parenthesis
+        validator.validateThrows("my_func(", UnexpectedTokenError.class);
+
+        // Expected an identifier as the argument
+        validator.validateThrows("my_func(,)", UnexpectedTokenError.class);
+
+        // Expected value for a
+        validator.validateThrows("my_func(a=,)", UnexpectedTokenError.class);
+      });
   }
 
   @Test
