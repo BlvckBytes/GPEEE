@@ -658,7 +658,7 @@ public class Parser {
       input = invokeNextPrecedenceParser(tokenizer, precedenceSelf);
 
     // Terminator requested, expect and eat it, fail otherwise
-    if (terminators != null && opInd < terminators.length) {
+    if (terminators != null) {
       if ((tk = tokenizer.consumeToken()) == null || tk.getType() != terminators[opInd])
         throw new UnexpectedTokenError(tokenizer, tk, terminators[opInd]);
     }
@@ -717,7 +717,7 @@ public class Parser {
       Token operator = tk;
 
       // Terminator requested, expect and eat it, fail otherwise
-      if (terminators != null && opInd < terminators.length) {
+      if (terminators != null) {
         if ((tk = tokenizer.consumeToken()) == null || tk.getType() != terminators[opInd])
           throw new UnexpectedTokenError(tokenizer, tk, terminators[opInd]);
       }
