@@ -30,9 +30,7 @@ import me.blvckbytes.gpeee.functions.AExpressionFunction;
 import me.blvckbytes.gpeee.functions.FExpressionFunctionBuilder;
 import org.junit.Test;
 
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class FunctionCallTests {
 
@@ -174,5 +172,113 @@ public class FunctionCallTests {
           "(0 -> red-#FF0000), (1 -> green-#00FF00), (2 -> blue-#0000FF)"
         );
       });
+  }
+
+  /**
+   * Builds an expression function which only returns the input if the first
+   * passed argument is an instance of the specified type and which requires
+   * it's first argument to be present and of that type on all call sites.
+   * @param type Target type
+   */
+  private AExpressionFunction buildTypeValidatorFunction(Class<?> type) {
+    return new FExpressionFunctionBuilder()
+      .withArg("a", "Input A", true, type)
+      .build((env, args) -> type.isInstance(args.get(0)) ? args.get(0) : "<error>");
+  }
+
+  @Test
+  public void shouldThrowOnTypeMismatch() {
+    EnvironmentBuilder env = new EnvironmentBuilder()
+      .withLiveVariable("my_map", HashMap::new)
+      .withFunction("my_func", buildTypeValidatorFunction(Map.class));
+
+    env.launch(validator -> {
+      validator.validateThrows("my_func()", InvalidFunctionArgumentTypeError.class);
+      validator.validateThrows("my_func(5)", InvalidFunctionArgumentTypeError.class);
+      validator.validateThrows("my_func(\"\")", InvalidFunctionArgumentTypeError.class);
+      validator.validateThrows("my_func(2.2)", InvalidFunctionArgumentTypeError.class);
+      validator.validate("my_func(my_map)", env.getVariable("my_map"));
+    });
+  }
+
+  @Test
+  public void shouldAutoConvertArgs() {
+    EnvironmentBuilder env = new EnvironmentBuilder()
+      .withStaticVariable("my_map", Map.of("k1", "v1", "k2", "v2"))
+      .withStaticVariable("my_list", List.of("v1", "v2", "v3"))
+      .withStaticVariable("my_map_empty", Map.of())
+      .withStaticVariable("my_list_empty", List.of())
+      .withFunction("list_func", buildTypeValidatorFunction(Collection.class))
+      .withFunction("string_func", buildTypeValidatorFunction(String.class))
+      .withFunction("long_func", buildTypeValidatorFunction(Long.class))
+      .withFunction("double_func", buildTypeValidatorFunction(Double.class))
+      .withFunction("boolean_func", buildTypeValidatorFunction(Boolean.class));
+
+    env.launch(validator -> {
+      // Collections can only accept other collections or a map (which will be transformed to a EntrySet-list)
+      validator.validateThrows("list_func(5)", InvalidFunctionArgumentTypeError.class);
+      validator.validateThrows("list_func(5.5)", InvalidFunctionArgumentTypeError.class);
+      validator.validateThrows("list_func(\"test\")", InvalidFunctionArgumentTypeError.class);
+      validator.validateThrows("list_func(false)", InvalidFunctionArgumentTypeError.class);
+      validator.validate("list_func(my_list)", env.getVariable("my_list"));
+
+      // Stringify result for ease of comparison
+      validator.validate("str(list_func(my_map))", env.stringifiedPermutations("my_map"));
+
+      // Everything should be stringified
+      validator.validate("string_func(5)", "5");
+      validator.validate("string_func(5.5)", "5.5");
+      validator.validate("string_func(my_list)", env.stringify(env.getVariable("my_list")));
+      validator.validate("string_func(my_map)", env.stringifiedPermutations("my_map"));
+      validator.validate("string_func(false)", "false");
+      validator.validate("string_func(\"test\")", "test");
+
+      // Numbers aren't parsed from strings by default - that's intended, use std-functions to parse numbers.
+
+      // Everything should be interpretable as a long
+      validator.validate("long_func(5)", 5);
+      validator.validate("long_func(\"5\")", 1);
+      validator.validate("long_func(3.3)", 3);
+      validator.validate("long_func(\"3.3\")", 1);
+      validator.validate("long_func(-3.3)", -3);
+      validator.validate("long_func(\"\")", 0);
+      validator.validate("long_func(\"test\")", 1);
+      validator.validate("long_func(false)", 0);
+      validator.validate("long_func(true)", 1);
+      validator.validate("long_func(my_list)", 1);
+      validator.validate("long_func(my_map)", 1);
+      validator.validate("long_func(my_list_empty)", 0);
+      validator.validate("long_func(my_map_empty)", 0);
+
+      // Everything should be interpretable as a double
+      validator.validate("double_func(5)", 5.0);
+      validator.validate("double_func(\"5\")", 1.0);
+      validator.validate("double_func(3.3)", 3.3);
+      validator.validate("double_func(\"3.3\")", 1.0);
+      validator.validate("double_func(-3.3)", -3.3);
+      validator.validate("double_func(\"\")", 0.0);
+      validator.validate("double_func(\"test\")", 1.0);
+      validator.validate("double_func(false)", 0.0);
+      validator.validate("double_func(true)", 1.0);
+      validator.validate("double_func(my_list)", 1.0);
+      validator.validate("double_func(my_map)", 1.0);
+      validator.validate("double_func(my_list_empty)", 0.0);
+      validator.validate("double_func(my_map_empty)", 0.0);
+
+      // Everything should be interpretable as a boolean
+      validator.validate("boolean_func(5)", true);
+      validator.validate("boolean_func(\"5\")", true);
+      validator.validate("boolean_func(3.3)", true);
+      validator.validate("boolean_func(\"3.3\")", true);
+      validator.validate("boolean_func(-3.3)", false);
+      validator.validate("boolean_func(\"\")", false);
+      validator.validate("boolean_func(\"test\")", true);
+      validator.validate("boolean_func(false)", false);
+      validator.validate("boolean_func(true)", true);
+      validator.validate("boolean_func(my_list)", true);
+      validator.validate("boolean_func(my_map)", true);
+      validator.validate("boolean_func(my_list_empty)", false);
+      validator.validate("boolean_func(my_map_empty)", false);
+    });
   }
 }
