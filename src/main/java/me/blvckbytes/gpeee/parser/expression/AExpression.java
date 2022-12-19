@@ -26,7 +26,9 @@ package me.blvckbytes.gpeee.parser.expression;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import me.blvckbytes.gpeee.Tuple;
 import me.blvckbytes.gpeee.tokenizer.Token;
+import org.jetbrains.annotations.Nullable;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
@@ -70,31 +72,7 @@ public abstract class AExpression {
           .append(f.getName())
           .append('=');
 
-        if (value instanceof AExpression)
-          result.append(((AExpression) value).stringify(indentWidth, indentLevel + 1));
-        else if (value instanceof List) {
-          List<?> valueList = (List<?>) value;
-
-          StringBuilder listBuilder = new StringBuilder("[\n");
-
-          for (Object item : valueList) {
-            if (item instanceof AExpression) {
-              listBuilder.append(indent)
-                .append(indentWidth.repeat(2))
-                .append(((AExpression) item).stringify(indentWidth, indentLevel + 2))
-                .append('\n');
-            } else {
-              listBuilder.append(indent)
-                .append(indentWidth.repeat(2))
-                .append(item.toString())
-                .append('\n');
-            }
-          }
-
-          result.append(listBuilder).append(indent).append(indentWidth).append("]");
-        }
-        else
-          result.append(value);
+        result.append(stringifyObject(value, indent, indentWidth, indentLevel + 1));
 
         firstField = false;
       }
@@ -108,5 +86,39 @@ public abstract class AExpression {
     result.append(indent).append("}");
 
     return result.toString();
+  }
+
+  private String stringifyObject(@Nullable Object object, String indent, String indentWidth, int indentLevel) throws Exception {
+    if (object == null)
+      return "<null>";
+
+    if (object instanceof AExpression)
+      return ((AExpression) object).stringify(indentWidth, indentLevel);
+
+    if (object instanceof List) {
+      List<?> valueList = (List<?>) object;
+
+      StringBuilder listBuilder = new StringBuilder("[\n");
+
+      for (Object item : valueList) {
+        listBuilder.append(indent)
+          .append(indentWidth.repeat(2))
+          .append(stringifyObject(item, indent, indentWidth, indentLevel + 2))
+          .append('\n');
+      }
+
+      listBuilder.append(indent).append(indentWidth).append("]");
+      return listBuilder.toString();
+    }
+
+    if (object instanceof Tuple) {
+      Tuple<?, ?> tuple = (Tuple<?, ?>) object;
+      return (
+        "Tuple(a=" + stringifyObject(tuple.getA(), indent, indentWidth, indentLevel - 1) +
+        ", b=" + stringifyObject(tuple.getB(), indent, indentWidth, indentLevel - 1) + ")"
+      );
+    }
+
+    return object.toString();
   }
 }
