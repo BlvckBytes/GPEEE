@@ -164,6 +164,33 @@ public class StandardValueInterpreter implements IValueInterpreter {
       return strict ? sA.equals(sB) : sA.trim().equalsIgnoreCase(sB.trim());
     }
 
+    // Comparing a string against a number - compare their contents
+    // Only works in non-strict mode, of course
+    if (!strict && (a instanceof String && b instanceof Number || a instanceof Number && b instanceof String)) {
+      String stringValue = a instanceof String ? (String) a : (String) b;
+      Object numberValue = a instanceof Number ? a : b;
+
+      // Splice off non-required decimal points for the ease of comparison
+      if (!hasDecimalPoint(numberValue))
+        numberValue = asLong(numberValue);
+
+      Object stringNumber;
+      try {
+        if (stringValue.contains("."))
+          stringNumber = Double.parseDouble(stringValue);
+        else
+          stringNumber = Long.parseLong(stringValue);
+      }
+
+      // Could not parse the number string, so it's definitely not equal to that value
+      catch (Exception e) {
+        return false;
+      }
+
+      // Compare the string parsed as a double (to allow for max precision)
+      return compare(stringNumber, numberValue) == 0;
+    }
+
     // In strict mode, so the value types have to match exactly
     if (strict && a.getClass() != b.getClass())
       return false;

@@ -475,7 +475,6 @@ public class Interpreter {
         // Cannot index this type of value
         throw new NonIndexableValueError((IndexExpression) expression, lhs);
       }
-
     }
 
     ///////////////////// Unary Expressions /////////////////////
