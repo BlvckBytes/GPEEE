@@ -295,6 +295,10 @@ public class Interpreter {
       else
         fieldName = valueInterpreter.asString(evaluateExpression(access, environment));
 
+      // Cannot access any members of null
+      if (value == null)
+        throw new UnknownMemberError(memberExpression, null, fieldName);
+
       // Look through all available fields within the container
       for (Field f : value.getClass().getDeclaredFields()) {
         // Not the target field

@@ -99,6 +99,9 @@ public class MemberAccessTests {
         validator.validate("my_object.str(self_field).str(second_field)", testObject.self.number);
         validator.validate("my_object.str(self_field).str(self_field)", testObject.self.self);
         validator.validateThrows("my_object.str(self_field).str(invalid_field)", UnknownMemberError.class);
+
+        // Null should have no accessible fields at all
+        validator.validateThrows("null.my_field", UnknownMemberError.class);
       });
   }
 
