@@ -117,11 +117,6 @@ public class Tokenizer implements ITokenizer {
   }
 
   @Override
-  public @Nullable Character previousChar() {
-    return state.charIndex == 0 ? null : this.text[state.charIndex - 2];
-  }
-
-  @Override
   public char peekNextChar() {
     return this.text[state.charIndex];
   }

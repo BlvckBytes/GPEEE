@@ -123,11 +123,16 @@ public enum TokenType {
     while (tokenizer.hasNextChar()) {
       char c = tokenizer.nextChar();
 
-      if (c == '"') {
-        Character previous = tokenizer.previousChar();
+      @Nullable Character previous = result.length() == 0 ? null : result.charAt(result.length() - 1);
+      @Nullable Character previousPrevious = result.length() <= 1 ? null : result.charAt(result.length() - 2);
 
+      // Delete an escaped escape sequence once to just leave the escape symbol
+      if (previous != null && previous == '\\' && previousPrevious != null && previousPrevious == '\\')
+        result.deleteCharAt(result.length() - 1);
+
+      if (c == '"') {
         // Escaped double quote character, remove leading backslash
-        if (previous != null && previous == '\\') {
+        if (previous != null && previous == '\\' && (previousPrevious == null || previousPrevious != '\\')) {
           result.deleteCharAt(result.length() - 1);
           result.append(c);
           continue;
@@ -138,10 +143,8 @@ public enum TokenType {
       }
 
       if (c == 's') {
-        Character previous = tokenizer.previousChar();
-
         // Escaped s character, substitute for single quote
-        if (previous != null && previous == '\\') {
+        if (previous != null && previous == '\\' && (previousPrevious == null || previousPrevious != '\\')) {
           result.deleteCharAt(result.length() - 1);
           result.append('\'');
           continue;

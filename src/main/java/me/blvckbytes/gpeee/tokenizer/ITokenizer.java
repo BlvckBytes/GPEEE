@@ -33,8 +33,6 @@ public interface ITokenizer {
 
   char nextChar();
 
-  @Nullable Character previousChar();
-
   char peekNextChar();
 
   boolean hasNextChar();

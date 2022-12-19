@@ -1,0 +1,14 @@
+# The purpose of this configuration override is just to not have
+# failing coverage only because the percentage dropped or too much
+# untested code has been added all at once. This feature is nice
+# for large automated projects but unwanted by me.
+
+coverage:
+  status:
+    patch:
+      target: 0%
+      threshold: 100%
+    project:
+      default:
+        target: 0%
+        threshold: 100%

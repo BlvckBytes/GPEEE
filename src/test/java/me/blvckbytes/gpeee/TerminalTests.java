@@ -51,8 +51,24 @@ public class TerminalTests {
       // String
       validator.validate("\"hello, world\"", "hello, world");
       validator.validateThrows("\"no termination", UnterminatedStringError.class);
+
+      // Escaped double quote
       validator.validate("\"\\\"\"", "\"");
+
+      // Escape sequence for a single quote
       validator.validate("\"\\s\"", "'");
+
+      // Escaped escape sequence for a single quote
+      validator.validate("\"\\\\s\"", "\\s");
+
+      // Just a backslash, should remain untouched
+      validator.validate("\"\\ \"", "\\ ");
+
+      // Two backslashes should cancel out and not escape the string end quote
+      validator.validate("\"\\\\\"", "\\");
+
+      // Just an s, should remain untouched
+      validator.validate("\"s\"", "s");
 
       // Literal
       validator.validate("true", true);
