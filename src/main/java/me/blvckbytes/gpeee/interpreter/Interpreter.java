@@ -176,8 +176,16 @@ public class Interpreter {
           throw new NonNamedFunctionArgumentError(argument.getA());
 
         // No definitions provided, just add to the list (variadic of unchecked type)
-        if (argDefinitions == null)
+        if (argDefinitions == null) {
+
+          // If there are no definitions provided by the function, named arguments should throw
+          // as they cannot be possibly matched with anything and should thus be omitted
+          IdentifierExpression argNameExpression = argument.getB();
+          if (argNameExpression != null)
+            throw new UndefinedFunctionArgumentNameError(function, argNameExpression);
+
           arguments.add(argumentValue);
+        }
 
         // Set at the next non-named index (before named can occur)
         else

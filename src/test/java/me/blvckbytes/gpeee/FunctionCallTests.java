@@ -93,6 +93,7 @@ public class FunctionCallTests {
   @Test
   public void shouldAcceptPositionalArguments() {
     new EnvironmentBuilder()
+      .withFunction("my_argless_func", new FExpressionFunctionBuilder().build((e, a) -> null))
       .withFunction(
         "my_func",
         new FExpressionFunctionBuilder()
@@ -122,6 +123,8 @@ public class FunctionCallTests {
 
         // Cannot specify a named argument which the function itself doesn't define
         validator.validateThrows("my_func(1, unknown=2)", UndefinedFunctionArgumentNameError.class);
+        validator.validateThrows("my_func(1, unknown=2)", UndefinedFunctionArgumentNameError.class);
+        validator.validateThrows("my_argless_func(unknown=2)", UndefinedFunctionArgumentNameError.class);
       });
   }
 

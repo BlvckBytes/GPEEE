@@ -115,7 +115,8 @@ public class Main {
         public Map<String, AExpressionFunction> getFunctions() {
           return Map.of(
             "get_map", new FExpressionFunctionBuilder()
-              .build((env, args) -> Map.of("hello", "it works"))
+              .build((env, args) -> Map.of("hello", "it works")),
+            "argless_func", new FExpressionFunctionBuilder().build((env, args) -> "argless func result")
           );
         }
 
