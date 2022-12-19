@@ -188,7 +188,7 @@ public class Interpreter {
         }
 
         // Set at the next non-named index (before named can occur)
-        else
+        else if (nonNamedArgCounter < arguments.size())
           arguments.set(nonNamedArgCounter++, argumentValue);
       }
 
