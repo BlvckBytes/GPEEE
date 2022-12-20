@@ -108,6 +108,7 @@ public class GPEEE implements IExpressionEvaluator, IStandardFunctionRegistry {
     new ValueFunction().registerSelf(this);
     new BoolFunction().registerSelf(this);
     new ListFunction().registerSelf(this);
+    new LenFunction().registerSelf(this);
   }
 
   private static IEvaluationEnvironment createEmptyEnvironment() {
