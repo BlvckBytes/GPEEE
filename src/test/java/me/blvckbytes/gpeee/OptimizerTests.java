@@ -24,16 +24,20 @@
 
 package me.blvckbytes.gpeee;
 
-public interface IExpressionResultValidator {
+import org.junit.jupiter.api.Test;
 
-  void validate(String expression, Object[] results) throws AssertionError;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
-  void validate(String expression, Object result) throws AssertionError;
+public class OptimizerTests {
 
-  void validateExact(String expression, Object result) throws AssertionError;
-
-  void validateThrows(String expression, Class<? extends RuntimeException> error) throws AssertionError;
-
-  String optimizeAndExpressionify(String expression);
-
+  @Test
+  public void shouldCollapseMultipleCollapsableRHS() {
+    new EnvironmentBuilder()
+      .launch(validator -> {
+        assertEquals(
+          validator.optimizeAndExpressionify("3 & 3.2 & my_number & null & \"hello\" & \" \" & \"world\""),
+          "((\"33.2\" & my_number) & \"<null>hello world\")"
+        );
+      });
+  }
 }

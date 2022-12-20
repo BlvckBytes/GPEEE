@@ -191,6 +191,11 @@ public class EnvironmentBuilder {
       public void validateThrows(String expression, Class<? extends RuntimeException> error) throws AssertionError {
         assertThrows(error, () -> evaluator.evaluateExpression(evaluator.parseString(expression), env));
       }
+
+      @Override
+      public String optimizeAndExpressionify(String expression) {
+        return evaluator.optimizeExpression(evaluator.parseString(expression)).expressionify();
+      }
     });
 
   }
