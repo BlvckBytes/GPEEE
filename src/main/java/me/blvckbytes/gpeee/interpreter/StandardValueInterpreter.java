@@ -29,6 +29,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.lang.reflect.Array;
 import java.util.*;
+import java.util.function.BiFunction;
 
 public class StandardValueInterpreter implements IValueInterpreter {
 
@@ -170,8 +171,8 @@ public class StandardValueInterpreter implements IValueInterpreter {
     if (a == null && b == null)
       return true;
 
-    // Non-null doesn't equal null
-    if (a == null || b == null)
+    // Non-null doesn't equal null in strict mode
+    if (strict && (a == null || b == null))
       return false;
 
     // Both values are of type string, specific rules apply
@@ -221,21 +222,34 @@ public class StandardValueInterpreter implements IValueInterpreter {
       if (cA.size() != cB.size())
         return false;
 
-      Iterator<?> iterA = cA.iterator(), iterB = cB.iterator();
+      return doIterablesContainSameItems(cA, cB, strict, (vA, vB) -> areEqual(vA, vB, strict));
+    }
 
-      // It's safe to loop both in order as they have the same size
-      while (iterA.hasNext()) {
-        // An item mismatched
-        if (!areEqual(iterA.next(), iterB.next(), strict))
-          return false;
-      }
+    // Both values are a map, compare their type and entry sets
+    if (a instanceof Map && b instanceof Map) {
+      Map<?, ?> mA = (Map<?, ?>) a, mB = (Map<?, ?>) b;
 
-      // All checks passed, these collections equal
-      return true;
+      // Cannot equal as they have a different number of items
+      if (mA.size() != mB.size())
+        return false;
+
+      return doIterablesContainSameItems(
+        mA.entrySet(), mB.entrySet(), strict,
+        (vA, vB) -> {
+          Map.Entry<?, ?> eA = (Map.Entry<?, ?>) vA, eB = (Map.Entry<?, ?>) vB;
+
+          // Check equality of the key and the value separately
+          return (
+            areEqual(eA.getKey(), eB.getKey(), strict) &&
+            areEqual(eA.getValue(), eB.getValue(), strict)
+          );
+        }
+      );
     }
 
     // Both values are an array, compare their type and contents
-    if (a.getClass().isArray() && b.getClass().isArray()) {
+    if (a != null && a.getClass().isArray() && b != null && b.getClass().isArray()) {
+
       // Array types mismatch
       if (!a.getClass().getComponentType().equals(b.getClass().getComponentType()))
         return false;
@@ -247,19 +261,95 @@ public class StandardValueInterpreter implements IValueInterpreter {
       if (lengthA != Array.getLength(b))
         return false;
 
-      // Compare items one by one
-      for (int i = 0; i < lengthA; i++) {
-        // An item has mismatched
-        if (!areEqual(Array.get(a, i), Array.get(b, i), strict))
-          return false;
-      }
-
-      // All checks passed, these arrays equal
-      return true;
+      return doIterablesContainSameItems(wrapArrayInIterable(a), wrapArrayInIterable(b), strict, (vA, vB) -> areEqual(vA, vB, strict));
     }
 
     // Fallback: Compare as integers (in non-strict mode now anyways)
     return compare(a, b) == 0;
+  }
+
+  /**
+   * Wraps an array in an iterable and uses reflect to access
+   * it's items as well as it's length value
+   * @param array Array to wrap
+   * @return Iterable which operates on the passed array
+   */
+  private Iterable<Object> wrapArrayInIterable(Object array) {
+    return () -> new Iterator<>() {
+
+      int i = 0;
+
+      @Override
+      public boolean hasNext() {
+        return i < Array.getLength(array);
+      }
+
+      @Override
+      public Object next() {
+        return Array.get(array, i++);
+      }
+    };
+  }
+
+  /**
+   * Checks whether two iterables contain the same items and also checks for sequence order if in strict mode
+   * @param iterableA Iterable A
+   * @param iterableB Iterable B
+   * @param strict Whether to compare sequence order too
+   * @param comparator External value comparator function
+   * @return True if all items that are available in A are also available in B
+   */
+  private boolean doIterablesContainSameItems(
+    Iterable<?> iterableA, Iterable<?> iterableB,
+    boolean strict, BiFunction<Object, Object, Boolean> comparator
+  ) {
+
+    // Check items in order
+    if (strict) {
+      Iterator<?> iterA = iterableA.iterator(), iterB = iterableB.iterator();
+
+      while (iterA.hasNext()) {
+        // Different size
+        if (!iterB.hasNext())
+          return false;
+
+        // An item mismatched
+        if (!comparator.apply(iterA.next(), iterB.next()))
+          return false;
+      }
+
+      // All items were equal in the right order
+      return true;
+    }
+
+    // Check items while ignoring order
+
+    // Keep track of matched indices in the B iterator
+    // to not match the same "slot" twice
+    List<Integer> matchedBIndices = new ArrayList<>();
+
+    for (Object valueA : iterableA) {
+      Iterator<?> iterB = iterableB.iterator();
+      boolean anyMatched = false;
+
+      int indexB = 0;
+      while (iterB.hasNext()) {
+        // An item mismatched
+        if (!comparator.apply(valueA, iterB.next()) || matchedBIndices.contains(indexB)) {
+          ++indexB;
+          continue;
+        }
+
+        anyMatched = true;
+        matchedBIndices.add(indexB);
+        break;
+      }
+
+      if (!anyMatched)
+        return false;
+    }
+
+    return true;
   }
 
   @Override
