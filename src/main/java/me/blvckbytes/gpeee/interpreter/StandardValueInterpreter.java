@@ -252,10 +252,6 @@ public class StandardValueInterpreter implements IValueInterpreter {
     // Both values are an array, compare their type and contents
     if (a != null && a.getClass().isArray() && b != null && b.getClass().isArray()) {
 
-      // Array types mismatch
-      if (!a.getClass().getComponentType().equals(b.getClass().getComponentType()))
-        return false;
-
       // instanceof boolean[], byte[], short[], char[], int[], long[], float[], double[], or Object[],
 
       // Size mismatch
