@@ -51,6 +51,8 @@ public class LenFunctionTests {
         validator.validate("len(my_array_empty)", 0);
         validator.validate("len(my_string)", "hello, world".length());
         validator.validate("len(null)", 0);
+        validator.validate("len(1)", 0);
+        validator.validate("len(1.1)", 0);
       });
   }
 }
