@@ -196,6 +196,13 @@ public class Interpreter {
 
       // Invoke and return that function's result
       Object result = function.apply(environment, arguments);
+
+      // Throw an exception based on the error description object, now that the expression ref is available
+      if (result instanceof FunctionInvocationError) {
+        FunctionInvocationError error = (FunctionInvocationError) result;
+        throw new InvalidFunctionInvocationError(functionExpression, error.getArgumentIndex(), error.getMessage());
+      }
+
       //#if mvn.project.property.production != "true"
       logger.logDebug(DebugLogLevel.INTERPRETER, "Invoked function, result: " + result);
       //#endif

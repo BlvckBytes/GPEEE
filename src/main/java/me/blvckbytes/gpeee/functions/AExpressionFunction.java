@@ -114,4 +114,10 @@ public abstract class AExpressionFunction {
   protected<T> @Nullable T nullable(List<@Nullable Object> args, int index) {
     return (T) args.get(index);
   }
+
+  protected @Nullable Integer lastArgIndex(@Nullable List<Object> args) {
+    if (args == null || args.size() == 0)
+      return null;
+    return args.size() - 1;
+  }
 }
