@@ -121,6 +121,7 @@ public class MathOperatorTests {
         validator.validate("2.0 - 2.1", 2.0 - 2.1);
         validator.validate("2.0 * 2.1", 2.0 * 2.1);
         validator.validate("2.0 / 2.1", 2.0 / 2.1);
+        validator.validate("2.0 % 2.1", 2.0 % 2.1);
         validator.validate("2.0 ^ 2.1", Math.pow(2.0, 2.1));
 
         // Can truncate since the decimal point does nothing
@@ -128,6 +129,7 @@ public class MathOperatorTests {
         validator.validateExact("2.0 - 2.0", 0L);
         validator.validateExact("2.0 * 2.0", 4L);
         validator.validateExact("2.0 / 2.0", 1L);
+        validator.validateExact("4.0 % 3.0", 1L);
         validator.validateExact("2.0 ^ 2.0", 4L);
 
         // Cannot truncate as the division result is not whole

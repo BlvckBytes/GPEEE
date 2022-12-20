@@ -238,6 +238,7 @@ public class EqualityOperatorTests {
       .withStaticVariable("my_array_b", new int[] { 1, 2, 3, 4, 5 })
       .withStaticVariable("my_array_b_2", new int[] { 5, 4, 3, 2, 1 })
       .withStaticVariable("my_array_b_3", new long[] { 1, 2, 3, 4, 5 })
+      .withStaticVariable("my_array_b_4", new long[] { 6, 7, 8, 9, 10 })
       .withStaticVariable("my_array_empty", new int[] {})
       .launch(validator -> {
         // Array contents equal, so no matter if exact or not, the maps equal
@@ -263,6 +264,10 @@ public class EqualityOperatorTests {
         // Type differs (int, long - only matters in exact mode)
         validator.validate("my_array_a == my_array_b_3", true);
         validator.validate("my_array_a === my_array_b_3", false);
+
+        // Items differ
+        validator.validate("my_array_a == my_array_b_4", false);
+        validator.validate("my_array_a === my_array_b_4", false);
       });
   }
 
