@@ -124,8 +124,19 @@ public class EnvironmentBuilder {
     return value.toString();
   }
 
+  public Object[] stringifiedPermutations(Collection<?> collection) {
+    return stringifiedPermutations((Object) collection);
+  }
+
+  public Object[] stringifiedPermutations(Map<?, ?> map) {
+    return stringifiedPermutations((Object) map);
+  }
+
   public Object[] stringifiedPermutations(String identifier) {
-    Object value = getVariable(identifier);
+    return stringifiedPermutations(getVariable(identifier));
+  }
+
+  public Object[] stringifiedPermutations(Object value) {
 
     // Transform an array to a list
     if (value != null && value.getClass().isArray()) {
