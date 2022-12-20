@@ -337,11 +337,11 @@ public class Optimizer {
     if (value instanceof String)
       return new StringExpression(((String) value), previous.getHead(), previous.getTail(), previous.getFullContainingExpression());
 
-    if (value instanceof Long)
-      return new LongExpression(((Long) value), previous.getHead(), previous.getTail(), previous.getFullContainingExpression());
+    if (value instanceof Long || value instanceof Integer)
+      return new LongExpression(((Number) value).longValue(), previous.getHead(), previous.getTail(), previous.getFullContainingExpression());
 
-    if (value instanceof Double)
-      return new DoubleExpression(((Double) value), previous.getHead(), previous.getTail(), previous.getFullContainingExpression());
+    if (value instanceof Double || value instanceof Float)
+      return new DoubleExpression(((Number) value).doubleValue(), previous.getHead(), previous.getTail(), previous.getFullContainingExpression());
 
     throw new IllegalStateException("Unimplemented value type encountered");
   }
