@@ -174,22 +174,17 @@ public class EnvironmentBuilder {
 
       @Override
       public void validate(String expression, Object[] results) throws AssertionError {
-        AExpression ast = evaluator.parseString(expression);
-        Object unoptimizedResult = evaluator.evaluateExpression(ast, env);
-
-        // Optimize, in order to also test the optimizer with all available tests
-        ast = evaluator.optimizeExpression(ast);
-
-        Object optimizedResult = evaluator.evaluateExpression(ast, env);
-
-        // Validate both the unoptimized as well as the optimized AST results
-        validateResult(unoptimizedResult, results);
-        validateResult(optimizedResult, results);
+        validateExpression(expression, results, env, false);
       }
 
       @Override
       public void validate(String expression, Object result) throws AssertionError {
         validate(expression, new Object[] { result });
+      }
+
+      @Override
+      public void validateExact(String expression, Object result) throws AssertionError {
+        validateExpression(expression, new Object[] { result }, env, true);
       }
 
       @Override
@@ -200,13 +195,27 @@ public class EnvironmentBuilder {
 
   }
 
-  private void validateResult(Object resultValue, Object[] results) {
+  private void validateExpression(String expression, Object[] results, IEvaluationEnvironment env, boolean exact) {
+    AExpression ast = evaluator.parseString(expression);
+    Object unoptimizedResult = evaluator.evaluateExpression(ast, env);
+
+    // Optimize, in order to also test the optimizer with all available tests
+    ast = evaluator.optimizeExpression(ast);
+
+    Object optimizedResult = evaluator.evaluateExpression(ast, env);
+
+    // Validate both the unoptimized as well as the optimized AST results
+    validateResult(unoptimizedResult, results, exact);
+    validateResult(optimizedResult, results, exact);
+  }
+
+  private void validateResult(Object resultValue, Object[] results, boolean exact) {
 
     AssertionError lastThrow = null;
     for (Object result : results) {
 
       // Number comparison using max delta
-      if (resultValue instanceof Number && result instanceof Number) {
+      if (!exact && resultValue instanceof Number && result instanceof Number) {
         if (!(Math.abs(((Number) result).doubleValue() - ((Number) resultValue).doubleValue()) <= MAX_DOUBLE_DELTA)) {
           try {
             assertEquals(result, resultValue);
@@ -230,7 +239,7 @@ public class EnvironmentBuilder {
 
         while (iterA.hasNext()) {
           Object a = iterA.next(), b = iterB.next();
-          validateResult(a, new Object[]{ b });
+          validateResult(a, new Object[]{ b }, exact);
         }
 
         // Success exit

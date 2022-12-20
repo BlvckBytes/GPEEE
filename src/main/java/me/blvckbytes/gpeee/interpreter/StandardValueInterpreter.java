@@ -162,7 +162,9 @@ public class StandardValueInterpreter implements IValueInterpreter {
 
   @Override
   public boolean hasDecimalPoint(@Nullable Object value) {
-    return (value instanceof Float || value instanceof Double);
+    if (value instanceof Double || value instanceof Float)
+      return ((Number) value).doubleValue() % 1 != 0;
+    return false;
   }
 
   @Override
@@ -380,7 +382,7 @@ public class StandardValueInterpreter implements IValueInterpreter {
         long lA = asLong(a), lB = asLong(b);
 
         // Not an even division, use doubles to not truncate the decimal places
-        if (lA % lB != 0)
+        if (lA % lB > 0)
           return (double) lA / (double) lB;
 
         return lA / lB;

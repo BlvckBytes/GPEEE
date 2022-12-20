@@ -111,4 +111,27 @@ public class MathOperatorTests {
         validator.validate("127^(1/4)", Math.pow(127.0, 1.0 / 4.0));
       });
   }
+
+  @Test
+  public void shouldTruncateDoublesIfAppropriate() {
+    new EnvironmentBuilder()
+      .launch(validator -> {
+        // Cannot truncate due to decimal point of importance
+        validator.validate("2.0 + 2.1", 2.0 + 2.1);
+        validator.validate("2.0 - 2.1", 2.0 - 2.1);
+        validator.validate("2.0 * 2.1", 2.0 * 2.1);
+        validator.validate("2.0 / 2.1", 2.0 / 2.1);
+        validator.validate("2.0 ^ 2.1", Math.pow(2.0, 2.1));
+
+        // Can truncate since the decimal point does nothing
+        validator.validateExact("2.0 + 2.0", 4L);
+        validator.validateExact("2.0 - 2.0", 0L);
+        validator.validateExact("2.0 * 2.0", 4L);
+        validator.validateExact("2.0 / 2.0", 1L);
+        validator.validateExact("2.0 ^ 2.0", 4L);
+
+        // Cannot truncate as the division result is not whole
+        validator.validateExact("2.0 / 3.0", 2.0 / 3.0);
+      });
+  }
 }
