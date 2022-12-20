@@ -60,4 +60,15 @@ public class ConcatenationTests {
       );
     });
   }
+
+  @Test
+  public void shouldConcatenateImmediates() {
+    new EnvironmentBuilder()
+      .launch(validator -> {
+        validator.validate(
+          "3 & 3.2 & true & null & \"hello\" & \" \" & \"world\"",
+          "33.2true<null>hello world"
+        );
+      });
+  }
 }
