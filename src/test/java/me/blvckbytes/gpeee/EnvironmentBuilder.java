@@ -285,11 +285,6 @@ public class EnvironmentBuilder {
       public IValueInterpreter getValueInterpreter() {
         return GPEEE.STD_VALUE_INTERPRETER;
       }
-
-      @Override
-      public IDependencyRegistry getDependencyRegistry() {
-        return evaluator;
-      }
     };
   }
 }

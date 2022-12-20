@@ -28,7 +28,7 @@ import me.blvckbytes.gpeee.error.AEvaluatorError;
 import me.blvckbytes.gpeee.interpreter.IEvaluationEnvironment;
 import me.blvckbytes.gpeee.parser.expression.AExpression;
 
-public interface IExpressionEvaluator extends IDependencyRegistry {
+public interface IExpressionEvaluator {
 
   /**
    * Parses an input string into an abstract syntax tree (AST) to be evaluated
