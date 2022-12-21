@@ -69,15 +69,10 @@ public class Parser {
       this::parseFlipSignExpression,
       this::parseIndexExpression,
       this::parseMemberAccessExpression,
-
-      // Try to parse a callback expression before a parenthesis expression, as it's way easier
-      // to check if it's actually a callback expression (only parens, identifiers, commas and the arrow)
-      // It actually has the same precedence too, as it also resets precedence in it's body
-      this::parseCallbackExpression,
-
-      this::parseParenthesisExpression,
       this::parseFunctionInvocationExpression,
       this::parseIfThenElseExpression,
+      this::parseCallbackExpression,
+      this::parseParenthesisExpression,
       (tk, s) -> this.parsePrimaryExpression(tk),
     };
   }
