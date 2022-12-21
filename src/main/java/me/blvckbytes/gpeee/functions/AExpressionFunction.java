@@ -33,9 +33,12 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 import java.util.Objects;
-import java.util.function.BiFunction;
 
 public abstract class AExpressionFunction {
+
+  //=========================================================================//
+  //                             Abstract Methods                            //
+  //=========================================================================//
 
   /**
    * Called whenever a function call to the registered corresponding
@@ -52,6 +55,36 @@ public abstract class AExpressionFunction {
    * the function call will not be checked.
    */
   public abstract @Nullable List<ExpressionFunctionArgument> getArguments();
+
+  //=========================================================================//
+  //                                  Utilities                              //
+  //=========================================================================//
+
+  /**
+   * Get a known non-null argument from the argument list
+   * @param args Argument list to read from
+   * @param index Index of the known argument
+   * @return Argument, required to be non-null
+   */
+  @SuppressWarnings("unchecked")
+  protected<T> T nonNull(List<@Nullable Object> args, int index) {
+    return (T) Objects.requireNonNull(args.get(index));
+  }
+
+  /**
+   * Get a maybe null argument from the argument list
+   * @param args Argument list to read from
+   * @param index Index of the argument
+   * @return Argument from the list or null if the index has been out-of-range
+   */
+  @SuppressWarnings("unchecked")
+  protected<T> @Nullable T nullable(List<@Nullable Object> args, int index) {
+    return (T) (index >= args.size() ? null : args.get(index));
+  }
+
+  //=========================================================================//
+  //                               Internal API                              //
+  //=========================================================================//
 
   /**
    * Validates the provided list of arguments against the locally kept argument definitions
@@ -82,42 +115,5 @@ public abstract class AExpressionFunction {
       if (i < args.size())
         args.set(i, result.getB());
     }
-  }
-
-  /**
-   * Create a new unchecked expression function handler
-   * @param handler Handler of function calls
-   */
-  public static AExpressionFunction makeUnchecked(BiFunction<IEvaluationEnvironment, List<@Nullable Object>, Object> handler) {
-    return new AExpressionFunction() {
-
-      @Override
-      public Object apply(IEvaluationEnvironment environment, List<@Nullable Object> args) {
-        // Relay to the lambda handler
-        return handler.apply(environment, args);
-      }
-
-      @Override
-      public @Nullable List<ExpressionFunctionArgument> getArguments() {
-        // Invocation arguments remain unchecked
-        return null;
-      }
-    };
-  }
-
-  @SuppressWarnings("unchecked")
-  protected<T> T nonNull(List<@Nullable Object> args, int index) {
-    return (T) Objects.requireNonNull(args.get(index));
-  }
-
-  @SuppressWarnings("unchecked")
-  protected<T> @Nullable T nullable(List<@Nullable Object> args, int index) {
-    return (T) (index >= args.size() ? null : args.get(index));
-  }
-
-  protected @Nullable Integer lastArgIndex(@Nullable List<Object> args) {
-    if (args == null || args.size() == 0)
-      return null;
-    return args.size() - 1;
   }
 }

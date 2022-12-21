@@ -225,57 +225,64 @@ public class Interpreter {
       //#endif
 
       // This lambda function will be called by java every time the callback is invoked
-      return AExpressionFunction.makeUnchecked((env, args) -> {
+      return new AExpressionFunction() {
+        @Override
+        public Object apply(IEvaluationEnvironment environment, List<@Nullable Object> args) {
+          // Copy the static variable table and extend it below
+          Map<String, Object> combinedVariables = new HashMap<>(environment.getStaticVariables());
 
-        // Copy the static variable table and extend it below
-        Map<String, Object> combinedVariables = new HashMap<>(environment.getStaticVariables());
+          // Map all identifiers from the callback's signature to a matching java argument in sequence
+          // If there are more arguments in the signature than provided by java, they'll just be set to null
+          for (int i = 0; i < callbackExpression.getSignature().size(); i++) {
+            String variableIdentifier = callbackExpression.getSignature().get(i).getSymbol();
+            Object variableValue = i < args.size() ? args.get(i) : null;
 
-        // Map all identifiers from the callback's signature to a matching java argument in sequence
-        // If there are more arguments in the signature than provided by java, they'll just be set to null
-        for (int i = 0; i < callbackExpression.getSignature().size(); i++) {
-          String variableIdentifier = callbackExpression.getSignature().get(i).getSymbol();
-          Object variableValue = i < args.size() ? args.get(i) : null;
+            //#if mvn.project.property.production != "true"
+            logger.logDebug(DebugLogLevel.INTERPRETER, "Adding " + variableIdentifier + "=" + variableValue + " to a callback's environment");
+            //#endif
+            combinedVariables.put(variableIdentifier, variableValue);
+          }
 
           //#if mvn.project.property.production != "true"
-          logger.logDebug(DebugLogLevel.INTERPRETER, "Adding " + variableIdentifier + "=" + variableValue + " to a callback's environment");
+          logger.logDebug(DebugLogLevel.INTERPRETER, "Evaluating a callback's body");
           //#endif
-          combinedVariables.put(variableIdentifier, variableValue);
+
+          // Callback expressions are evaluated within their own environment, which extends the current environment
+          // by the additional variables coming from the arguments passed by the callback caller
+          Object result = evaluateExpression(callbackExpression.getBody(), new IEvaluationEnvironment() {
+
+            @Override
+            public Map<String, AExpressionFunction> getFunctions() {
+              return environment.getFunctions();
+            }
+
+            @Override
+            public Map<String, Supplier<Object>> getLiveVariables() {
+              return environment.getLiveVariables();
+            }
+
+            @Override
+            public Map<String, Object> getStaticVariables() {
+              return combinedVariables;
+            }
+
+            @Override
+            public IValueInterpreter getValueInterpreter() {
+              return environment.getValueInterpreter();
+            }
+          });
+
+          //#if mvn.project.property.production != "true"
+          logger.logDebug(DebugLogLevel.INTERPRETER, "Callback result=" + result);
+          //#endif
+          return result;
         }
 
-        //#if mvn.project.property.production != "true"
-        logger.logDebug(DebugLogLevel.INTERPRETER, "Evaluating a callback's body");
-        //#endif
-
-        // Callback expressions are evaluated within their own environment, which extends the current environment
-        // by the additional variables coming from the arguments passed by the callback caller
-        Object result = evaluateExpression(callbackExpression.getBody(), new IEvaluationEnvironment() {
-
-          @Override
-          public Map<String, AExpressionFunction> getFunctions() {
-            return environment.getFunctions();
-          }
-
-          @Override
-          public Map<String, Supplier<Object>> getLiveVariables() {
-            return environment.getLiveVariables();
-          }
-
-          @Override
-          public Map<String, Object> getStaticVariables() {
-            return combinedVariables;
-          }
-
-          @Override
-          public IValueInterpreter getValueInterpreter() {
-            return environment.getValueInterpreter();
-          }
-        });
-
-        //#if mvn.project.property.production != "true"
-        logger.logDebug(DebugLogLevel.INTERPRETER, "Callback result=" + result);
-        //#endif
-        return result;
-      });
+        @Override
+        public @Nullable List<ExpressionFunctionArgument> getArguments() {
+          return null;
+        }
+      };
     }
 
     /////////////////////// Control Flow ////////////////////////

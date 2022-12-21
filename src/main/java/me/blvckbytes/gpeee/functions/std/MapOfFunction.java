@@ -47,7 +47,7 @@ public class MapOfFunction extends AStandardFunction {
     Map<Object, Object> result = new LinkedHashMap<>();
 
     if (args.size() % 2 != 0)
-      return new FunctionInvocationError(lastArgIndex(args), "Please provide an even number of arguments");
+      return new FunctionInvocationError(args.size() - 1, "Please provide an even number of arguments");
 
     for (int i = 0; i < args.size(); i += 2)
       result.put(args.get(i), args.get(i + 1));
