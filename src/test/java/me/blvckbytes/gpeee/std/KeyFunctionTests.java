@@ -37,10 +37,10 @@ public class KeyFunctionTests {
   @Test
   public void shouldThrowOnNonMapEntryInput() {
     createEnvironment().launch(validator -> {
-      validator.validateThrows("key(my_number, () -> \"\")", InvalidFunctionArgumentTypeError.class);
-      validator.validateThrows("key(my_string, () -> \"\")", InvalidFunctionArgumentTypeError.class);
-      validator.validateThrows("key(my_boolean, () -> \"\")", InvalidFunctionArgumentTypeError.class);
-      validator.validateThrows("key(my_list, () -> \"\")", InvalidFunctionArgumentTypeError.class);
+      validator.validateThrows("key(my_number, () => \"\")", InvalidFunctionArgumentTypeError.class);
+      validator.validateThrows("key(my_string, () => \"\")", InvalidFunctionArgumentTypeError.class);
+      validator.validateThrows("key(my_boolean, () => \"\")", InvalidFunctionArgumentTypeError.class);
+      validator.validateThrows("key(my_list, () => \"\")", InvalidFunctionArgumentTypeError.class);
     });
   }
 
