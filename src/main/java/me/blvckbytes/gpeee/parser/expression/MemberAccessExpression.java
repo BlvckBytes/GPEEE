@@ -32,8 +32,12 @@ import org.jetbrains.annotations.Nullable;
 @Getter
 public class MemberAccessExpression extends ABinaryExpression {
 
-  public MemberAccessExpression(AExpression container, AExpression access, Token head, Token tail, String fullContainingExpression) {
+  private final boolean optional;
+
+  public MemberAccessExpression(AExpression container, AExpression access, boolean optional, Token head, Token tail, String fullContainingExpression) {
     super(container, access, head, tail, fullContainingExpression);
+
+    this.optional = optional;
   }
 
   @Override

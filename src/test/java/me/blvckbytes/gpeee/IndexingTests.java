@@ -24,6 +24,8 @@
 
 package me.blvckbytes.gpeee;
 
+import me.blvckbytes.gpeee.error.InvalidIndexError;
+import me.blvckbytes.gpeee.error.InvalidMapKeyError;
 import me.blvckbytes.gpeee.error.NonIndexableValueError;
 import me.blvckbytes.gpeee.error.UnexpectedTokenError;
 import me.blvckbytes.gpeee.functions.FExpressionFunctionBuilder;
@@ -44,8 +46,8 @@ public class IndexingTests {
       validator.validate("my_list[1]", 2);
       validator.validate("my_list[2]", 3);
 
-      // Out of range access should result in null
-      validator.validate("my_list[3]", (Object) null);
+      validator.validateThrows("my_list[3]", InvalidIndexError.class);
+      validator.validate("my_list?[3]", (Object) null);
     });
   }
 
@@ -59,8 +61,8 @@ public class IndexingTests {
       validator.validate("my_array[1]", 8);
       validator.validate("my_array[2]", 9);
 
-      // Out of range access should result in null
-      validator.validate("my_array[3]", (Object) null);
+      validator.validateThrows("my_array[3]", InvalidIndexError.class);
+      validator.validate("my_array?[3]", (Object) null);
     });
   }
 
@@ -86,8 +88,8 @@ public class IndexingTests {
       validator.validate("my_map[\"AnotherMap\"][\"Two\"]", 2);
       validator.validate("my_map[\"AnotherMap\"][\"Three\"]", 3);
 
-      // Unknown key access should result in null
-      validator.validate("my_map[\"unknown\"]", (Object) null);
+      validator.validateThrows("my_map[\"unknown\"]", InvalidMapKeyError.class);
+      validator.validate("my_map?[\"unknown\"]", (Object) null);
     });
   }
 
@@ -107,6 +109,8 @@ public class IndexingTests {
       validator.validate("get_my_map()[\"One\"]", 1);
       validator.validate("get_my_map()[\"Two\"]", 2);
       validator.validate("get_my_map()[\"Three\"]", 3);
+
+      validator.validate("get_my_map()?[\"unknown\"]", (Object) null);
     });
   }
 

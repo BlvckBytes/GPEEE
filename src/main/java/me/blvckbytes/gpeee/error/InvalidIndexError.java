@@ -22,42 +22,18 @@
  * SOFTWARE.
  */
 
-package me.blvckbytes.gpeee.parser.expression;
+package me.blvckbytes.gpeee.error;
 
-import lombok.Getter;
-import me.blvckbytes.gpeee.tokenizer.Token;
-import me.blvckbytes.gpeee.tokenizer.TokenType;
-import org.jetbrains.annotations.Nullable;
+import me.blvckbytes.gpeee.parser.expression.IndexExpression;
 
-@Getter
-public class IndexExpression extends ABinaryExpression {
+public class InvalidIndexError extends AEvaluatorError {
 
-  private final boolean optional;
-
-  public IndexExpression(AExpression target, AExpression input, boolean optional, Token head, Token tail, String fullContainingExpression) {
-    super(target, input, head, tail, fullContainingExpression);
-
-    this.optional = optional;
-  }
-
-  @Override
-  public String expressionify() {
-    return lhs.expressionify() +
-    TokenType.BRACKET_OPEN.getRepresentation() +
-    rhs.expressionify() +
-    TokenType.BRACKET_CLOSE.getRepresentation();
-  }
-
-  @Override
-  public boolean canBeCombinedToOptimize(ABinaryExpression other) {
-    // Index expressions never equal one another, as they're dependent on
-    // the exact order of operation and cannot be optimized away at all
-    return false;
-  }
-
-  @Override
-  protected @Nullable String getInfixSymbol() {
-    // Null, as expressionify is overridden
-    return null;
+  public InvalidIndexError(IndexExpression expression, Object index, int size) {
+    super(
+      expression.getHead().getRow(),
+      expression.getHead().getCol(),
+      expression.getFullContainingExpression(),
+      "The index " + index + " is out of range for a collection of size " + size
+    );
   }
 }

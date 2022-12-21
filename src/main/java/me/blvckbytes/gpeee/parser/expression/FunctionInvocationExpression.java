@@ -37,12 +37,17 @@ public class FunctionInvocationExpression extends AExpression {
 
   private final IdentifierExpression name;
   private final List<Tuple<AExpression, @Nullable IdentifierExpression>> arguments;
+  private final boolean optional;
 
-  public FunctionInvocationExpression(IdentifierExpression name, List<Tuple<AExpression, @Nullable IdentifierExpression>> arguments, Token head, Token tail, String fullContainingExpression) {
+  public FunctionInvocationExpression(
+    IdentifierExpression name, List<Tuple<AExpression, @Nullable IdentifierExpression>> arguments, boolean optional,
+    Token head, Token tail, String fullContainingExpression
+  ) {
     super(head, tail, fullContainingExpression);
 
     this.name = name;
     this.arguments = arguments;
+    this.optional = optional;
   }
 
   @Override

@@ -109,8 +109,16 @@ public class Interpreter {
 
         // Now, try to look up the target function in the environment's function table
         function = environment.getFunctions().get(name);
-        if (function == null)
+
+        // Function not available
+        if (function == null) {
+
+          // Was an optional call, respond with null
+          if (functionExpression.isOptional())
+            return null;
+
           throw new UndefinedFunctionError(functionExpression.getName());
+        }
       }
 
       //#if mvn.project.property.production != "true"
@@ -305,8 +313,14 @@ public class Interpreter {
         fieldName = valueInterpreter.asString(evaluateExpression(access, environment));
 
       // Cannot access any members of null
-      if (value == null)
+      if (value == null) {
+
+        // Optional access, respond with null
+        if (memberExpression.isOptional())
+          return null;
+
         throw new UnknownMemberError(memberExpression, null, fieldName);
+      }
 
       // Look through all available fields within the container
       for (Field f : value.getClass().getDeclaredFields()) {
@@ -322,6 +336,10 @@ public class Interpreter {
           return "<error>";
         }
       }
+
+      // Optional access, respond with null
+      if (memberExpression.isOptional())
+        return null;
 
       // Found no field with the required name
       throw new UnknownMemberError(memberExpression, value, fieldName);
@@ -450,10 +468,24 @@ public class Interpreter {
       }
 
       if (expression instanceof IndexExpression) {
+        IndexExpression indexExpression = (IndexExpression) expression;
+
         if (lhs instanceof List) {
           List<?> list = (List<?>) lhs;
           int key = (int) valueInterpreter.asLong(rhs);
-          Object result = key < list.size() ? list.get(key) : null;
+          int listLength = list.size();
+
+          // Not a valid list index
+          if (key >= listLength) {
+
+            // Index is optional, respond with null
+            if (indexExpression.isOptional())
+              return null;
+
+            throw new InvalidIndexError(indexExpression, key, listLength);
+          }
+
+          Object result = list.get(key);
 
           //#if mvn.project.property.production != "true"
           logger.logDebug(DebugLogLevel.INTERPRETER, "Indexing a list at " + key + ": " + result);
@@ -464,7 +496,19 @@ public class Interpreter {
 
         if (lhs != null && lhs.getClass().isArray()) {
           int key = (int) valueInterpreter.asLong(rhs);
-          Object result = key < Array.getLength(lhs) ? Array.get(lhs, key) : null;
+          int arrayLength = Array.getLength(lhs);
+
+          // Not a valid array index
+          if (key >= arrayLength) {
+
+            // Index is optional, respond with null
+            if (indexExpression.isOptional())
+              return null;
+
+            throw new InvalidIndexError(indexExpression, key, arrayLength);
+          }
+
+          Object result = Array.get(lhs, key);
 
           //#if mvn.project.property.production != "true"
           logger.logDebug(DebugLogLevel.INTERPRETER, "Indexing an array at " + key + ": " + result);
@@ -476,6 +520,17 @@ public class Interpreter {
         if (lhs instanceof Map) {
           Map<?, ?> map = (Map<?, ?>) lhs;
           String key = valueInterpreter.asString(rhs);
+
+          // Not a valid map member
+          if (!map.containsKey(key)) {
+
+            // Index is optional, respond with null
+            if (indexExpression.isOptional())
+              return null;
+
+            throw new InvalidMapKeyError(indexExpression, key);
+          }
+
           Object result = map.get(key);
 
           //#if mvn.project.property.production != "true"

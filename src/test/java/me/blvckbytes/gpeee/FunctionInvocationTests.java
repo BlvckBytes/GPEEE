@@ -295,6 +295,7 @@ public class FunctionInvocationTests {
     new EnvironmentBuilder()
       .launch(validator -> {
         validator.validateThrows("unknown_func()", UndefinedFunctionError.class);
+        validator.validate("unknown_func?()", (Object) null);
       });
   }
 

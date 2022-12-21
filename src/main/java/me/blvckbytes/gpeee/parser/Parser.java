@@ -253,7 +253,7 @@ public class Parser {
     tk = tokenizer.peekToken();
 
     // There's no opening parenthesis as the next token
-    if (tk == null || tk.getType() != TokenType.PARENTHESIS_OPEN) {
+    if (tk == null || (tk.getType() != TokenType.PARENTHESIS_OPEN && tk.getType() != TokenType.OPTIONAL_PARENTHESIS_OPEN)) {
       //#if mvn.project.property.production != "true"
       logger.logDebug(DebugLogLevel.PARSER, "Not a function invocation expression");
       //#endif
@@ -267,6 +267,7 @@ public class Parser {
     tokenizer.discardState(true);
 
     // Consume the opening parenthesis
+    Token paren = tk;
     tokenizer.consumeToken();
 
     List<Tuple<AExpression, @Nullable IdentifierExpression>> arguments = new ArrayList<>();
@@ -333,7 +334,8 @@ public class Parser {
     );
 
     return new FunctionInvocationExpression(
-      identifierExpression, arguments, tokenIdentifier, tk, tokenizer.getRawText()
+      identifierExpression, arguments, paren.getType() == TokenType.OPTIONAL_PARENTHESIS_OPEN,
+      tokenIdentifier, tk, tokenizer.getRawText()
     );
   }
 
@@ -367,17 +369,18 @@ public class Parser {
 
   private AExpression parseMemberAccessExpression(ITokenizer tokenizer, int precedenceSelf) throws AEvaluatorError {
     return parseBinaryExpression(
-      (lhs, rhs, h, t, op) -> new MemberAccessExpression(lhs, rhs, h, t, tokenizer.getRawText()),
+      (lhs, rhs, h, t, op) -> new MemberAccessExpression(lhs, rhs, op.getType() == TokenType.OPTIONAL_DOT, h, t, tokenizer.getRawText()),
       tokenizer, PrecedenceMode.HIGHER, precedenceSelf,
-      new TokenType[] { TokenType.DOT }, null
+      new TokenType[] { TokenType.DOT, TokenType.OPTIONAL_DOT }, null
     );
   }
 
   private AExpression parseIndexExpression(ITokenizer tokenizer, int precedenceSelf) throws AEvaluatorError {
     return parseBinaryExpression(
-      (lhs, rhs, h, t, op) -> new IndexExpression(lhs, rhs, h, t, tokenizer.getRawText()),
+      (lhs, rhs, h, t, op) -> new IndexExpression(lhs, rhs, op.getType() == TokenType.OPTIONAL_BRACKET_OPEN, h, t, tokenizer.getRawText()),
       tokenizer, PrecedenceMode.RESET, precedenceSelf,
-      new TokenType[] { TokenType.BRACKET_OPEN }, new TokenType[] { TokenType.BRACKET_CLOSE }
+      new TokenType[] { TokenType.BRACKET_OPEN, TokenType.OPTIONAL_BRACKET_OPEN },
+      new TokenType[] { TokenType.BRACKET_CLOSE, TokenType.BRACKET_CLOSE }
     );
   }
 

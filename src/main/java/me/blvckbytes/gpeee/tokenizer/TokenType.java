@@ -199,12 +199,14 @@ public enum TokenType {
   //=========================================================================//
 
   PARENTHESIS_OPEN(TokenCategory.SYMBOL, "(", tokenizer -> tryCollectSequenceWithNextCheck(tokenizer, null, '(')),
+  OPTIONAL_PARENTHESIS_OPEN(TokenCategory.SYMBOL, "?(", tokenizer -> tryCollectSequenceWithNextCheck(tokenizer, null, '?', '(')),
   PARENTHESIS_CLOSE(TokenCategory.SYMBOL, ")", tokenizer -> tryCollectSequenceWithNextCheck(tokenizer, null, ')')),
   COMMA(TokenCategory.SYMBOL, ",", tokenizer -> tryCollectSequenceWithNextCheck(tokenizer, null, ',')),
   DOT(TokenCategory.SYMBOL, ".", tokenizer -> tryCollectSequenceWithNextCheck(tokenizer, TokenType::isDigit, '.')),
+  OPTIONAL_DOT(TokenCategory.SYMBOL, "?.", tokenizer -> tryCollectSequenceWithNextCheck(tokenizer, TokenType::isDigit, '?', '.')),
   BRACKET_OPEN(TokenCategory.SYMBOL, "[", tokenizer -> tryCollectSequenceWithNextCheck(tokenizer, null, '[')),
+  OPTIONAL_BRACKET_OPEN(TokenCategory.SYMBOL, "?[", tokenizer -> tryCollectSequenceWithNextCheck(tokenizer, null, '?', '[')),
   BRACKET_CLOSE(TokenCategory.SYMBOL, "]", tokenizer -> tryCollectSequenceWithNextCheck(tokenizer, null, ']')),
-  QUESTION_MARK(TokenCategory.SYMBOL, "?", tokenizer -> tryCollectSequenceWithNextCheck(tokenizer, c -> c == '?', '?')),
 
   //=========================================================================//
   //                                Invisible                                //
