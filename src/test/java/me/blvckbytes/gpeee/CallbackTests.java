@@ -26,7 +26,9 @@ package me.blvckbytes.gpeee;
 
 import me.blvckbytes.gpeee.error.*;
 import me.blvckbytes.gpeee.functions.AExpressionFunction;
-import me.blvckbytes.gpeee.functions.FExpressionFunctionBuilder;
+import me.blvckbytes.gpeee.functions.ExpressionFunctionArgument;
+import me.blvckbytes.gpeee.interpreter.IEvaluationEnvironment;
+import org.jetbrains.annotations.Nullable;
 import org.junit.jupiter.api.Test;
 
 import java.util.*;
@@ -36,15 +38,7 @@ public class CallbackTests {
   @Test
   public void shouldParseCallback() {
     EnvironmentBuilder env = new EnvironmentBuilder()
-      .withFunction(
-        "my_func",
-        new FExpressionFunctionBuilder()
-          .withArg("cb", "callback expression", true, AExpressionFunction.class)
-          .build((e, args) -> {
-            AExpressionFunction func = (AExpressionFunction) args.get(0);
-            return func.apply(e, List.of(1, 2, 3));
-          })
-      );
+      .withFunction("my_func", createFunction());
 
     env.launch(validator -> {
       // Should be able to access as many parameters as needed
@@ -61,12 +55,7 @@ public class CallbackTests {
   @Test
   public void shouldThrowWhenMalformed() {
     new EnvironmentBuilder()
-      .withFunction(
-        "my_func",
-        new FExpressionFunctionBuilder()
-          .withArg("cb", "callback expression", true, AExpressionFunction.class)
-          .build((e, args) -> null)
-      )
+      .withFunction("my_func", createFunction())
       .launch(validator -> {
         validator.validateThrows("my_func((a -> \"ok\")", UnexpectedTokenError.class);
         validator.validateThrows("my_func((a) \"ok\")", UnexpectedTokenError.class);
@@ -75,5 +64,22 @@ public class CallbackTests {
         validator.validateThrows("my_func((a - 5) -> \"ok\")", UnexpectedTokenError.class);
         validator.validateThrows("my_func((a=5) -> \"ok\")", UnexpectedTokenError.class);
       });
+  }
+
+  private AExpressionFunction createFunction() {
+    return new AExpressionFunction() {
+      @Override
+      public Object apply(IEvaluationEnvironment environment, List<@Nullable Object> args) {
+        AExpressionFunction func = nonNull(args, 0);
+        return func.apply(environment, List.of(1, 2, 3));
+      }
+
+      @Override
+      public List<ExpressionFunctionArgument> getArguments() {
+        return List.of(
+          new ExpressionFunctionArgument("cb", "callback expression", true, AExpressionFunction.class)
+        );
+      }
+    };
   }
 }

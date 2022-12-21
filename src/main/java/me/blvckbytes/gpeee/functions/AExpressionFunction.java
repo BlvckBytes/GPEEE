@@ -112,7 +112,7 @@ public abstract class AExpressionFunction {
 
   @SuppressWarnings("unchecked")
   protected<T> @Nullable T nullable(List<@Nullable Object> args, int index) {
-    return (T) args.get(index);
+    return (T) (index >= args.size() ? null : args.get(index));
   }
 
   protected @Nullable Integer lastArgIndex(@Nullable List<Object> args) {

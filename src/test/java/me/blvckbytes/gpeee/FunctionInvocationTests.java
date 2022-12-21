@@ -26,7 +26,9 @@ package me.blvckbytes.gpeee;
 
 import me.blvckbytes.gpeee.error.*;
 import me.blvckbytes.gpeee.functions.AExpressionFunction;
-import me.blvckbytes.gpeee.functions.FExpressionFunctionBuilder;
+import me.blvckbytes.gpeee.functions.ExpressionFunctionArgument;
+import me.blvckbytes.gpeee.interpreter.IEvaluationEnvironment;
+import org.jetbrains.annotations.Nullable;
 import org.junit.jupiter.api.Test;
 
 import java.util.*;
@@ -38,12 +40,18 @@ public class FunctionInvocationTests {
     new EnvironmentBuilder()
       .withFunction(
         "my_func",
-        new FExpressionFunctionBuilder()
-          .build((env, args) -> "Hello, world")
-      )
-      .launch(validator -> {
-        validator.validate("my_func()", "Hello, world");
-      });
+        new AExpressionFunction() {
+          @Override
+          public Object apply(IEvaluationEnvironment environment, List<@Nullable Object> args) {
+            return "Hello, world";
+          }
+
+          @Override
+          public @Nullable List<ExpressionFunctionArgument> getArguments() {
+            return null;
+          }
+        })
+      .launch(validator -> validator.validate("my_func()", "Hello, world"));
   }
 
   @Test
@@ -51,28 +59,46 @@ public class FunctionInvocationTests {
     new EnvironmentBuilder()
       .withFunction(
         "my_func",
-        new FExpressionFunctionBuilder()
-          .withArg("number", "number to append to the hello string", true)
-          .build((env, args) -> "hello " + env.getValueInterpreter().asString(args.get(0)))
-      )
+        new AExpressionFunction() {
+          @Override
+          public Object apply(IEvaluationEnvironment environment, List<@Nullable Object> args) {
+            return "hello " + environment.getValueInterpreter().asString(nullable(args, 0));
+          }
+
+          @Override
+          public List<ExpressionFunctionArgument> getArguments() {
+            return List.of(
+              new ExpressionFunctionArgument("number", "number appended to the hello string", true)
+            );
+          }
+        })
       .withFunction(
         "my_func2",
-        new FExpressionFunctionBuilder()
-          .withArg("number", "number to prepend to the callback's result", true, Long.class)
-          .withArg("cb", "callback to evaluate", false, AExpressionFunction.class)
-          .withArg("number2", "number to append to the callback result", false, Long.class)
-          .build((env, args) -> {
-            String result = env.getValueInterpreter().asString(args.get(0));
+        new AExpressionFunction() {
+          @Override
+          public Object apply(IEvaluationEnvironment environment, List<@Nullable Object> args) {
+            String result = environment.getValueInterpreter().asString(nullable(args, 0));
 
-            if (args.get(1) != null)
-              result += env.getValueInterpreter().asString(((AExpressionFunction) args.get(1)).apply(env, List.of(result)));
+            if (args.get(1) != null) {
+              AExpressionFunction callback = nonNull(args, 1);
+              result += environment.getValueInterpreter().asString(callback.apply(environment, List.of(result)));
+            }
 
             if (args.get(2) != null)
-              result += env.getValueInterpreter().asString(args.get(2));
+              result += environment.getValueInterpreter().asString(args.get(2));
 
             return result;
-          })
-      )
+          }
+
+          @Override
+          public List<ExpressionFunctionArgument> getArguments() {
+            return List.of(
+              new ExpressionFunctionArgument("number", "number to prepend to the callback's result", true, Long.class),
+              new ExpressionFunctionArgument("cb", "callback to evaluate", false, AExpressionFunction.class),
+              new ExpressionFunctionArgument("number2", "number to append to the callback result", false, Long.class)
+            );
+          }
+        })
       .launch(validator -> {
         validator.validate("my_func(2)", "hello 2");
         validator.validate("my_func(55)", "hello 55");
@@ -90,21 +116,40 @@ public class FunctionInvocationTests {
   @Test
   public void shouldAcceptPositionalArguments() {
     new EnvironmentBuilder()
-      .withFunction("my_argless_func", new FExpressionFunctionBuilder().build((e, a) -> null))
+      .withFunction(
+        "my_argless_func",
+        new AExpressionFunction() {
+          @Override
+          public Object apply(IEvaluationEnvironment environment, List<@Nullable Object> args) {
+            return null;
+          }
+
+          @Override
+          public @Nullable List<ExpressionFunctionArgument> getArguments() {
+            return null;
+          }
+        })
       .withFunction(
         "my_func",
-        new FExpressionFunctionBuilder()
-          .withArg("a", "Input A", true)
-          .withArg("b", "Input B", false)
-          .withArg("c", "Input C", false)
-          .withArg("d", "Input D", false)
-          .build((env, args) -> (
-            (args.get(0) == null ? "" : "a") +
-            (args.get(1) == null ? "" : "b") +
-            (args.get(2) == null ? "" : "c") +
-            (args.get(3) == null ? "" : "d")
-          ))
-      )
+        new AExpressionFunction() {
+          @Override
+          public Object apply(IEvaluationEnvironment environment, List<@Nullable Object> args) {
+            return (args.get(0) == null ? "" : "a") +
+              (args.get(1) == null ? "" : "b") +
+              (args.get(2) == null ? "" : "c") +
+              (args.get(3) == null ? "" : "d");
+          }
+
+          @Override
+          public List<ExpressionFunctionArgument> getArguments() {
+            return List.of(
+              new ExpressionFunctionArgument("a", "Input A", true),
+              new ExpressionFunctionArgument("b", "Input B", false),
+              new ExpressionFunctionArgument("c", "Input C", false),
+              new ExpressionFunctionArgument("d", "Input D", false)
+            );
+          }
+        })
       .launch(validator -> {
         // a is required
         validator.validateThrows("my_func()", InvalidFunctionArgumentTypeError.class);
@@ -130,10 +175,18 @@ public class FunctionInvocationTests {
     new EnvironmentBuilder()
       .withFunction(
         "add_one",
-        new FExpressionFunctionBuilder()
-          .withArg("a", "Input A", true, Long.class)
-          .build((env, args) -> (((Long) args.get(0)) + 1))
-      )
+        new AExpressionFunction() {
+          @Override
+          public Object apply(IEvaluationEnvironment environment, List<@Nullable Object> args) {
+            Long inputA = nonNull(args, 0);
+            return inputA + 1;
+          }
+
+          @Override
+          public List<ExpressionFunctionArgument> getArguments() {
+            return List.of(new ExpressionFunctionArgument("a", "Input A", true, Long.class));
+          }
+        })
       .launch(validator -> {
         validator.validateThrows("add_one()", InvalidFunctionArgumentTypeError.class);
         validator.validate("add_one(add_one(add_one(1)))", 4);
@@ -145,16 +198,22 @@ public class FunctionInvocationTests {
     new EnvironmentBuilder()
       .withFunction(
         "sum",
-        new FExpressionFunctionBuilder()
-          .build((env, args) -> {
+        new AExpressionFunction() {
+          @Override
+          public Object apply(IEvaluationEnvironment environment, List<@Nullable Object> args) {
             long sum = 0;
 
             for (Object arg : args)
-              sum += env.getValueInterpreter().asLong(arg);
+              sum += environment.getValueInterpreter().asLong(arg);
 
             return sum;
-          })
-      )
+          }
+
+          @Override
+          public @Nullable List<ExpressionFunctionArgument> getArguments() {
+            return null;
+          }
+        })
       .launch(validator -> {
         validator.validate("sum(1)", 1);
         validator.validate("sum(1, 2, 3, 4, 5, 6, 7, 8, 9, 10)", 55);
@@ -168,9 +227,17 @@ public class FunctionInvocationTests {
    * @param type Target type
    */
   private AExpressionFunction buildTypeValidatorFunction(Class<?> type) {
-    return new FExpressionFunctionBuilder()
-      .withArg("a", "Input A", true, type)
-      .build((env, args) -> type.isInstance(args.get(0)) ? args.get(0) : "<error>");
+    return new AExpressionFunction() {
+      @Override
+      public Object apply(IEvaluationEnvironment environment, List<@Nullable Object> args) {
+        return type.isInstance(args.get(0)) ? args.get(0) : "<error>";
+      }
+
+      @Override
+      public List<ExpressionFunctionArgument> getArguments() {
+        return List.of(new ExpressionFunctionArgument("a", "Input A", true, type));
+      }
+    };
   }
 
   @Test
@@ -193,10 +260,17 @@ public class FunctionInvocationTests {
     new EnvironmentBuilder()
       .withFunction(
         "my_func",
-        new FExpressionFunctionBuilder()
-          .withArg("a", "test parameter", false)
-          .build((e, a) -> null)
-      )
+        new AExpressionFunction() {
+          @Override
+          public Object apply(IEvaluationEnvironment environment, List<@Nullable Object> args) {
+            return null;
+          }
+
+          @Override
+          public List<ExpressionFunctionArgument> getArguments() {
+            return List.of(new ExpressionFunctionArgument("a", "test parameter", false));
+          }
+        })
       .launch(validator -> {
         // Needs to end with a closing parenthesis
         validator.validateThrows("my_func(", UnexpectedTokenError.class);
@@ -304,14 +378,30 @@ public class FunctionInvocationTests {
     new EnvironmentBuilder()
       .withFunction(
         "get_my_number",
-        new FExpressionFunctionBuilder()
-          .build((e, a) -> 5)
-      )
+        new AExpressionFunction() {
+          @Override
+          public Object apply(IEvaluationEnvironment environment, List<@Nullable Object> args) {
+            return 5;
+          }
+
+          @Override
+          public @Nullable List<ExpressionFunctionArgument> getArguments() {
+            return null;
+          }
+        })
       .withFunction(
         "get_my_boolean",
-        new FExpressionFunctionBuilder()
-          .build((e, a) -> true)
-      )
+        new AExpressionFunction() {
+          @Override
+          public Object apply(IEvaluationEnvironment environment, List<@Nullable Object> args) {
+            return true;
+          }
+
+          @Override
+          public @Nullable List<ExpressionFunctionArgument> getArguments() {
+            return null;
+          }
+        })
       .launch(validator -> {
         // Invert sign of function return
         validator.validate("get_my_number()", 5);

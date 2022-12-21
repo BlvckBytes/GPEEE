@@ -28,7 +28,10 @@ import me.blvckbytes.gpeee.error.InvalidIndexError;
 import me.blvckbytes.gpeee.error.InvalidMapKeyError;
 import me.blvckbytes.gpeee.error.NonIndexableValueError;
 import me.blvckbytes.gpeee.error.UnexpectedTokenError;
-import me.blvckbytes.gpeee.functions.FExpressionFunctionBuilder;
+import me.blvckbytes.gpeee.functions.AExpressionFunction;
+import me.blvckbytes.gpeee.functions.ExpressionFunctionArgument;
+import me.blvckbytes.gpeee.interpreter.IEvaluationEnvironment;
+import org.jetbrains.annotations.Nullable;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
@@ -95,17 +98,25 @@ public class IndexingTests {
 
   @Test
   public void shouldIndexFunctionResult() {
-    EnvironmentBuilder env = new EnvironmentBuilder()
-      .withFunction("get_my_map", new FExpressionFunctionBuilder()
-        .build((e, args) -> (
-          Map.of(
-            "One", 1,
-            "Two", 2,
-            "Three", 3
-          )
-        )));
+    new EnvironmentBuilder()
+      .withFunction(
+        "get_my_map",
+        new AExpressionFunction() {
+          @Override
+          public Object apply(IEvaluationEnvironment environment, List<@Nullable Object> args) {
+            return Map.of(
+              "One", 1,
+              "Two", 2,
+              "Three", 3
+            );
+          }
 
-    env.launch(validator -> {
+          @Override
+          public @Nullable List<ExpressionFunctionArgument> getArguments() {
+            return null;
+          }
+        })
+    .launch(validator -> {
       validator.validate("get_my_map()[\"One\"]", 1);
       validator.validate("get_my_map()[\"Two\"]", 2);
       validator.validate("get_my_map()[\"Three\"]", 3);

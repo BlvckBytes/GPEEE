@@ -24,7 +24,10 @@
 
 package me.blvckbytes.gpeee;
 
-import me.blvckbytes.gpeee.functions.FExpressionFunctionBuilder;
+import me.blvckbytes.gpeee.functions.AExpressionFunction;
+import me.blvckbytes.gpeee.functions.ExpressionFunctionArgument;
+import me.blvckbytes.gpeee.interpreter.IEvaluationEnvironment;
+import org.jetbrains.annotations.Nullable;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
@@ -35,7 +38,19 @@ public class NullCoalesceTests {
   public void shouldUseFallbackValueIfNull() {
     new EnvironmentBuilder()
       .withStaticVariable("my_null", null)
-      .withFunction("my_null_func", new FExpressionFunctionBuilder().build((e, a) -> null))
+      .withFunction(
+        "my_null_func",
+        new AExpressionFunction() {
+          @Override
+          public Object apply(IEvaluationEnvironment environment, List<@Nullable Object> args) {
+            return null;
+          }
+
+          @Override
+          public @Nullable List<ExpressionFunctionArgument> getArguments() {
+            return null;
+          }
+        })
       .launch(validator -> {
         validator.validate("my_null ?? \"Fallback\"", "Fallback");
         validator.validate("my_null_func() ?? \"Fallback\"", "Fallback");

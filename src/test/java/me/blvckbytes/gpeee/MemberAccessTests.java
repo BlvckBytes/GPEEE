@@ -26,9 +26,14 @@ package me.blvckbytes.gpeee;
 
 import lombok.AllArgsConstructor;
 import me.blvckbytes.gpeee.error.UnknownMemberError;
-import me.blvckbytes.gpeee.functions.FExpressionFunctionBuilder;
+import me.blvckbytes.gpeee.functions.AExpressionFunction;
+import me.blvckbytes.gpeee.functions.ExpressionFunctionArgument;
+import me.blvckbytes.gpeee.interpreter.IEvaluationEnvironment;
+import org.jetbrains.annotations.Nullable;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
+import java.util.List;
 
 public class MemberAccessTests {
 
@@ -115,7 +120,19 @@ public class MemberAccessTests {
   @Test
   public void shouldAccessMembersFromFunctionReturns() {
     new EnvironmentBuilder()
-      .withFunction("get_my_object", new FExpressionFunctionBuilder().build((e, args) -> testObject))
+      .withFunction(
+        "get_my_object",
+        new AExpressionFunction() {
+          @Override
+          public Object apply(IEvaluationEnvironment environment, List<@Nullable Object> args) {
+            return testObject;
+          }
+
+          @Override
+          public @Nullable List<ExpressionFunctionArgument> getArguments() {
+            return null;
+          }
+        })
       .withStaticVariable("first_field", "text")
       .withStaticVariable("second_field", "number")
       .withStaticVariable("self_field", "self")
