@@ -1,0 +1,40 @@
+Digit ::= [0-9]
+Letter ::= [A-Za-z]
+
+Long ::= "-"? Digit+
+Double ::= "-"? Digit* "." Digit+
+String ::= '"' ('\"' | [^"] | "\s")* '"'
+Identifier ::= Letter (Digit | Letter | '_')*
+Literal ::= "true" | "false" | "null"
+
+AdditiveOperator ::= "+" | "-"
+MultiplicativeOperator ::= "*" | "/" | "%"
+EqualityOperator ::= "==" | "!=" | "===" | "!=="
+ComparisonOperator ::= ">" | "<" | ">=" | "<="
+
+NullCoalesceExpression ::= ConcatenationExpression ("??" ConcatenationExpression)*
+ConcatenationExpression ::= DisjunctionExpression ("&" DisjunctionExpression)*
+DisjunctionExpression ::= ConjunctionExpression ("or" ConjunctionExpression)*
+ConjunctionExpression ::= EqualityExpression ("and" EqualityExpression)*
+EqualityExpression ::= ComparisonExpression (EqualityOperator ComparisonExpression)*
+ComparisonExpression ::= AdditiveExpression (ComparisonOperator AdditiveExpression)*
+AdditiveExpression ::= MultiplicativeExpression (AdditiveOperator MultiplicativeExpression)*
+MultiplicativeExpression ::= ExponentiationExpression (MultiplicativeOperator ExponentiationExpression)*
+ExponentiationExpression ::= NegationExpression ("^" NegationExpression)*
+
+NegationExpression ::= FlipSignExpression ("-" FlipSignExpression)?
+FlipSignExpression ::= IndexExpression ("not" IndexExpression)?
+
+IndexExpression ::= MemberAccessExpression (("[" | "?[") Expression "]")*
+MemberAccessExpression ::= FunctionInvocationExpression (("." | "?.") FunctionInvocationExpression)*
+
+FunctionArgument ::= (Identifier "=")? Expression
+FunctionInvocationExpression ::= (Identifier ("(" | "?(") (FunctionArgument | (FunctionArgument ("," FunctionArgument)*))? ")") | IfThenElseExpression
+
+IfThenElseExpression ::= ("if" Expression "then" Expression "else" Expression) | CallbackExpression
+CallbackExpression ::= ("(" (Identifier | (Identifier ("," Identifier)*)) ")" "=>" Expression) | ParenthesesExpression
+ParenthesesExpression ::= ("(" Expression ")") | PrimaryExpression
+
+PrimaryExpression ::= Long | Double | String | Identifier | Literal
+
+Expression ::= NullCoalesceExpression
