@@ -190,7 +190,7 @@ public enum TokenType {
   KW_THEN(TokenCategory.KEYWORD, "then", tokenizer -> tryCollectSequenceWithNextCheck(tokenizer, null, "then".toCharArray())),
   KW_ELSE(TokenCategory.KEYWORD, "else", tokenizer -> tryCollectSequenceWithNextCheck(tokenizer, null, "else".toCharArray())),
 
-  ARROW(TokenCategory.OPERATOR, "->", tokenizer -> tryCollectSequenceWithNextCheck(tokenizer, null, "->".toCharArray())),
+  ARROW(TokenCategory.OPERATOR, "=>", tokenizer -> tryCollectSequenceWithNextCheck(tokenizer, null, "=>".toCharArray())),
   ASSIGN(TokenCategory.OPERATOR, "=", tokenizer -> tryCollectSequenceWithNextCheck(tokenizer, c -> c == '=', '=')),
   NULL_COALESCE(TokenCategory.OPERATOR, "??", tokenizer -> tryCollectSequenceWithNextCheck(tokenizer, null, "??".toCharArray())),
 

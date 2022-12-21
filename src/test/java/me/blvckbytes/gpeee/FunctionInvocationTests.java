@@ -105,9 +105,9 @@ public class FunctionInvocationTests {
         validator.validateThrows("my_func()", InvalidFunctionArgumentTypeError.class);
 
         validator.validate("my_func2(2)", "2");
-        validator.validate("my_func2(2, () -> \"callback\")", "2callback");
-        validator.validate("my_func2(2, (first) -> first & \"callback\", 3)", "22callback3");
-        validator.validate("my_func2(2, cb=() -> \"callback\", number2=3)", "2callback3");
+        validator.validate("my_func2(2, () => \"callback\")", "2callback");
+        validator.validate("my_func2(2, (first) => first & \"callback\", 3)", "22callback3");
+        validator.validate("my_func2(2, cb=() => \"callback\", number2=3)", "2callback3");
         validator.validate("my_func2(2, number2=3)", "23");
         validator.validateThrows("my_func2()", InvalidFunctionArgumentTypeError.class);
       });

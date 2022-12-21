@@ -37,10 +37,10 @@ public class IterCatFunctionTests {
   @Test
   public void shouldThrowOnNonCollectionInput() {
     createEnvironment().launch(validator -> {
-      validator.validateThrows("iter_cat(my_number, () -> \"\")", InvalidFunctionArgumentTypeError.class);
-      validator.validateThrows("iter_cat(my_string, () -> \"\")", InvalidFunctionArgumentTypeError.class);
-      validator.validateThrows("iter_cat(my_boolean, () -> \"\")", InvalidFunctionArgumentTypeError.class);
-      validator.validateThrows("iter_cat(null, () -> \"\")", InvalidFunctionArgumentTypeError.class);
+      validator.validateThrows("iter_cat(my_number, () => \"\")", InvalidFunctionArgumentTypeError.class);
+      validator.validateThrows("iter_cat(my_string, () => \"\")", InvalidFunctionArgumentTypeError.class);
+      validator.validateThrows("iter_cat(my_boolean, () => \"\")", InvalidFunctionArgumentTypeError.class);
+      validator.validateThrows("iter_cat(null, () => \"\")", InvalidFunctionArgumentTypeError.class);
     });
   }
 
@@ -48,7 +48,7 @@ public class IterCatFunctionTests {
   public void shouldAcceptAMapAsInput() {
     createEnvironment().launch(validator -> {
       validator.validate(
-        "iter_cat(my_map, (it, ind) -> \"(\" & ind & \" -> \" & key(it) & \"-\" & value(it) & \")\", \", \")",
+        "iter_cat(my_map, (it, ind) => \"(\" & ind & \" -> \" & key(it) & \"-\" & value(it) & \")\", \", \")",
         "(0 -> red-#FF0000), (1 -> green-#00FF00), (2 -> blue-#0000FF)"
       );
     });
@@ -58,7 +58,7 @@ public class IterCatFunctionTests {
   public void shouldAcceptAListAsInput() {
     createEnvironment().launch(validator -> {
       validator.validate(
-        "iter_cat(my_list, (it, ind) -> \"(\" & ind & \" -> \" & it & \")\", \" | \")",
+        "iter_cat(my_list, (it, ind) => \"(\" & ind & \" -> \" & it & \")\", \" | \")",
         "(0 -> red) | (1 -> green) | (2 -> blue)"
       );
     });
@@ -68,7 +68,7 @@ public class IterCatFunctionTests {
   public void shouldUseDefaultSeparator() {
     createEnvironment().launch(validator -> {
       validator.validate(
-        "iter_cat(my_list, (it, ind) -> \"(\" & ind & \" -> \" & it & \")\")",
+        "iter_cat(my_list, (it, ind) => \"(\" & ind & \" -> \" & it & \")\")",
         "(0 -> red), (1 -> green), (2 -> blue)"
       );
     });
@@ -78,7 +78,7 @@ public class IterCatFunctionTests {
   public void shouldPrintEmptyIfEmptyAndNoFallbackAvailable() {
     createEnvironment().launch(validator -> {
       validator.validate(
-        "iter_cat(my_list_empty, (it, ind) -> \"(\" & ind & \" -> \" & it & \")\")",
+        "iter_cat(my_list_empty, (it, ind) => \"(\" & ind & \" -> \" & it & \")\")",
         ""
       );
     });
@@ -88,7 +88,7 @@ public class IterCatFunctionTests {
   public void shouldPrintFallbackIfEmptyAndFallbackAvailable() {
     createEnvironment().launch(validator -> {
       validator.validate(
-        "iter_cat(my_list_empty, (it, ind) -> \"(\" & ind & \" -> \" & it & \")\", fallback=\"this is my fallback\")",
+        "iter_cat(my_list_empty, (it, ind) => \"(\" & ind & \" -> \" & it & \")\", fallback=\"this is my fallback\")",
         "this is my fallback"
       );
     });

@@ -37,7 +37,7 @@ public class AExpressionTests {
 
     try {
       resultText = new GPEEE(null).parseString(
-        "\"my prefix: \" & iter_cat(my_object.map[\"colormap\"], (it, ind) -> \"(\" & ind & \" -> \" & value(it) & \")\", \", \")"
+        "\"my prefix: \" & iter_cat(my_object.map[\"colormap\"], (it, ind) => \"(\" & ind & \" -> \" & value(it) & \")\", \", \")"
       ).stringify("  ", 0);
     } catch (Exception e) {
       e.printStackTrace();

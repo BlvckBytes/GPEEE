@@ -37,10 +37,10 @@ public class ValueFunctionTests {
   @Test
   public void shouldThrowOnNonMapEntryInput() {
     createEnvironment().launch(validator -> {
-      validator.validateThrows("value(my_number, () -> \"\")", InvalidFunctionArgumentTypeError.class);
-      validator.validateThrows("value(my_string, () -> \"\")", InvalidFunctionArgumentTypeError.class);
-      validator.validateThrows("value(my_boolean, () -> \"\")", InvalidFunctionArgumentTypeError.class);
-      validator.validateThrows("value(my_list, () -> \"\")", InvalidFunctionArgumentTypeError.class);
+      validator.validateThrows("value(my_number, () => \"\")", InvalidFunctionArgumentTypeError.class);
+      validator.validateThrows("value(my_string, () => \"\")", InvalidFunctionArgumentTypeError.class);
+      validator.validateThrows("value(my_boolean, () => \"\")", InvalidFunctionArgumentTypeError.class);
+      validator.validateThrows("value(my_list, () => \"\")", InvalidFunctionArgumentTypeError.class);
     });
   }
 

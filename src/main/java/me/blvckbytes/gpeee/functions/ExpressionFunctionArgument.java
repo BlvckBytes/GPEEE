@@ -43,6 +43,13 @@ public class ExpressionFunctionArgument {
   private final boolean required;
   private final Class<?>[] allowedTypes;
 
+  /**
+   * Create a new expression function argument from it's parameters
+   * @param name Name of the argument (required, unique)
+   * @param description Description of the argument (required), printed on errors
+   * @param required Whether this argument is required (present and non-null) or optional (nullable, omittable)
+   * @param allowedTypes List of types which this parameter accepts, leave empty to disable type checking
+   */
   public ExpressionFunctionArgument(String name, String description, boolean required, Class<?>... allowedTypes) {
     this.name = name;
     this.description = description;

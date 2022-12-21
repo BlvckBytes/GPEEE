@@ -42,13 +42,13 @@ public class CallbackTests {
 
     env.launch(validator -> {
       // Should be able to access as many parameters as needed
-      validator.validate("my_func(() -> \"ok\")", "ok");
-      validator.validate("my_func((a) -> \"ok\" & a)", "ok1");
-      validator.validate("my_func((a, b) -> \"ok\" & a & b)", "ok12");
-      validator.validate("my_func((a, b, c) -> \"ok\" & a & b & c)", "ok123");
+      validator.validate("my_func(() => \"ok\")", "ok");
+      validator.validate("my_func((a) => \"ok\" & a)", "ok1");
+      validator.validate("my_func((a, b) => \"ok\" & a & b)", "ok12");
+      validator.validate("my_func((a, b, c) => \"ok\" & a & b & c)", "ok123");
 
       // Where non-provided callback input parameters will default to null
-      validator.validate("my_func((a, b, c, d) -> \"ok\" & a & b & c & d)", "ok123" + env.stringify(null));
+      validator.validate("my_func((a, b, c, d) => \"ok\" & a & b & c & d)", "ok123" + env.stringify(null));
     });
   }
 
@@ -57,12 +57,12 @@ public class CallbackTests {
     new EnvironmentBuilder()
       .withFunction("my_func", createFunction())
       .launch(validator -> {
-        validator.validateThrows("my_func((a -> \"ok\")", UnexpectedTokenError.class);
+        validator.validateThrows("my_func((a => \"ok\")", UnexpectedTokenError.class);
         validator.validateThrows("my_func((a) \"ok\")", UnexpectedTokenError.class);
-        validator.validateThrows("my_func((a,) -> \"ok\")", UnexpectedTokenError.class);
-        validator.validateThrows("my_func((a 5) -> \"ok\")", UnexpectedTokenError.class);
-        validator.validateThrows("my_func((a - 5) -> \"ok\")", UnexpectedTokenError.class);
-        validator.validateThrows("my_func((a=5) -> \"ok\")", UnexpectedTokenError.class);
+        validator.validateThrows("my_func((a,) => \"ok\")", UnexpectedTokenError.class);
+        validator.validateThrows("my_func((a 5) => \"ok\")", UnexpectedTokenError.class);
+        validator.validateThrows("my_func((a - 5) => \"ok\")", UnexpectedTokenError.class);
+        validator.validateThrows("my_func((a=5) => \"ok\")", UnexpectedTokenError.class);
       });
   }
 
