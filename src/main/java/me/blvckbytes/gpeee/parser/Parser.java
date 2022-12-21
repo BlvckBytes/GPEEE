@@ -56,6 +56,7 @@ public class Parser {
     this.logger = logger;
 
     this.precedenceLadder = new FExpressionParser[] {
+      this::parseNullCoalesceExpression,
       this::parseConcatenationExpression,
       this::parseDisjunctionExpression,
       this::parseConjunctionExpression,
@@ -410,6 +411,14 @@ public class Parser {
       },
       tokenizer, PrecedenceMode.HIGHER, precedenceSelf,
       new TokenType[] { TokenType.GREATER_THAN, TokenType.GREATER_THAN_OR_EQUAL, TokenType.LESS_THAN, TokenType.LESS_THAN_OR_EQUAL }, null
+    );
+  }
+
+  private AExpression parseNullCoalesceExpression(ITokenizer tokenizer, int precedenceSelf) throws AEvaluatorError {
+    return parseBinaryExpression(
+      (lhs, rhs, h, t, op) -> new NullCoalesceExpression(lhs, rhs, h, t, tokenizer.getRawText()),
+      tokenizer, PrecedenceMode.HIGHER, precedenceSelf,
+      new TokenType[] { TokenType.NULL_COALESCE }, null
     );
   }
 

@@ -348,6 +348,18 @@ public class Interpreter {
         return result;
       }
 
+      if (expression instanceof NullCoalesceExpression) {
+        NullCoalesceExpression nullCoalesce = (NullCoalesceExpression) expression;
+        Object inputValue = evaluateExpression(nullCoalesce.getLhs(), environment);
+
+        // Input value is non-null, return that
+        if (inputValue != null)
+          return inputValue;
+
+        // Return the provided fallback value
+        return evaluateExpression(nullCoalesce.getRhs(), environment);
+      }
+
       if (expression instanceof EqualityExpression) {
         EqualityOperation operation = ((EqualityExpression) expression).getOperation();
         boolean result;

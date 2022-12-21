@@ -192,6 +192,7 @@ public enum TokenType {
 
   ARROW(TokenCategory.OPERATOR, "->", tokenizer -> tryCollectSequenceWithNextCheck(tokenizer, null, "->".toCharArray())),
   ASSIGN(TokenCategory.OPERATOR, "=", tokenizer -> tryCollectSequenceWithNextCheck(tokenizer, c -> c == '=', '=')),
+  NULL_COALESCE(TokenCategory.OPERATOR, "??", tokenizer -> tryCollectSequenceWithNextCheck(tokenizer, null, "??".toCharArray())),
 
   //=========================================================================//
   //                                 Symbols                                 //
@@ -203,6 +204,7 @@ public enum TokenType {
   DOT(TokenCategory.SYMBOL, ".", tokenizer -> tryCollectSequenceWithNextCheck(tokenizer, TokenType::isDigit, '.')),
   BRACKET_OPEN(TokenCategory.SYMBOL, "[", tokenizer -> tryCollectSequenceWithNextCheck(tokenizer, null, '[')),
   BRACKET_CLOSE(TokenCategory.SYMBOL, "]", tokenizer -> tryCollectSequenceWithNextCheck(tokenizer, null, ']')),
+  QUESTION_MARK(TokenCategory.SYMBOL, "?", tokenizer -> tryCollectSequenceWithNextCheck(tokenizer, c -> c == '?', '?')),
 
   //=========================================================================//
   //                                Invisible                                //
