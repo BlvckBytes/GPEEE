@@ -56,11 +56,25 @@ public class Interpreter {
     if (expression == null)
       return null;
 
+    // Every expression evaluation starts out with a fresh interpretation environment
+    // State is NOT kept between evaluation sessions
+    return evaluateExpressionSub(expression, environment, new InterpretationEnvironment());
+  }
+
+  public Object evaluateExpressionSub(
+    AExpression expression,
+    IEvaluationEnvironment evaluationEnvironment,
+    InterpretationEnvironment interpretationEnvironment
+  ) throws AEvaluatorError {
+
+    if (expression == null)
+      return null;
+
     //#if mvn.project.property.production != "true"
     logger.logDebug(DebugLogLevel.INTERPRETER, "Evaluating " + expression.getClass().getSimpleName() + ": " + expression.expressionify());
     //#endif
 
-    IValueInterpreter valueInterpreter = environment.getValueInterpreter();
+    IValueInterpreter valueInterpreter = evaluationEnvironment.getValueInterpreter();
 
     /////////////////////// Static Values ///////////////////////
 
@@ -95,30 +109,26 @@ public class Interpreter {
     ////////////////////// Variable Values //////////////////////
 
     if (expression instanceof IdentifierExpression)
-      return lookupVariable(environment, (IdentifierExpression) expression);
+      return lookupVariable(evaluationEnvironment, interpretationEnvironment, (IdentifierExpression) expression);
 
     ///////////////////////// Functions /////////////////////////
 
     if (expression instanceof FunctionInvocationExpression) {
       FunctionInvocationExpression functionExpression = (FunctionInvocationExpression) expression;
-      String name = functionExpression.getName().getSymbol().toLowerCase(Locale.ROOT);
+      AExpressionFunction function = lookupFunction(evaluationEnvironment, interpretationEnvironment, functionExpression.getName());
 
-      // Try to look up the target function in the standard function table first
-      AExpressionFunction function = this.standardFunctionRegistry.lookup(name);
+      // Function does not exist within the current environment
       if (function == null) {
 
-        // Now, try to look up the target function in the environment's function table
-        function = environment.getFunctions().get(name);
-
-        // Function not available
-        if (function == null) {
-
-          // Was an optional call, respond with null
-          if (functionExpression.isOptional())
-            return null;
-
-          throw new UndefinedFunctionError(functionExpression.getName());
+        // Was an optional call, respond with null
+        if (functionExpression.isOptional()) {
+          //#if mvn.project.property.production != "true"
+          logger.logDebug(DebugLogLevel.INTERPRETER, "Function " + functionExpression.getName().getSymbol() + " not found, returning null (optional call)");
+          //#endif
+          return null;
         }
+
+        throw new UndefinedFunctionError(functionExpression.getName());
       }
 
       //#if mvn.project.property.production != "true"
@@ -145,7 +155,7 @@ public class Interpreter {
         logger.logDebug(DebugLogLevel.INTERPRETER, "Evaluating argument " + (++debugArgCounter));
         //#endif
 
-        Object argumentValue = evaluateExpression(argument.getA(), environment);
+        Object argumentValue = evaluateExpressionSub(argument.getA(), evaluationEnvironment, interpretationEnvironment);
 
         // Argument definitions are available and this argument has a name attached
         if (argDefinitions != null && argument.getB() != null) {
@@ -200,10 +210,10 @@ public class Interpreter {
       }
 
       // Let the function validate the arguments of it's invocation before actually performing the call
-      function.validateArguments(functionExpression, environment.getValueInterpreter(), arguments);
+      function.validateArguments(functionExpression, evaluationEnvironment.getValueInterpreter(), arguments);
 
       // Invoke and return that function's result
-      Object result = function.apply(environment, arguments);
+      Object result = function.apply(evaluationEnvironment, arguments);
 
       // Throw an exception based on the error description object, now that the expression ref is available
       if (result instanceof FunctionInvocationError) {
@@ -249,7 +259,7 @@ public class Interpreter {
 
           // Callback expressions are evaluated within their own environment, which extends the current environment
           // by the additional variables coming from the arguments passed by the callback caller
-          Object result = evaluateExpression(callbackExpression.getBody(), new IEvaluationEnvironment() {
+          Object result = evaluateExpressionSub(callbackExpression.getBody(), new IEvaluationEnvironment() {
 
             @Override
             public Map<String, AExpressionFunction> getFunctions() {
@@ -270,7 +280,7 @@ public class Interpreter {
             public IValueInterpreter getValueInterpreter() {
               return environment.getValueInterpreter();
             }
-          });
+          }, interpretationEnvironment);
 
           //#if mvn.project.property.production != "true"
           logger.logDebug(DebugLogLevel.INTERPRETER, "Callback result=" + result);
@@ -291,13 +301,13 @@ public class Interpreter {
       IfThenElseExpression ifExpression = (IfThenElseExpression) expression;
 
       // Evaluate the if statement's condition expression
-      Object condition = evaluateExpression(ifExpression.getCondition(), environment);
+      Object condition = evaluateExpressionSub(ifExpression.getCondition(), evaluationEnvironment, interpretationEnvironment);
 
       // Interpret the result as a boolean and evaluate the body accordingly
-      if (environment.getValueInterpreter().asBoolean(condition))
-        return evaluateExpression(ifExpression.getPositiveBody(), environment);
+      if (evaluationEnvironment.getValueInterpreter().asBoolean(condition))
+        return evaluateExpressionSub(ifExpression.getPositiveBody(), evaluationEnvironment, interpretationEnvironment);
 
-      return evaluateExpression(ifExpression.getNegativeBody(), environment);
+      return evaluateExpressionSub(ifExpression.getNegativeBody(), evaluationEnvironment, interpretationEnvironment);
     }
 
     /////////////////////// Member Access ////////////////////////
@@ -306,7 +316,7 @@ public class Interpreter {
       MemberAccessExpression memberExpression = (MemberAccessExpression) expression;
 
       // Look up the container's value
-      Object value = evaluateExpression(memberExpression.getLhs(), environment);
+      Object value = evaluateExpressionSub(memberExpression.getLhs(), evaluationEnvironment, interpretationEnvironment);
       AExpression access = memberExpression.getRhs();
 
       String fieldName;
@@ -317,7 +327,7 @@ public class Interpreter {
 
       // Evaluate the name expression as a string
       else
-        fieldName = valueInterpreter.asString(evaluateExpression(access, environment));
+        fieldName = valueInterpreter.asString(evaluateExpressionSub(access, evaluationEnvironment, interpretationEnvironment));
 
       // Cannot access any members of null
       if (value == null) {
@@ -359,8 +369,53 @@ public class Interpreter {
       logger.logDebug(DebugLogLevel.INTERPRETER, "Evaluating LHS and RHS of a binary expression");
       //#endif
 
-      Object lhs = evaluateExpression(((ABinaryExpression) expression).getLhs(), environment);
-      Object rhs = evaluateExpression(((ABinaryExpression) expression).getRhs(), environment);
+      Object rhs = evaluateExpressionSub(((ABinaryExpression) expression).getRhs(), evaluationEnvironment, interpretationEnvironment);
+
+      // Try to execute an assignment expression before evaluating the LHS value
+      // of the binary expression, which would end up in a variable lookup
+      if (expression instanceof AssignmentExpression) {
+        String identifier = ((IdentifierExpression) ((ABinaryExpression) expression).getLhs()).getSymbol();
+        boolean isFunction = rhs instanceof AExpressionFunction;
+
+        // Is not a function, check for existing variable names before adding
+        if (!isFunction) {
+          if (
+            evaluationEnvironment.getLiveVariables().containsKey(identifier) ||
+            evaluationEnvironment.getStaticVariables().containsKey(identifier) ||
+            interpretationEnvironment.getVariables().containsKey(identifier)
+          ) {
+            throw new IdentifierInUseError((IdentifierExpression) ((AssignmentExpression) expression).getLhs());
+          }
+
+          //#if mvn.project.property.production != "true"
+          logger.logDebug(DebugLogLevel.INTERPRETER, "Storing variable " + identifier + " within the interpretation environment");
+          //#endif
+
+          interpretationEnvironment.getVariables().put(identifier, rhs);
+        }
+
+        // Is a function, check for existing function names before adding
+        else {
+          if (
+            standardFunctionRegistry.lookup(identifier) != null ||
+            evaluationEnvironment.getFunctions().containsKey(identifier) ||
+            interpretationEnvironment.getFunctions().containsKey(identifier)
+          ) {
+            throw new IdentifierInUseError((IdentifierExpression) ((AssignmentExpression) expression).getLhs());
+          }
+
+          //#if mvn.project.property.production != "true"
+          logger.logDebug(DebugLogLevel.INTERPRETER, "Storing function " + identifier + " within the interpretation environment");
+          //#endif
+
+          interpretationEnvironment.getFunctions().put(identifier, (AExpressionFunction) rhs);
+        }
+
+        // Assignments always return their assigned type
+        return rhs;
+      }
+
+      Object lhs = evaluateExpressionSub(((ABinaryExpression) expression).getLhs(), evaluationEnvironment, interpretationEnvironment);
 
       if (expression instanceof MathExpression) {
         MathOperation operation = ((MathExpression) expression).getOperation();
@@ -375,14 +430,14 @@ public class Interpreter {
 
       if (expression instanceof NullCoalesceExpression) {
         NullCoalesceExpression nullCoalesce = (NullCoalesceExpression) expression;
-        Object inputValue = evaluateExpression(nullCoalesce.getLhs(), environment);
+        Object inputValue = evaluateExpressionSub(nullCoalesce.getLhs(), evaluationEnvironment, interpretationEnvironment);
 
         // Input value is non-null, return that
         if (inputValue != null)
           return inputValue;
 
         // Return the provided fallback value
-        return evaluateExpression(nullCoalesce.getRhs(), environment);
+        return evaluateExpressionSub(nullCoalesce.getRhs(), evaluationEnvironment, interpretationEnvironment);
       }
 
       if (expression instanceof EqualityExpression) {
@@ -559,7 +614,7 @@ public class Interpreter {
       logger.logDebug(DebugLogLevel.INTERPRETER, "Evaluating input of a unary expression");
       //#endif
 
-      Object input = evaluateExpression(((AUnaryExpression) expression).getInput(), environment);
+      Object input = evaluateExpressionSub(((AUnaryExpression) expression).getInput(), evaluationEnvironment, interpretationEnvironment);
 
       if (expression instanceof FlipSignExpression) {
         Object result;
@@ -588,21 +643,69 @@ public class Interpreter {
   }
 
   /**
-   * Tries to look up a variable within the provided environment based on an identifier
-   * @param environment Environment to look in
+   * Tries to look up a function within the provided environments based on an identifier
+   * @param evaluationEnvironment Evaluation environment to look in
+   * @param interpretationEnvironment Interpretation environment to look in
+   * @param identifier Identifier to look up
+   * @return Function value
+   */
+  private @Nullable AExpressionFunction lookupFunction(
+    IEvaluationEnvironment evaluationEnvironment,
+    InterpretationEnvironment interpretationEnvironment,
+    IdentifierExpression identifier
+  ) {
+    String symbol = identifier.getSymbol().toLowerCase(Locale.ROOT);
+
+    //#if mvn.project.property.production != "true"
+    logger.logDebug(DebugLogLevel.INTERPRETER, "Looking up function " + symbol);
+    //#endif
+
+    AExpressionFunction stdFunction = standardFunctionRegistry.lookup(symbol);
+    if (stdFunction != null) {
+      //#if mvn.project.property.production != "true"
+      logger.logDebug(DebugLogLevel.INTERPRETER, "Resolved standard function");
+      //#endif
+      return stdFunction;
+    }
+
+    if (evaluationEnvironment.getFunctions().containsKey(symbol)) {
+      //#if mvn.project.property.production != "true"
+      logger.logDebug(DebugLogLevel.INTERPRETER, "Resolved environment function");
+      //#endif
+      return evaluationEnvironment.getFunctions().get(symbol);
+    }
+
+    if (interpretationEnvironment.getFunctions().containsKey(symbol)) {
+      //#if mvn.project.property.production != "true"
+      logger.logDebug(DebugLogLevel.INTERPRETER, "Resolved interpretation function");
+      //#endif
+      return interpretationEnvironment.getFunctions().get(symbol);
+    }
+
+    return null;
+  }
+
+  /**
+   * Tries to look up a variable within the provided environments based on an identifier
+   * @param evaluationEnvironment Evaluation environment to look in
+   * @param interpretationEnvironment Interpretation environment to look in
    * @param identifier Identifier to look up
    * @return Variable value
-   * @throws UndefinedVariableError A variable with that identifier does not exist within the environment
+   * @throws UndefinedVariableError A variable with that identifier does not exist within the environments
    */
-  private Object lookupVariable(IEvaluationEnvironment environment, IdentifierExpression identifier) throws UndefinedVariableError {
+  private Object lookupVariable(
+    IEvaluationEnvironment evaluationEnvironment,
+    InterpretationEnvironment interpretationEnvironment,
+    IdentifierExpression identifier
+  ) throws UndefinedVariableError {
     String symbol = identifier.getSymbol().toLowerCase(Locale.ROOT);
 
     //#if mvn.project.property.production != "true"
     logger.logDebug(DebugLogLevel.INTERPRETER, "Looking up variable " + symbol);
     //#endif
 
-    if (environment.getStaticVariables().containsKey(symbol)) {
-      Object value = environment.getStaticVariables().get(symbol);
+    if (evaluationEnvironment.getStaticVariables().containsKey(symbol)) {
+      Object value = evaluationEnvironment.getStaticVariables().get(symbol);
 
       //#if mvn.project.property.production != "true"
       logger.logDebug(DebugLogLevel.INTERPRETER, "Resolved static variable value: " + value);
@@ -611,12 +714,22 @@ public class Interpreter {
       return value;
     }
 
-    Supplier<Object> valueSupplier = environment.getLiveVariables().get(symbol);
+    Supplier<Object> valueSupplier = evaluationEnvironment.getLiveVariables().get(symbol);
     if (valueSupplier != null) {
       Object value = valueSupplier.get();
 
       //#if mvn.project.property.production != "true"
       logger.logDebug(DebugLogLevel.INTERPRETER, "Resolved dynamic variable value: " + value);
+      //#endif
+
+      return value;
+    }
+
+    if (interpretationEnvironment.getVariables().containsKey(symbol)) {
+      Object value = interpretationEnvironment.getVariables().get(symbol);
+
+      //#if mvn.project.property.production != "true"
+      logger.logDebug(DebugLogLevel.INTERPRETER, "Resolved interpretation environment variable value: " + value);
       //#endif
 
       return value;
