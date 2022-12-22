@@ -18,6 +18,7 @@ want to integrate into your next project.
   - [Function Implementation Example](#function-implementation-example)
   - [Full Use Example](#full-use-example)
 - [Syntax](#syntax)
+  - [Multiline Programs](#multiline-programs)
   - [Operator Precedence](#operator-precedence)
   - [Optional Access](#optional-access)
     - [Members](#members)
@@ -516,6 +517,24 @@ public class FullUseExample {
 
 The syntax of this language has been mostly inspired by *JavaScript* as well as *Python* and is easy to grow accustomed
 to once you've spent a few minutes to experiment with it.
+
+### Multiline Programs
+
+A program may only consist of a single expression if that's sufficient for the use-case at hand, but it may also involve
+multiple expressions which get processed top-down. For example: One expression can assign a variable which then can be
+accessed by another expression later on.
+
+The following program represents a really simple example:
+
+```
+add_prefix = (input) => "prefix: " & input
+add_prefix("Hello") & ", " & add_prefix("World")
+```
+
+Which results in: `prefix: Hello, prefix: World`
+
+This functionality can be useful to extract reused expressions for a single program. If you notice similar patterns across
+multiple programs, it would be advised to rather create a function in Java, which will then be accessible to all programs.
 
 ### Operator Precedence
 
