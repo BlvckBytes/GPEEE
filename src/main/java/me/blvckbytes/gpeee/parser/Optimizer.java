@@ -59,6 +59,18 @@ public class Optimizer {
 
   private AExpression optimizeASTSub(AExpression expression, @Nullable Consumer<AExpression> substituteParent) throws AEvaluatorError {
 
+    if (expression instanceof ProgramExpression) {
+      //#if mvn.project.property.production != "true"
+      logger.logDebug(DebugLogLevel.OPTIMIZER, "Encountered a program expression");
+      //#endif
+
+      // Optimize all lines individually
+      ProgramExpression program = (ProgramExpression) expression;
+      program.getLines().replaceAll(aExpression -> optimizeASTSub(aExpression, null));
+
+      return expression;
+    }
+
     if (expression instanceof ABinaryExpression) {
       //#if mvn.project.property.production != "true"
       logger.logDebug(DebugLogLevel.OPTIMIZER, "Encountered a binary expression");

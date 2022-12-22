@@ -96,8 +96,8 @@ public class MathOperatorTests {
         // Parenthesis not closed
         validator.validateThrows("3 / (2 + 3", UnexpectedTokenError.class);
 
-        // Extra token after a "completed" expression
-        validator.validateThrows("3 / (2 + 3) 5", UnexpectedTokenError.class);
+        // Extra token after a "completed" expression, should return the value of that expression
+        validator.validate("3 / (2 + 3) 5", 5);
       });
   }
 

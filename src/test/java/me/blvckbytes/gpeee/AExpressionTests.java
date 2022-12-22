@@ -44,77 +44,81 @@ public class AExpressionTests {
     }
 
     String expectedText =
-      "ConcatenationExpression {\n" +
-        "  lhs=StringExpression {\n" +
-        "    value=my prefix: \n" +
-        "  },\n" +
-        "  rhs=FunctionInvocationExpression {\n" +
-        "    name=IdentifierExpression {\n" +
-        "      symbol=iter_cat\n" +
-        "    },\n" +
-        "    arguments=[\n" +
-        "      Tuple(a=IndexExpression {\n" +
-        "        optional=false,\n" +
-        "        lhs=MemberAccessExpression {\n" +
-        "          optional=false,\n" +
-        "          lhs=IdentifierExpression {\n" +
-        "            symbol=my_object\n" +
-        "          },\n" +
-        "          rhs=IdentifierExpression {\n" +
-        "            symbol=map\n" +
-        "          }\n" +
+      "ProgramExpression {\n" +
+        "  lines=[\n" +
+        "    ConcatenationExpression {\n" +
+        "        lhs=StringExpression {\n" +
+        "          value=my prefix: \n" +
         "        },\n" +
-        "        rhs=StringExpression {\n" +
-        "          value=colormap\n" +
-        "        }\n" +
-        "      }, b=<null>)\n" +
-        "      Tuple(a=CallbackExpression {\n" +
-        "        signature=[\n" +
-        "          IdentifierExpression {\n" +
-        "              symbol=it\n" +
-        "            }\n" +
-        "          IdentifierExpression {\n" +
-        "              symbol=ind\n" +
-        "            }\n" +
-        "        ],\n" +
-        "        body=ConcatenationExpression {\n" +
-        "          lhs=ConcatenationExpression {\n" +
-        "            lhs=ConcatenationExpression {\n" +
-        "              lhs=ConcatenationExpression {\n" +
-        "                lhs=StringExpression {\n" +
-        "                  value=(\n" +
+        "        rhs=FunctionInvocationExpression {\n" +
+        "          name=IdentifierExpression {\n" +
+        "            symbol=iter_cat\n" +
+        "          },\n" +
+        "          arguments=[\n" +
+        "            Tuple(a=IndexExpression {\n" +
+        "              optional=false,\n" +
+        "              lhs=MemberAccessExpression {\n" +
+        "                optional=false,\n" +
+        "                lhs=IdentifierExpression {\n" +
+        "                  symbol=my_object\n" +
         "                },\n" +
         "                rhs=IdentifierExpression {\n" +
-        "                  symbol=ind\n" +
+        "                  symbol=map\n" +
         "                }\n" +
         "              },\n" +
         "              rhs=StringExpression {\n" +
-        "                value= -> \n" +
+        "                value=colormap\n" +
         "              }\n" +
-        "            },\n" +
-        "            rhs=FunctionInvocationExpression {\n" +
-        "              name=IdentifierExpression {\n" +
-        "                symbol=value\n" +
-        "              },\n" +
-        "              arguments=[\n" +
-        "                Tuple(a=IdentifierExpression {\n" +
-        "                  symbol=it\n" +
-        "                }, b=<null>)\n" +
+        "            }, b=<null>)\n" +
+        "            Tuple(a=CallbackExpression {\n" +
+        "              signature=[\n" +
+        "                IdentifierExpression {\n" +
+        "                    symbol=it\n" +
+        "                  }\n" +
+        "                IdentifierExpression {\n" +
+        "                    symbol=ind\n" +
+        "                  }\n" +
         "              ],\n" +
-        "              optional=false\n" +
-        "            }\n" +
-        "          },\n" +
-        "          rhs=StringExpression {\n" +
-        "            value=)\n" +
-        "          }\n" +
+        "              body=ConcatenationExpression {\n" +
+        "                lhs=ConcatenationExpression {\n" +
+        "                  lhs=ConcatenationExpression {\n" +
+        "                    lhs=ConcatenationExpression {\n" +
+        "                      lhs=StringExpression {\n" +
+        "                        value=(\n" +
+        "                      },\n" +
+        "                      rhs=IdentifierExpression {\n" +
+        "                        symbol=ind\n" +
+        "                      }\n" +
+        "                    },\n" +
+        "                    rhs=StringExpression {\n" +
+        "                      value= -> \n" +
+        "                    }\n" +
+        "                  },\n" +
+        "                  rhs=FunctionInvocationExpression {\n" +
+        "                    name=IdentifierExpression {\n" +
+        "                      symbol=value\n" +
+        "                    },\n" +
+        "                    arguments=[\n" +
+        "                      Tuple(a=IdentifierExpression {\n" +
+        "                        symbol=it\n" +
+        "                      }, b=<null>)\n" +
+        "                    ],\n" +
+        "                    optional=false\n" +
+        "                  }\n" +
+        "                },\n" +
+        "                rhs=StringExpression {\n" +
+        "                  value=)\n" +
+        "                }\n" +
+        "              }\n" +
+        "            }, b=<null>)\n" +
+        "            Tuple(a=StringExpression {\n" +
+        "              value=, \n" +
+        "            }, b=<null>)\n" +
+        "          ],\n" +
+        "          optional=false\n" +
         "        }\n" +
-        "      }, b=<null>)\n" +
-        "      Tuple(a=StringExpression {\n" +
-        "        value=, \n" +
-        "      }, b=<null>)\n" +
-        "    ],\n" +
-        "    optional=false\n" +
-        "  }\n" +
+        "      }\n" +
+        "  ]\n" +
         "}";
 
     assertMultilineStrings(resultText, expectedText);

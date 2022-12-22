@@ -76,6 +76,26 @@ public class Interpreter {
 
     IValueInterpreter valueInterpreter = evaluationEnvironment.getValueInterpreter();
 
+    //////////////////////// Entry Point ////////////////////////
+
+    if (expression instanceof ProgramExpression) {
+      ProgramExpression program = (ProgramExpression) expression;
+
+      Object lastValue = null;
+      for (int i = 0; i < program.getLines().size(); i++) {
+        AExpression line = program.getLines().get(i);
+
+        //#if mvn.project.property.production != "true"
+        logger.logDebug(DebugLogLevel.INTERPRETER, "Processing program line " + (i + 1));
+        //#endif
+
+        lastValue = evaluateExpressionSub(line, evaluationEnvironment, interpretationEnvironment);
+      }
+
+      // The return value of a program is the return value of it's last line
+      return lastValue;
+    }
+
     /////////////////////// Static Values ///////////////////////
 
     if (expression instanceof LongExpression) {

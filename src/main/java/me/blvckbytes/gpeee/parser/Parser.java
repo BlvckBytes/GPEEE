@@ -82,18 +82,22 @@ public class Parser {
    * Parses all available tokens into an abstract syntax tree (AST)
    * @return AST root ready for execution
    */
-  public AExpression parse(ITokenizer tokenizer) throws AEvaluatorError {
-    // Start to parse the lowest precedence expression and climb up
-    AExpression result = invokeLowestPrecedenceParser(tokenizer);
+  public ProgramExpression parse(ITokenizer tokenizer) throws AEvaluatorError {
+    List<AExpression> lines = new ArrayList<>();
 
-    // If there are still tokens left after parsing an expression, the expression
-    // wasn't closed in itself and has thus to be malformed, as this parser is only
-    // intended for mono-expression "programs"
-    Token tk = tokenizer.peekToken();
-    if (tk != null)
-      throw new UnexpectedTokenError(tokenizer, tk);
+    while (tokenizer.peekToken() != null) {
+      // Start to parse the lowest precedence expression and climb up
+      lines.add(invokeLowestPrecedenceParser(tokenizer));
+    }
 
-    return result;
+    // Completely empty expression, should've at least parsed one line
+    if (lines.size() == 0)
+      throw new UnexpectedTokenError(tokenizer, null, TokenType.valuesInTrialOrder);
+
+    return new ProgramExpression(
+      lines, lines.get(0).getHead(), lines.get(lines.size() - 1).getTail(),
+      tokenizer.getRawText()
+    );
   }
 
   //=========================================================================//
