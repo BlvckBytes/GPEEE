@@ -137,6 +137,54 @@ precedence number means that the value of that expression is evaluated first.
 | (...) & (...)                       | Concatenation                  | a & b                                            | 15         |
 | (...) ?? (...)                      | Null Coalescence               | a ?? b                                           | 16         |
 
+### Optional Access
+
+While all other operators should be pretty self-explanatory, some of their optional access versions
+might need a little description of themselves. They can be made use of whenever it's preferred to not
+throw errors on invalid access, but rather just return null.
+
+#### Members
+
+If a variable value is an object and thus contains fields, these fields can be accessed by the member access
+operator. As long as the requested field name exists, it's value will be substituted properly. Otherwise, an
+error will be thrown. The optional member access operator can be used and even chained together by just prepending
+a question-mark to the operator itself.
+
+```
+a?.b?.c?.d
+```
+
+#### Indexing
+
+If a variable value is either of type map and thus contains key-value pairs or of type list/array which contains
+numerically indexed values, all of these values can be accessed by their key. As long as the requested key exists,
+it's value will be substituted properly. Otherwise, an error will be thrown. The optional indexing can be used and
+even chained together by just prepending a question-mark to the opening bracket itself.
+
+```
+my_map?["key1"]?[0]?[1]
+```
+
+#### Function Calls
+
+If a function exists within the environment of an evaluation, it may be called an arbitrary number of times within the
+expression itself. To just receive a null-value whenever the target function isn't available, a question-mark can be
+prepended to the opening parenthesis of the call notation.
+
+```
+my_function?()
+```
+
+#### Null Coalescence
+
+While this operator is often used in combination with optional access operators, it also makes a lot of sense to be used
+on it's own. It checks whether the left-hand-side value is null. If it is, it returns it's right-hand-side value, otherwise
+the left-hand-side value will be just passed through without any modifications.
+
+```
+my_maybe_null ?? "Fallback value"
+```
+
 ### Primary Expressions
 
 A primary expression is an immediate value and the most simple type of expression possible. These types of primary expressions are
@@ -158,8 +206,8 @@ The following *EBNF* describes the grammar of this small expression language pre
 
 <!-- #include src/main/resources/grammar.ebnf -->
 
-<!-- #configure include SKIP_LEADING_COMMENTS true  -->
-<!-- #configure include SKIP_LEADING_EMPTY true  -->
-<!-- #configure include SKIP_LEADING_PACKAGE false  -->
-<!-- #configure include SKIP_LEADING_IMPORTS true  -->
-<!-- #configure include WRAP_IN_COLLAPSIBLE true  -->
+<!-- #configure include SKIP_LEADING_COMMENTS true -->
+<!-- #configure include SKIP_LEADING_EMPTY true -->
+<!-- #configure include SKIP_LEADING_PACKAGE false -->
+<!-- #configure include SKIP_LEADING_IMPORTS true -->
+<!-- #configure include WRAP_IN_COLLAPSIBLE true -->
