@@ -56,6 +56,7 @@ public class Parser {
     this.logger = logger;
 
     this.precedenceLadder = new FExpressionParser[] {
+      this::parseAssignmentExpression,
       this::parseNullCoalesceExpression,
       this::parseConcatenationExpression,
       this::parseDisjunctionExpression,
@@ -409,6 +410,56 @@ public class Parser {
       },
       tokenizer, PrecedenceMode.HIGHER, precedenceSelf,
       new TokenType[] { TokenType.GREATER_THAN, TokenType.GREATER_THAN_OR_EQUAL, TokenType.LESS_THAN, TokenType.LESS_THAN_OR_EQUAL }, null
+    );
+  }
+
+  private AExpression parseAssignmentExpression(ITokenizer tokenizer, int precedenceSelf) throws AEvaluatorError {
+    //#if mvn.project.property.production != "true"
+    logger.logDebug(DebugLogLevel.PARSER, "Trying to parse an assignment expression");
+    //#endif
+
+    Token tk = tokenizer.peekToken();
+
+    // There's no identifier as the next token
+    if (tk == null || tk.getType() != TokenType.IDENTIFIER) {
+      //#if mvn.project.property.production != "true"
+      logger.logDebug(DebugLogLevel.PARSER, "Not an assignment expression");
+      //#endif
+
+      return invokeNextPrecedenceParser(tokenizer, precedenceSelf);
+    }
+
+    // Save before consuming the identifier
+    tokenizer.saveState(true);
+
+    Token identifier = tk;
+    tokenizer.consumeToken();
+
+    tk = tokenizer.peekToken();
+
+    // The identifier needs to be followed by an assign token
+    if (tk == null || tk.getType() != TokenType.ASSIGN) {
+      //#if mvn.project.property.production != "true"
+      logger.logDebug(DebugLogLevel.PARSER, "Not an assignment expression");
+      //#endif
+
+      // Put the identifier back
+      tokenizer.restoreState(true);
+      return invokeNextPrecedenceParser(tokenizer, precedenceSelf);
+    }
+
+    // No need to restore anymore, is definitely an assignment expression
+    tokenizer.discardState(true);
+
+    // Consume the assign token
+    tokenizer.consumeToken();
+
+    // Parse the expression to be assigned to this identifier
+    AExpression value = invokeLowestPrecedenceParser(tokenizer);
+
+    return new AssignmentExpression(
+      new IdentifierExpression(identifier.getValue(), identifier, identifier, tokenizer.getRawText()),
+      value, identifier, value.getTail(), tokenizer.getRawText()
     );
   }
 

@@ -27,7 +27,7 @@ main guidelines in stone:
 
 * Very clean, maintainable and well documented codebase to make it accessible for everyone
 * Implement all generally known and loved operators but **don't** add anything fancy
-* Expressions will **not** keep any state (no variable declarations, etc)
+* Expressions will **not** keep any state between evaluations
 * Next to basic terminal values, operators and if-then-else, there will be **no** keywords
 * **All** remaining control flow and complex logic will be outsourced to Java and hidden behind functions
 
@@ -136,6 +136,7 @@ precedence number means that the value of that expression is evaluated first.
 | (...) or (...)                      | Boolean Disjunction            | a or b                                           | 14         |
 | (...) & (...)                       | Concatenation                  | a & b                                            | 15         |
 | (...) ?? (...)                      | Null Coalescence               | a ?? b                                           | 16         |
+| my_variable = (...)                 | Simple Assignment              | a = 5                                            | 17         |
 
 ### Optional Access
 
