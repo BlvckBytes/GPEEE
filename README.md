@@ -13,6 +13,7 @@ want to integrate into your next project.
 ## Table of Contents
 - [Mission Statement](#mission-statement)
 - [Getting Started](#getting-started)
+  - [Installation](#installation)
   - [Evaluator Instance](#evaluator-instance)
   - [Creating An Environment](#creating-an-environment)
   - [Function Implementation Example](#function-implementation-example)
@@ -52,6 +53,25 @@ feature please". The restrictions may seem harsh, but you're still able to get u
 all customizations by defining your own *evaluation environment* exactly to your needs in no time.
 
 ## Getting Started
+
+### Installation
+
+For now, this resource won't be hosted anywhere. Please clone the last successfully built commit,
+navigate into it and run `mvn install` to install it into your local maven repository.
+
+Then, add the project as a dependency to your new project:
+
+```xml
+<dependency>
+  <groupId>me.blvckbytes</groupId>
+  <artifactId>GPEEE</artifactId>
+
+  <!-- Use whatever the pom.xml of GPEEE currently specifies -->
+  <version>0.1-SNAPSHOT</version>
+</dependency>
+```
+
+As soon as this software has proven itself useful, releases and hosted dependencies will be set up.
 
 ### Evaluator Instance
 
@@ -422,6 +442,9 @@ public class IterCatFunction extends AStandardFunction {
 ```
 </details>
 
+
+While this implementation is a standard function, the exact same way of implementing functions applies to custom functions, 
+minus the registration- as well as the result return boolean parts.
 
 ### Full Use Example
 

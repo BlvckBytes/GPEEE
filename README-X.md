@@ -37,6 +37,25 @@ all customizations by defining your own *evaluation environment* exactly to your
 
 ## Getting Started
 
+### Installation
+
+For now, this resource won't be hosted anywhere. Please clone the last successfully built commit,
+navigate into it and run `mvn install` to install it into your local maven repository.
+
+Then, add the project as a dependency to your new project:
+
+```xml
+<dependency>
+  <groupId>me.blvckbytes</groupId>
+  <artifactId>GPEEE</artifactId>
+
+  <!-- Use whatever the pom.xml of GPEEE currently specifies -->
+  <version>0.1-SNAPSHOT</version>
+</dependency>
+```
+
+As soon as this software has proven itself useful, releases and hosted dependencies will be set up.
+
 ### Evaluator Instance
 
 The working principle of this evaluator is as simple as it gets: You provide an *evaluation environment*
@@ -91,6 +110,9 @@ to get a feel for how functions are intended to be used and created. As an examp
 `iter_cat` has been provided for you.
 
 <!-- #include src/main/java/me/blvckbytes/gpeee/functions/std/IterCatFunction.java -->
+
+While this implementation is a standard function, the exact same way of implementing functions applies to custom functions, 
+minus the registration- as well as the result return boolean parts.
 
 ### Full Use Example
 
