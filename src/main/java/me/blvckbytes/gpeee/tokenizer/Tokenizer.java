@@ -138,8 +138,6 @@ public class Tokenizer implements ITokenizer {
 
   @Override
   public @Nullable Token peekToken() throws AEvaluatorError {
-    eatComments();
-
     if (state.currentToken == null)
       readNextToken();
 
@@ -153,7 +151,6 @@ public class Tokenizer implements ITokenizer {
   @Override
   public @Nullable Token consumeToken() throws AEvaluatorError {
     state.previousToken = state.currentToken;
-    eatComments();
 
     if (state.currentToken == null)
       readNextToken();
@@ -187,19 +184,6 @@ public class Tokenizer implements ITokenizer {
   //                                Utilities                                //
   //=========================================================================//
 
-  private void eatComments() {
-    int c = 0;
-    while (state.currentToken != null && state.currentToken.getType() == TokenType.COMMENT) {
-      readNextToken();
-      ++c;
-    }
-
-    //#if mvn.project.property.production != "true"
-    if (c > 0)
-      logger.logDebug(DebugLogLevel.TOKENIZER, "Ate " + c + " comment(s)");
-    //#endif
-  }
-
   private void eatWhitespace() {
     int ate = 0;
 
@@ -220,21 +204,37 @@ public class Tokenizer implements ITokenizer {
   private void readNextToken() throws AEvaluatorError {
     eatWhitespace();
 
+    // EOF reached
     if (!hasNextChar()) {
       state.currentToken = null;
       return;
     }
 
+    // Save state before letting TokenType COMMENT operate
+    saveState(false);
+
+    // Try to eat a following comment
+    String comment;
+    if ((comment = TokenType.COMMENT.getTokenReader().apply(this)) != null) {
+      //#if mvn.project.property.production != "true"
+      logger.logDebug(DebugLogLevel.TOKENIZER, "Ate comment: " + comment);
+      //#endif
+
+      // No longer needing to revert
+      discardState(false);
+
+      // Successfully ate the comment, try to eat more whitespace/comments
+      // before actually reading any other tokens
+      readNextToken();
+      return;
+    }
+
+    // Comment reader wasn't successful, restore state again
+    else
+      restoreState(false);
+
     for (TokenType tryType : TokenType.valuesInTrialOrder) {
       FTokenReader reader = tryType.getTokenReader();
-
-      // Token not yet implemented
-      if (reader == null) {
-        //#if mvn.project.property.production != "true"
-        logger.logDebug(DebugLogLevel.TOKENIZER, "Token not yet implemented");
-        //#endif
-        continue;
-      }
 
       saveState(false);
 

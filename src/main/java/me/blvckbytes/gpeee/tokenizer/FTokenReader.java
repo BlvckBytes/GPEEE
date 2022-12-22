@@ -30,5 +30,5 @@ import org.jetbrains.annotations.Nullable;
 @FunctionalInterface
 public interface FTokenReader {
 
-  @Nullable String apply(ITokenizer tokenizer) throws AEvaluatorError;
+  String apply(ITokenizer tokenizer) throws AEvaluatorError;
 }

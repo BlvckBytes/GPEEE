@@ -34,7 +34,6 @@ import java.util.Comparator;
 import java.util.function.Function;
 
 @Getter
-@AllArgsConstructor
 public enum TokenType {
 
   //=========================================================================//
@@ -227,7 +226,7 @@ public enum TokenType {
 
   private final TokenCategory category;
   private final String representation;
-  private final @Nullable FTokenReader tokenReader;
+  private final FTokenReader tokenReader;
 
   public static final TokenType[] valuesInTrialOrder;
   public static final TokenType[] nonValueTypes;
@@ -246,6 +245,20 @@ public enum TokenType {
     valueTypes = Arrays.stream(values())
       .filter(type -> type.getCategory() == TokenCategory.VALUE)
       .toArray(TokenType[]::new);
+  }
+
+  TokenType(TokenCategory category, String representation, FTokenReader tokenReader) {
+    this.category = category;
+    this.representation = representation;
+
+    // Extract out initially checking for EOF for all readers
+    this.tokenReader = tokenizer -> {
+
+      if (!tokenizer.hasNextChar())
+        return null;
+
+      return tokenReader.apply(tokenizer);
+    };
   }
 
   private static CollectorResult collectDigits(ITokenizer tokenizer, StringBuilder result, boolean stopBeforeDot) {
@@ -280,7 +293,7 @@ public enum TokenType {
       }
     }
 
-    return CollectorResult.READ_OKAY;
+    return result.length() > 0 ? CollectorResult.READ_OKAY : CollectorResult.CHAR_MISMATCH;
   }
 
   private static @Nullable String tryCollectSequenceWithNextCheck(ITokenizer tokenizer, @Nullable Function<Character, Boolean> notNextCheck, char... sequence) {
