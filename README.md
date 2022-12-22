@@ -682,6 +682,7 @@ ParenthesesExpression ::= ("(" Expression ")") | PrimaryExpression
 PrimaryExpression ::= Long | Double | String | Identifier | Literal
 
 Expression ::= NullCoalesceExpression
+ProgramExpression ::= Expression+
 ```
 </details>
 
