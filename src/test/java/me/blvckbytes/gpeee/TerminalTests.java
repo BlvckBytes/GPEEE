@@ -39,7 +39,7 @@ public class TerminalTests {
       validator.validate("3", 3);
       validator.validate(".3", .3);
       validator.validate("-3", -3);
-      validator.validateThrows("-3a", UnknownTokenError.class);
+      validator.validateThrows("-3a", UndefinedVariableError.class);
 
       // Double
       validator.validate("3.3", 3.3);

@@ -24,7 +24,6 @@
 
 package me.blvckbytes.gpeee.tokenizer;
 
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 import me.blvckbytes.gpeee.error.UnterminatedStringError;
 import org.jetbrains.annotations.Nullable;
@@ -229,7 +228,7 @@ public enum TokenType {
   private final FTokenReader tokenReader;
 
   public static final TokenType[] valuesInTrialOrder;
-  public static final TokenType[] nonValueTypes;
+  public static final TokenType[] nonNumericTypes;
   public static final TokenType[] valueTypes;
 
   static {
@@ -238,8 +237,8 @@ public enum TokenType {
       .sorted(Comparator.comparingInt(tt -> tt.getCategory().ordinal()))
       .toArray(TokenType[]::new);
 
-    nonValueTypes = Arrays.stream(values())
-      .filter(type -> type.getCategory() != TokenCategory.VALUE)
+    nonNumericTypes = Arrays.stream(values())
+      .filter(type -> type != LONG && type != DOUBLE)
       .toArray(TokenType[]::new);
 
     valueTypes = Arrays.stream(values())
@@ -286,7 +285,7 @@ public enum TokenType {
       else {
         tokenizer.undoNextChar();
 
-        if (result.length() - initialLength > 0 && wouldFollow(tokenizer, nonValueTypes))
+        if (result.length() - initialLength > 0 && wouldFollow(tokenizer, nonNumericTypes))
           return CollectorResult.READ_OKAY;
 
         return CollectorResult.CHAR_MISMATCH;

@@ -1,0 +1,59 @@
+/*
+ * MIT License
+ *
+ * Copyright (c) 2022 BlvckBytes
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
+
+package me.blvckbytes.gpeee;
+
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+public class ProgramTests {
+
+  @Test
+  public void shouldReturnValueOfTheLastExpression() {
+    new EnvironmentBuilder()
+      .launch(validator -> {
+        validator.validate("5 + 3\n\"Hello\"\n2 + 8", 2 + 8);
+
+        // Newlines should not matter
+        validator.validate("5 + 3\"Hello\"2 + 8", 2 + 8);
+      });
+  }
+
+  @Test
+  public void shouldSubstituteAssignedVariables() {
+    new EnvironmentBuilder()
+      .launch(validator -> {
+        validator.validate("a = \"Hello, World\" b = 5 a & \" \" & b", "Hello, World 5");
+      });
+  }
+
+  @Test
+  public void shouldCallAssignedFunctions() {
+    new EnvironmentBuilder()
+      .launch(validator -> {
+        validator.validate("a = (input) => input & \"Suffix\" a(5)", "5Suffix");
+      });
+  }
+}
