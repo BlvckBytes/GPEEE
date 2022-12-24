@@ -29,7 +29,7 @@ import org.jetbrains.annotations.Nullable;
 public class NullLogger implements ILogger {
 
   @Override
-  public void logDebug(DebugLogLevel level, String message) {}
+  public void logDebug(ILogSourceType source, String message) {}
 
   @Override
   public void logError(String message, @Nullable Exception error) {}

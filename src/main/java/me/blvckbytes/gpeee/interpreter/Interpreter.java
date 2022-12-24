@@ -27,7 +27,7 @@ package me.blvckbytes.gpeee.interpreter;
 import me.blvckbytes.gpeee.Tuple;
 import me.blvckbytes.gpeee.error.*;
 import me.blvckbytes.gpeee.functions.ExpressionFunctionArgument;
-import me.blvckbytes.gpeee.logging.DebugLogLevel;
+import me.blvckbytes.gpeee.logging.DebugLogSource;
 import me.blvckbytes.gpeee.logging.ILogger;
 import me.blvckbytes.gpeee.functions.AExpressionFunction;
 import me.blvckbytes.gpeee.functions.IStandardFunctionRegistry;
@@ -71,7 +71,7 @@ public class Interpreter {
       return null;
 
     //#if mvn.project.property.production != "true"
-    logger.logDebug(DebugLogLevel.INTERPRETER, "Evaluating " + expression.getClass().getSimpleName() + ": " + expression.expressionify());
+    logger.logDebug(DebugLogSource.INTERPRETER, "Evaluating " + expression.getClass().getSimpleName() + ": " + expression.expressionify());
     //#endif
 
     IValueInterpreter valueInterpreter = evaluationEnvironment.getValueInterpreter();
@@ -86,7 +86,7 @@ public class Interpreter {
         AExpression line = program.getLines().get(i);
 
         //#if mvn.project.property.production != "true"
-        logger.logDebug(DebugLogLevel.INTERPRETER, "Processing program line " + (i + 1));
+        logger.logDebug(DebugLogSource.INTERPRETER, "Processing program line " + (i + 1));
         //#endif
 
         lastValue = evaluateExpressionSub(line, evaluationEnvironment, interpretationEnvironment);
@@ -100,28 +100,28 @@ public class Interpreter {
 
     if (expression instanceof LongExpression) {
       //#if mvn.project.property.production != "true"
-      logger.logDebug(DebugLogLevel.INTERPRETER, "Taking the immediate long value");
+      logger.logDebug(DebugLogSource.INTERPRETER, "Taking the immediate long value");
       //#endif
       return ((LongExpression) expression).getNumber();
     }
 
     if (expression instanceof DoubleExpression) {
       //#if mvn.project.property.production != "true"
-      logger.logDebug(DebugLogLevel.INTERPRETER, "Taking the immediate double value");
+      logger.logDebug(DebugLogSource.INTERPRETER, "Taking the immediate double value");
       //#endif
       return ((DoubleExpression) expression).getValue();
     }
 
     if (expression instanceof LiteralExpression) {
       //#if mvn.project.property.production != "true"
-      logger.logDebug(DebugLogLevel.INTERPRETER, "Taking the immediate literal value");
+      logger.logDebug(DebugLogSource.INTERPRETER, "Taking the immediate literal value");
       //#endif
       return ((LiteralExpression) expression).getValue();
     }
 
     if (expression instanceof StringExpression) {
       //#if mvn.project.property.production != "true"
-      logger.logDebug(DebugLogLevel.INTERPRETER, "Taking the immediate string value");
+      logger.logDebug(DebugLogSource.INTERPRETER, "Taking the immediate string value");
       //#endif
       return ((StringExpression) expression).getValue();
     }
@@ -143,7 +143,7 @@ public class Interpreter {
         // Was an optional call, respond with null
         if (functionExpression.isOptional()) {
           //#if mvn.project.property.production != "true"
-          logger.logDebug(DebugLogLevel.INTERPRETER, "Function " + functionExpression.getName().getSymbol() + " not found, returning null (optional call)");
+          logger.logDebug(DebugLogSource.INTERPRETER, "Function " + functionExpression.getName().getSymbol() + " not found, returning null (optional call)");
           //#endif
           return null;
         }
@@ -152,7 +152,7 @@ public class Interpreter {
       }
 
       //#if mvn.project.property.production != "true"
-      logger.logDebug(DebugLogLevel.INTERPRETER, "Evaluating arguments of function invocation " + functionExpression.getName().getSymbol());
+      logger.logDebug(DebugLogSource.INTERPRETER, "Evaluating arguments of function invocation " + functionExpression.getName().getSymbol());
       //#endif
 
       @Nullable List<ExpressionFunctionArgument> argDefinitions = function.getArguments();
@@ -172,7 +172,7 @@ public class Interpreter {
       // Evaluate and collect all arguments
       for (Tuple<AExpression, @Nullable IdentifierExpression> argument : functionExpression.getArguments()) {
         //#if mvn.project.property.production != "true"
-        logger.logDebug(DebugLogLevel.INTERPRETER, "Evaluating argument " + (++debugArgCounter));
+        logger.logDebug(DebugLogSource.INTERPRETER, "Evaluating argument " + (++debugArgCounter));
         //#endif
 
         Object argumentValue = evaluateExpressionSub(argument.getA(), evaluationEnvironment, interpretationEnvironment);
@@ -193,7 +193,7 @@ public class Interpreter {
 
             // Found a name match, set the value at that same index
             //#if mvn.project.property.production != "true"
-            logger.logDebug(DebugLogLevel.INTERPRETER, "Matched named argument " + argName + " to index " + i);
+            logger.logDebug(DebugLogSource.INTERPRETER, "Matched named argument " + argName + " to index " + i);
             //#endif
             arguments.set(i, argumentValue);
             foundMatch = true;
@@ -242,7 +242,7 @@ public class Interpreter {
       }
 
       //#if mvn.project.property.production != "true"
-      logger.logDebug(DebugLogLevel.INTERPRETER, "Invoked function, result: " + result);
+      logger.logDebug(DebugLogSource.INTERPRETER, "Invoked function, result: " + result);
       //#endif
       return result;
     }
@@ -251,7 +251,7 @@ public class Interpreter {
       CallbackExpression callbackExpression = (CallbackExpression) expression;
 
       //#if mvn.project.property.production != "true"
-      logger.logDebug(DebugLogLevel.INTERPRETER, "Setting up the java endpoint for a callback expression");
+      logger.logDebug(DebugLogSource.INTERPRETER, "Setting up the java endpoint for a callback expression");
       //#endif
 
       // This lambda function will be called by java every time the callback is invoked
@@ -268,13 +268,13 @@ public class Interpreter {
             Object variableValue = i < args.size() ? args.get(i) : null;
 
             //#if mvn.project.property.production != "true"
-            logger.logDebug(DebugLogLevel.INTERPRETER, "Adding " + variableIdentifier + "=" + variableValue + " to a callback's environment");
+            logger.logDebug(DebugLogSource.INTERPRETER, "Adding " + variableIdentifier + "=" + variableValue + " to a callback's environment");
             //#endif
             combinedVariables.put(variableIdentifier, variableValue);
           }
 
           //#if mvn.project.property.production != "true"
-          logger.logDebug(DebugLogLevel.INTERPRETER, "Evaluating a callback's body");
+          logger.logDebug(DebugLogSource.INTERPRETER, "Evaluating a callback's body");
           //#endif
 
           // Callback expressions are evaluated within their own environment, which extends the current environment
@@ -303,7 +303,7 @@ public class Interpreter {
           }, interpretationEnvironment);
 
           //#if mvn.project.property.production != "true"
-          logger.logDebug(DebugLogLevel.INTERPRETER, "Callback result=" + result);
+          logger.logDebug(DebugLogSource.INTERPRETER, "Callback result=" + result);
           //#endif
           return result;
         }
@@ -386,7 +386,7 @@ public class Interpreter {
 
     if (expression instanceof ABinaryExpression) {
       //#if mvn.project.property.production != "true"
-      logger.logDebug(DebugLogLevel.INTERPRETER, "Evaluating LHS and RHS of a binary expression");
+      logger.logDebug(DebugLogSource.INTERPRETER, "Evaluating LHS and RHS of a binary expression");
       //#endif
 
       Object rhs = evaluateExpressionSub(((ABinaryExpression) expression).getRhs(), evaluationEnvironment, interpretationEnvironment);
@@ -408,7 +408,7 @@ public class Interpreter {
           }
 
           //#if mvn.project.property.production != "true"
-          logger.logDebug(DebugLogLevel.INTERPRETER, "Storing variable " + identifier + " within the interpretation environment");
+          logger.logDebug(DebugLogSource.INTERPRETER, "Storing variable " + identifier + " within the interpretation environment");
           //#endif
 
           interpretationEnvironment.getVariables().put(identifier, rhs);
@@ -425,7 +425,7 @@ public class Interpreter {
           }
 
           //#if mvn.project.property.production != "true"
-          logger.logDebug(DebugLogLevel.INTERPRETER, "Storing function " + identifier + " within the interpretation environment");
+          logger.logDebug(DebugLogSource.INTERPRETER, "Storing function " + identifier + " within the interpretation environment");
           //#endif
 
           interpretationEnvironment.getFunctions().put(identifier, (AExpressionFunction) rhs);
@@ -443,7 +443,7 @@ public class Interpreter {
 
         result = valueInterpreter.performMath(lhs, rhs, operation);
         //#if mvn.project.property.production != "true"
-        logger.logDebug(DebugLogLevel.INTERPRETER, "Math Operation operation " + operation + " result: " + result);
+        logger.logDebug(DebugLogSource.INTERPRETER, "Math Operation operation " + operation + " result: " + result);
         //#endif
         return result;
       }
@@ -487,7 +487,7 @@ public class Interpreter {
         }
 
         //#if mvn.project.property.production != "true"
-        logger.logDebug(DebugLogLevel.INTERPRETER, "Equality Operation operation " + operation + " result: " + result);
+        logger.logDebug(DebugLogSource.INTERPRETER, "Equality Operation operation " + operation + " result: " + result);
         //#endif
         return result;
       }
@@ -520,7 +520,7 @@ public class Interpreter {
         }
 
         //#if mvn.project.property.production != "true"
-        logger.logDebug(DebugLogLevel.INTERPRETER, "Comparison Operation operation " + operation + " result: " + result);
+        logger.logDebug(DebugLogSource.INTERPRETER, "Comparison Operation operation " + operation + " result: " + result);
         //#endif
         return result;
       }
@@ -528,7 +528,7 @@ public class Interpreter {
       if (expression instanceof ConjunctionExpression) {
         boolean result = valueInterpreter.asBoolean(lhs) && valueInterpreter.asBoolean(rhs);
         //#if mvn.project.property.production != "true"
-        logger.logDebug(DebugLogLevel.INTERPRETER, "Conjunction Operation result: " + result);
+        logger.logDebug(DebugLogSource.INTERPRETER, "Conjunction Operation result: " + result);
         //#endif
         return result;
       }
@@ -536,7 +536,7 @@ public class Interpreter {
       if (expression instanceof DisjunctionExpression) {
         boolean result = valueInterpreter.asBoolean(lhs) || valueInterpreter.asBoolean(rhs);
         //#if mvn.project.property.production != "true"
-        logger.logDebug(DebugLogLevel.INTERPRETER, "Disjunction Operation result: " + result);
+        logger.logDebug(DebugLogSource.INTERPRETER, "Disjunction Operation result: " + result);
         //#endif
         return result;
       }
@@ -544,7 +544,7 @@ public class Interpreter {
       if (expression instanceof ConcatenationExpression) {
         String result = valueInterpreter.asString(lhs) + valueInterpreter.asString(rhs);
         //#if mvn.project.property.production != "true"
-        logger.logDebug(DebugLogLevel.INTERPRETER, "Concatenation Operation result: " + result);
+        logger.logDebug(DebugLogSource.INTERPRETER, "Concatenation Operation result: " + result);
         //#endif
         return result;
       }
@@ -570,7 +570,7 @@ public class Interpreter {
           Object result = list.get(key);
 
           //#if mvn.project.property.production != "true"
-          logger.logDebug(DebugLogLevel.INTERPRETER, "Indexing a list at " + key + ": " + result);
+          logger.logDebug(DebugLogSource.INTERPRETER, "Indexing a list at " + key + ": " + result);
           //#endif
 
           return result;
@@ -593,7 +593,7 @@ public class Interpreter {
           Object result = Array.get(lhs, key);
 
           //#if mvn.project.property.production != "true"
-          logger.logDebug(DebugLogLevel.INTERPRETER, "Indexing an array at " + key + ": " + result);
+          logger.logDebug(DebugLogSource.INTERPRETER, "Indexing an array at " + key + ": " + result);
           //#endif
 
           return result;
@@ -616,7 +616,7 @@ public class Interpreter {
           Object result = map.get(key);
 
           //#if mvn.project.property.production != "true"
-          logger.logDebug(DebugLogLevel.INTERPRETER, "Indexing a map at " + key + ": " + result);
+          logger.logDebug(DebugLogSource.INTERPRETER, "Indexing a map at " + key + ": " + result);
           //#endif
 
           return result;
@@ -631,7 +631,7 @@ public class Interpreter {
 
     if (expression instanceof AUnaryExpression) {
       //#if mvn.project.property.production != "true"
-      logger.logDebug(DebugLogLevel.INTERPRETER, "Evaluating input of a unary expression");
+      logger.logDebug(DebugLogSource.INTERPRETER, "Evaluating input of a unary expression");
       //#endif
 
       Object input = evaluateExpressionSub(((AUnaryExpression) expression).getInput(), evaluationEnvironment, interpretationEnvironment);
@@ -645,7 +645,7 @@ public class Interpreter {
           result = -1 * valueInterpreter.asLong(input);
 
         //#if mvn.project.property.production != "true"
-        logger.logDebug(DebugLogLevel.INTERPRETER, "Flip Sign Operation result: " + result);
+        logger.logDebug(DebugLogSource.INTERPRETER, "Flip Sign Operation result: " + result);
         //#endif
         return result;
       }
@@ -653,7 +653,7 @@ public class Interpreter {
       if (expression instanceof InvertExpression) {
         boolean result = !valueInterpreter.asBoolean(input);
         //#if mvn.project.property.production != "true"
-        logger.logDebug(DebugLogLevel.INTERPRETER, "Invert Operation result: " + result);
+        logger.logDebug(DebugLogSource.INTERPRETER, "Invert Operation result: " + result);
         //#endif
         return result;
       }
@@ -677,27 +677,27 @@ public class Interpreter {
     String symbol = identifier.getSymbol().toLowerCase(Locale.ROOT);
 
     //#if mvn.project.property.production != "true"
-    logger.logDebug(DebugLogLevel.INTERPRETER, "Looking up function " + symbol);
+    logger.logDebug(DebugLogSource.INTERPRETER, "Looking up function " + symbol);
     //#endif
 
     AExpressionFunction stdFunction = standardFunctionRegistry.lookup(symbol);
     if (stdFunction != null) {
       //#if mvn.project.property.production != "true"
-      logger.logDebug(DebugLogLevel.INTERPRETER, "Resolved standard function");
+      logger.logDebug(DebugLogSource.INTERPRETER, "Resolved standard function");
       //#endif
       return stdFunction;
     }
 
     if (evaluationEnvironment.getFunctions().containsKey(symbol)) {
       //#if mvn.project.property.production != "true"
-      logger.logDebug(DebugLogLevel.INTERPRETER, "Resolved environment function");
+      logger.logDebug(DebugLogSource.INTERPRETER, "Resolved environment function");
       //#endif
       return evaluationEnvironment.getFunctions().get(symbol);
     }
 
     if (interpretationEnvironment.getFunctions().containsKey(symbol)) {
       //#if mvn.project.property.production != "true"
-      logger.logDebug(DebugLogLevel.INTERPRETER, "Resolved interpretation function");
+      logger.logDebug(DebugLogSource.INTERPRETER, "Resolved interpretation function");
       //#endif
       return interpretationEnvironment.getFunctions().get(symbol);
     }
@@ -721,14 +721,14 @@ public class Interpreter {
     String symbol = identifier.getSymbol().toLowerCase(Locale.ROOT);
 
     //#if mvn.project.property.production != "true"
-    logger.logDebug(DebugLogLevel.INTERPRETER, "Looking up variable " + symbol);
+    logger.logDebug(DebugLogSource.INTERPRETER, "Looking up variable " + symbol);
     //#endif
 
     if (evaluationEnvironment.getStaticVariables().containsKey(symbol)) {
       Object value = evaluationEnvironment.getStaticVariables().get(symbol);
 
       //#if mvn.project.property.production != "true"
-      logger.logDebug(DebugLogLevel.INTERPRETER, "Resolved static variable value: " + value);
+      logger.logDebug(DebugLogSource.INTERPRETER, "Resolved static variable value: " + value);
       //#endif
 
       return value;
@@ -739,7 +739,7 @@ public class Interpreter {
       Object value = valueSupplier.get();
 
       //#if mvn.project.property.production != "true"
-      logger.logDebug(DebugLogLevel.INTERPRETER, "Resolved dynamic variable value: " + value);
+      logger.logDebug(DebugLogSource.INTERPRETER, "Resolved dynamic variable value: " + value);
       //#endif
 
       return value;
@@ -749,7 +749,7 @@ public class Interpreter {
       Object value = interpretationEnvironment.getVariables().get(symbol);
 
       //#if mvn.project.property.production != "true"
-      logger.logDebug(DebugLogLevel.INTERPRETER, "Resolved interpretation environment variable value: " + value);
+      logger.logDebug(DebugLogSource.INTERPRETER, "Resolved interpretation environment variable value: " + value);
       //#endif
 
       return value;

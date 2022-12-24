@@ -24,7 +24,7 @@
 
 package me.blvckbytes.gpeee.logging;
 
-public enum DebugLogLevel {
+public enum DebugLogSource implements ILogSourceType {
   TOKENIZER,
   PARSER,
   INTERPRETER,

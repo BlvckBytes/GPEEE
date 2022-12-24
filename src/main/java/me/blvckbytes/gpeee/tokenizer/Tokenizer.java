@@ -24,7 +24,7 @@
 
 package me.blvckbytes.gpeee.tokenizer;
 
-import me.blvckbytes.gpeee.logging.DebugLogLevel;
+import me.blvckbytes.gpeee.logging.DebugLogSource;
 import me.blvckbytes.gpeee.logging.ILogger;
 import me.blvckbytes.gpeee.error.AEvaluatorError;
 import me.blvckbytes.gpeee.error.UnknownTokenError;
@@ -73,7 +73,7 @@ public class Tokenizer implements ITokenizer {
 
     //#if mvn.project.property.production != "true"
     if (debugLog)
-      logger.logDebug(DebugLogLevel.TOKENIZER, "Saved state " + this.saveStates.size() + " (charIndex=" + state.charIndex + ")");
+      logger.logDebug(DebugLogSource.TOKENIZER, "Saved state " + this.saveStates.size() + " (charIndex=" + state.charIndex + ")");
     //#endif
   }
 
@@ -84,7 +84,7 @@ public class Tokenizer implements ITokenizer {
 
     //#if mvn.project.property.production != "true"
     if (debugLog)
-      logger.logDebug(DebugLogLevel.TOKENIZER, "Restored state " + sizeBefore + " (charIndex=" + state.charIndex + ")");
+      logger.logDebug(DebugLogSource.TOKENIZER, "Restored state " + sizeBefore + " (charIndex=" + state.charIndex + ")");
     //#endif
   }
 
@@ -95,7 +95,7 @@ public class Tokenizer implements ITokenizer {
 
     //#if mvn.project.property.production != "true"
     if (debugLog)
-      logger.logDebug(DebugLogLevel.TOKENIZER, "Discarded state " + sizeBefore + " (charIndex=" + state.charIndex + ")");
+      logger.logDebug(DebugLogSource.TOKENIZER, "Discarded state " + sizeBefore + " (charIndex=" + state.charIndex + ")");
     //#endif
 
     return state;
@@ -142,7 +142,7 @@ public class Tokenizer implements ITokenizer {
       readNextToken();
 
     //#if mvn.project.property.production != "true"
-    logger.logDebug(DebugLogLevel.TOKENIZER, "Peeked token " + state.currentToken);
+    logger.logDebug(DebugLogSource.TOKENIZER, "Peeked token " + state.currentToken);
     //#endif
 
     return state.currentToken;
@@ -159,7 +159,7 @@ public class Tokenizer implements ITokenizer {
     readNextToken();
 
     //#if mvn.project.property.production != "true"
-    logger.logDebug(DebugLogLevel.TOKENIZER, "Consumed token " + result);
+    logger.logDebug(DebugLogSource.TOKENIZER, "Consumed token " + result);
     //#endif
 
     return result;
@@ -194,7 +194,7 @@ public class Tokenizer implements ITokenizer {
 
     //#if mvn.project.property.production != "true"
     if (ate > 0)
-      logger.logDebug(DebugLogLevel.TOKENIZER, "Ate " + ate + " character(s) of whitespace");
+      logger.logDebug(DebugLogSource.TOKENIZER, "Ate " + ate + " character(s) of whitespace");
     //#endif
   }
 
@@ -217,7 +217,7 @@ public class Tokenizer implements ITokenizer {
     String comment;
     if ((comment = TokenType.COMMENT.getTokenReader().apply(this)) != null) {
       //#if mvn.project.property.production != "true"
-      logger.logDebug(DebugLogLevel.TOKENIZER, "Ate comment: " + comment);
+      logger.logDebug(DebugLogSource.TOKENIZER, "Ate comment: " + comment);
       //#endif
 
       // No longer needing to revert
@@ -251,7 +251,7 @@ public class Tokenizer implements ITokenizer {
       state.currentToken = new Token(tryType, previousState.row, previousState.col, result);
 
       //#if mvn.project.property.production != "true"
-      logger.logDebug(DebugLogLevel.TOKENIZER, "Reader for " + tryType + " was successful");
+      logger.logDebug(DebugLogSource.TOKENIZER, "Reader for " + tryType + " was successful");
       //#endif
       return;
     }

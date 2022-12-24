@@ -28,7 +28,7 @@ import me.blvckbytes.gpeee.error.AEvaluatorError;
 import me.blvckbytes.gpeee.functions.AExpressionFunction;
 import me.blvckbytes.gpeee.interpreter.IEvaluationEnvironment;
 import me.blvckbytes.gpeee.interpreter.IValueInterpreter;
-import me.blvckbytes.gpeee.logging.DebugLogLevel;
+import me.blvckbytes.gpeee.logging.ILogSourceType;
 import me.blvckbytes.gpeee.logging.ILogger;
 import me.blvckbytes.gpeee.parser.expression.AExpression;
 import org.jetbrains.annotations.Nullable;
@@ -47,8 +47,8 @@ public class FullUseExample {
 
       ILogger logger = new ILogger() {
         @Override
-        public void logDebug(DebugLogLevel level, String message) {
-          System.out.println("[DEBUG] [" + level + "]: " + message);
+        public void logDebug(ILogSourceType source, String message) {
+          System.out.println("[DEBUG] [" + source.name() + "]: " + message);
         }
 
         @Override

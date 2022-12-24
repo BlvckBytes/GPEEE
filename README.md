@@ -465,8 +465,8 @@ public class FullUseExample {
 
       ILogger logger = new ILogger() {
         @Override
-        public void logDebug(DebugLogLevel level, String message) {
-          System.out.println("[DEBUG] [" + level + "]: " + message);
+        public void logDebug(ILogSourceType source, String message) {
+          System.out.println("[DEBUG] [" + source.name() + "]: " + message);
         }
 
         @Override

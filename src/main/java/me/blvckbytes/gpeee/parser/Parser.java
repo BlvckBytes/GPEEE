@@ -25,7 +25,7 @@
 package me.blvckbytes.gpeee.parser;
 
 import me.blvckbytes.gpeee.Tuple;
-import me.blvckbytes.gpeee.logging.DebugLogLevel;
+import me.blvckbytes.gpeee.logging.DebugLogSource;
 import me.blvckbytes.gpeee.logging.ILogger;
 import me.blvckbytes.gpeee.error.AEvaluatorError;
 import me.blvckbytes.gpeee.error.UnexpectedTokenError;
@@ -108,7 +108,7 @@ public class Parser {
 
   private AExpression parseIfThenElseExpression(ITokenizer tokenizer, int precedenceSelf) throws AEvaluatorError {
     //#if mvn.project.property.production != "true"
-    logger.logDebug(DebugLogLevel.PARSER, "Trying to parse a if then else expression");
+    logger.logDebug(DebugLogSource.PARSER, "Trying to parse a if then else expression");
     //#endif
 
     Token tk = tokenizer.peekToken();
@@ -116,7 +116,7 @@ public class Parser {
     // There's no if keyword as the next token
     if (tk == null || tk.getType() != TokenType.KW_IF) {
       //#if mvn.project.property.production != "true"
-      logger.logDebug(DebugLogLevel.PARSER, "Not a if then else expression");
+      logger.logDebug(DebugLogSource.PARSER, "Not a if then else expression");
       //#endif
       return invokeNextPrecedenceParser(tokenizer, precedenceSelf);
     }
@@ -146,7 +146,7 @@ public class Parser {
 
   private AExpression parseCallbackExpression(ITokenizer tokenizer, int precedenceSelf) throws AEvaluatorError {
     //#if mvn.project.property.production != "true"
-    logger.logDebug(DebugLogLevel.PARSER, "Trying to parse a callback expression");
+    logger.logDebug(DebugLogSource.PARSER, "Trying to parse a callback expression");
     //#endif
 
     Token tk = tokenizer.previousToken();
@@ -155,7 +155,7 @@ public class Parser {
     // chain, as the previous token was a dot
     if (tk != null && tk.getType() == TokenType.DOT) {
       //#if mvn.project.property.production != "true"
-      logger.logDebug(DebugLogLevel.PARSER, "Not a callback expression");
+      logger.logDebug(DebugLogSource.PARSER, "Not a callback expression");
       //#endif
       return invokeNextPrecedenceParser(tokenizer, precedenceSelf);
     }
@@ -165,7 +165,7 @@ public class Parser {
     // There's no opening parenthesis as the next token
     if (tk == null || tk.getType() != TokenType.PARENTHESIS_OPEN) {
       //#if mvn.project.property.production != "true"
-      logger.logDebug(DebugLogLevel.PARSER, "Not a callback expression");
+      logger.logDebug(DebugLogSource.PARSER, "Not a callback expression");
       //#endif
       return invokeNextPrecedenceParser(tokenizer, precedenceSelf);
     }
@@ -181,7 +181,7 @@ public class Parser {
     // As long as there is no closing parenthesis, there are still arguments left
     while ((tk = tokenizer.peekToken()) != null && tk.getType() != TokenType.PARENTHESIS_CLOSE) {
       //#if mvn.project.property.production != "true"
-      logger.logDebug(DebugLogLevel.PARSER, "Parsing argument " + signature.size());
+      logger.logDebug(DebugLogSource.PARSER, "Parsing argument " + signature.size());
       //#endif
 
       if (signature.size() > 0) {
@@ -189,7 +189,7 @@ public class Parser {
         // If there's no comma, this cannot be a callback expression and is more likely a parenthesis expression
         if (tk.getType() != TokenType.COMMA) {
           //#if mvn.project.property.production != "true"
-          logger.logDebug(DebugLogLevel.PARSER, "Not a callback expression");
+          logger.logDebug(DebugLogSource.PARSER, "Not a callback expression");
           //#endif
           tokenizer.restoreState(true);
           return invokeNextPrecedenceParser(tokenizer, precedenceSelf);
@@ -204,7 +204,7 @@ public class Parser {
       // Anything else than an identifier cannot be within a callback's parentheses
       if (!(identifier instanceof IdentifierExpression)) {
         //#if mvn.project.property.production != "true"
-        logger.logDebug(DebugLogLevel.PARSER, "Not a callback expression");
+        logger.logDebug(DebugLogSource.PARSER, "Not a callback expression");
         //#endif
         tokenizer.restoreState(true);
         return invokeNextPrecedenceParser(tokenizer, precedenceSelf);
@@ -230,7 +230,7 @@ public class Parser {
 
   private AExpression parseFunctionInvocationExpression(ITokenizer tokenizer, int precedenceSelf) throws AEvaluatorError {
     //#if mvn.project.property.production != "true"
-    logger.logDebug(DebugLogLevel.PARSER, "Trying to parse a function invocation expression");
+    logger.logDebug(DebugLogSource.PARSER, "Trying to parse a function invocation expression");
     //#endif
 
     Token tk = tokenizer.peekToken();
@@ -238,7 +238,7 @@ public class Parser {
     // There's no identifier or minus as the next token
     if (tk == null || tk.getType() != TokenType.IDENTIFIER) {
       //#if mvn.project.property.production != "true"
-      logger.logDebug(DebugLogLevel.PARSER, "Not a function invocation expression");
+      logger.logDebug(DebugLogSource.PARSER, "Not a function invocation expression");
       //#endif
       return invokeNextPrecedenceParser(tokenizer, precedenceSelf);
     }
@@ -255,7 +255,7 @@ public class Parser {
     // There's no opening parenthesis as the next token
     if (tk == null || (tk.getType() != TokenType.PARENTHESIS_OPEN && tk.getType() != TokenType.OPTIONAL_PARENTHESIS_OPEN)) {
       //#if mvn.project.property.production != "true"
-      logger.logDebug(DebugLogLevel.PARSER, "Not a function invocation expression");
+      logger.logDebug(DebugLogSource.PARSER, "Not a function invocation expression");
       //#endif
 
       // Put back the token
@@ -275,7 +275,7 @@ public class Parser {
     // As long as there is no closing parenthesis, there are still arguments left
     while ((tk = tokenizer.peekToken()) != null && tk.getType() != TokenType.PARENTHESIS_CLOSE) {
       //#if mvn.project.property.production != "true"
-      logger.logDebug(DebugLogLevel.PARSER, "Parsing argument " + arguments.size());
+      logger.logDebug(DebugLogSource.PARSER, "Parsing argument " + arguments.size());
       //#endif
 
       if (arguments.size() > 0) {
@@ -290,7 +290,7 @@ public class Parser {
       Token identifier = null;
       if ((tk = tokenizer.peekToken()) != null && tk.getType() == TokenType.IDENTIFIER) {
         //#if mvn.project.property.production != "true"
-        logger.logDebug(DebugLogLevel.PARSER, "Trying to parse a named argument");
+        logger.logDebug(DebugLogSource.PARSER, "Trying to parse a named argument");
         //#endif
 
         // Save before consuming so the next token can be peeked too
@@ -300,7 +300,7 @@ public class Parser {
         // There's no assign token following this identifier, it cannot be a named argument
         if ((tk = tokenizer.peekToken()) == null || tk.getType() != TokenType.ASSIGN) {
           //#if mvn.project.property.production != "true"
-          logger.logDebug(DebugLogLevel.PARSER, "Not a named argument");
+          logger.logDebug(DebugLogSource.PARSER, "Not a named argument");
           //#endif
 
           // Put the identifier back
@@ -419,7 +419,7 @@ public class Parser {
 
   private AExpression parseAssignmentExpression(ITokenizer tokenizer, int precedenceSelf) throws AEvaluatorError {
     //#if mvn.project.property.production != "true"
-    logger.logDebug(DebugLogLevel.PARSER, "Trying to parse an assignment expression");
+    logger.logDebug(DebugLogSource.PARSER, "Trying to parse an assignment expression");
     //#endif
 
     Token tk = tokenizer.peekToken();
@@ -427,7 +427,7 @@ public class Parser {
     // There's no identifier as the next token
     if (tk == null || tk.getType() != TokenType.IDENTIFIER) {
       //#if mvn.project.property.production != "true"
-      logger.logDebug(DebugLogLevel.PARSER, "Not an assignment expression");
+      logger.logDebug(DebugLogSource.PARSER, "Not an assignment expression");
       //#endif
 
       return invokeNextPrecedenceParser(tokenizer, precedenceSelf);
@@ -444,7 +444,7 @@ public class Parser {
     // The identifier needs to be followed by an assign token
     if (tk == null || tk.getType() != TokenType.ASSIGN) {
       //#if mvn.project.property.production != "true"
-      logger.logDebug(DebugLogLevel.PARSER, "Not an assignment expression");
+      logger.logDebug(DebugLogSource.PARSER, "Not an assignment expression");
       //#endif
 
       // Put the identifier back
@@ -577,7 +577,7 @@ public class Parser {
 
   private AExpression parsePrimaryExpression(ITokenizer tokenizer) throws AEvaluatorError {
     //#if mvn.project.property.production != "true"
-    logger.logDebug(DebugLogLevel.PARSER, "Trying to parse a primary expression");
+    logger.logDebug(DebugLogSource.PARSER, "Trying to parse a primary expression");
     //#endif
 
     Token tk = tokenizer.consumeToken();
@@ -588,44 +588,44 @@ public class Parser {
     switch (tk.getType()) {
       case LONG:
         //#if mvn.project.property.production != "true"
-        logger.logDebug(DebugLogLevel.PARSER, "Found an integer");
+        logger.logDebug(DebugLogSource.PARSER, "Found an integer");
         //#endif
         return new LongExpression(Integer.parseInt(tk.getValue()), tk, tk, tokenizer.getRawText());
 
       case DOUBLE:
         //#if mvn.project.property.production != "true"
-        logger.logDebug(DebugLogLevel.PARSER, "Found a double");
+        logger.logDebug(DebugLogSource.PARSER, "Found a double");
         //#endif
         return new DoubleExpression(Double.parseDouble(tk.getValue()), tk, tk, tokenizer.getRawText());
 
       case STRING:
         //#if mvn.project.property.production != "true"
-        logger.logDebug(DebugLogLevel.PARSER, "Found a string");
+        logger.logDebug(DebugLogSource.PARSER, "Found a string");
         //#endif
         return new StringExpression(tk.getValue(), tk, tk, tokenizer.getRawText());
 
       case IDENTIFIER: {
         //#if mvn.project.property.production != "true"
-        logger.logDebug(DebugLogLevel.PARSER, "Found an identifier");
+        logger.logDebug(DebugLogSource.PARSER, "Found an identifier");
         //#endif
         return new IdentifierExpression(tk.getValue(), tk, tk, tokenizer.getRawText());
       }
 
       case TRUE:
         //#if mvn.project.property.production != "true"
-        logger.logDebug(DebugLogLevel.PARSER, "Found the true literal");
+        logger.logDebug(DebugLogSource.PARSER, "Found the true literal");
         //#endif
         return new LiteralExpression(LiteralType.TRUE, tk, tk, tokenizer.getRawText());
 
       case FALSE:
         //#if mvn.project.property.production != "true"
-        logger.logDebug(DebugLogLevel.PARSER, "Found the false literal");
+        logger.logDebug(DebugLogSource.PARSER, "Found the false literal");
         //#endif
       return new LiteralExpression(LiteralType.FALSE, tk, tk, tokenizer.getRawText());
 
       case NULL:
         //#if mvn.project.property.production != "true"
-        logger.logDebug(DebugLogLevel.PARSER, "Found the null literal");
+        logger.logDebug(DebugLogSource.PARSER, "Found the null literal");
         //#endif
       return new LiteralExpression(LiteralType.NULL, tk, tk, tokenizer.getRawText());
 
@@ -690,7 +690,7 @@ public class Parser {
   ) {
     //#if mvn.project.property.production != "true"
     String requiredOperatorsString = Arrays.stream(operators).map(Enum::name).collect(Collectors.joining("|"));
-    logger.logDebug(DebugLogLevel.PARSER, "Trying to parse a unary expression for the operator " + requiredOperatorsString);
+    logger.logDebug(DebugLogSource.PARSER, "Trying to parse a unary expression for the operator " + requiredOperatorsString);
     //#endif
 
     Token tk = tokenizer.peekToken();
@@ -699,7 +699,7 @@ public class Parser {
     // There's no not operator as the next token, hand over to the next higher precedence parser
     if (tk == null || (opInd = matchingTypeIndex(operators, tk)) < 0) {
       //#if mvn.project.property.production != "true"
-      logger.logDebug(DebugLogLevel.PARSER, "Doesn't match any required operators of " + requiredOperatorsString);
+      logger.logDebug(DebugLogSource.PARSER, "Doesn't match any required operators of " + requiredOperatorsString);
       //#endif
       return invokeNextPrecedenceParser(tokenizer, precedenceSelf);
     }
@@ -709,7 +709,7 @@ public class Parser {
 
     // Parse the following expression
     //#if mvn.project.property.production != "true"
-    logger.logDebug(DebugLogLevel.PARSER, "Trying to parse an input for this expression");
+    logger.logDebug(DebugLogSource.PARSER, "Trying to parse an input for this expression");
     //#endif
 
     AExpression input;
@@ -748,7 +748,7 @@ public class Parser {
     TokenType[] operators, @Nullable TokenType[] terminators
   ) throws AEvaluatorError {
     //#if mvn.project.property.production != "true"
-    logger.logDebug(DebugLogLevel.PARSER, "Trying to parse a binary expression for the operator " + Arrays.stream(operators).map(Enum::name).collect(Collectors.joining("|")));
+    logger.logDebug(DebugLogSource.PARSER, "Trying to parse a binary expression for the operator " + Arrays.stream(operators).map(Enum::name).collect(Collectors.joining("|")));
     //#endif
 
     AExpression lhs = invokeNextPrecedenceParser(tokenizer, precedenceSelf);
@@ -764,7 +764,7 @@ public class Parser {
       tokenizer.consumeToken();
 
       //#if mvn.project.property.production != "true"
-      logger.logDebug(DebugLogLevel.PARSER, "Trying to parse a rhs for this operation");
+      logger.logDebug(DebugLogSource.PARSER, "Trying to parse a rhs for this operation");
       //#endif
 
       AExpression rhs;

@@ -24,12 +24,8 @@
 
 package me.blvckbytes.gpeee.logging;
 
-import org.jetbrains.annotations.Nullable;
+public interface ILogSourceType {
 
-public interface ILogger {
-
-  void logDebug(ILogSourceType source, String message);
-
-  void logError(String message, @Nullable Exception error);
+  String name();
 
 }
