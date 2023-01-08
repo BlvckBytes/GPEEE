@@ -43,7 +43,7 @@ public class EnvironmentBuilder {
   private static final double MAX_DOUBLE_DELTA = .00001;
 
   private final Map<String, Object> staticVariables;
-  private final Map<String, Supplier<Object>> liveVariables;
+  private final Map<String, Supplier<?>> liveVariables;
   private final Map<String, AExpressionFunction> functions;
   private final GPEEE evaluator;
 
@@ -73,7 +73,7 @@ public class EnvironmentBuilder {
     Object value = this.staticVariables.get(identifier);
 
     if (value == null) {
-      Supplier<Object> supplier = this.liveVariables.get(identifier);
+      Supplier<?> supplier = this.liveVariables.get(identifier);
 
       if (supplier != null)
         value = supplier.get();
@@ -288,12 +288,12 @@ public class EnvironmentBuilder {
       }
 
       @Override
-      public Map<String, Supplier<Object>> getLiveVariables() {
+      public Map<String, Supplier<?>> getLiveVariables() {
         return liveVariables;
       }
 
       @Override
-      public Map<String, Object> getStaticVariables() {
+      public Map<String, ?> getStaticVariables() {
         return staticVariables;
       }
 

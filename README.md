@@ -148,12 +148,12 @@ public interface IEvaluationEnvironment {
   /**
    * Mapping identifiers to available live variables which an expression may resolve
    */
-  Map<String, Supplier<Object>> getLiveVariables();
+  Map<String, Supplier<?>> getLiveVariables();
 
   /**
    * Mapping identifiers to available static variables which an expression may resolve
    */
-  Map<String, Object> getStaticVariables();
+  Map<String, ?> getStaticVariables();
 
   /**
    * Get the value interpreter used to interpret values when doing any kind of
@@ -497,7 +497,7 @@ public class FullUseExample {
         }
 
         @Override
-        public Map<String, Supplier<Object>> getLiveVariables() {
+        public Map<String, Supplier<?>> getLiveVariables() {
           // Register your live variables here
           return Map.of(
             "current_time", () -> DATE_FORMAT.format(new Date())

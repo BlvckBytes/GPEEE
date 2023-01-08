@@ -79,7 +79,7 @@ public class FullUseExample {
         }
 
         @Override
-        public Map<String, Supplier<Object>> getLiveVariables() {
+        public Map<String, Supplier<?>> getLiveVariables() {
           // Register your live variables here
           return Map.of(
             "current_time", () -> DATE_FORMAT.format(new Date())

@@ -121,12 +121,12 @@ public class GPEEE implements IExpressionEvaluator, IStandardFunctionRegistry {
       }
 
       @Override
-      public Map<String, Supplier<Object>> getLiveVariables() {
+      public Map<String, Supplier<?>> getLiveVariables() {
         return Map.of();
       }
 
       @Override
-      public Map<String, Object> getStaticVariables() {
+      public Map<String, ?> getStaticVariables() {
         return Map.of();
       }
 

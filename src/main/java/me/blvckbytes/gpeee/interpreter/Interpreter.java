@@ -287,12 +287,12 @@ public class Interpreter {
             }
 
             @Override
-            public Map<String, Supplier<Object>> getLiveVariables() {
+            public Map<String, Supplier<?>> getLiveVariables() {
               return environment.getLiveVariables();
             }
 
             @Override
-            public Map<String, Object> getStaticVariables() {
+            public Map<String, ?> getStaticVariables() {
               return combinedVariables;
             }
 
@@ -734,7 +734,7 @@ public class Interpreter {
       return value;
     }
 
-    Supplier<Object> valueSupplier = evaluationEnvironment.getLiveVariables().get(symbol);
+    Supplier<?> valueSupplier = evaluationEnvironment.getLiveVariables().get(symbol);
     if (valueSupplier != null) {
       Object value = valueSupplier.get();
 
