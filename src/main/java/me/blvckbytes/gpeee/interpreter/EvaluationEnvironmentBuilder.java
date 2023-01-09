@@ -1,5 +1,7 @@
 package me.blvckbytes.gpeee.interpreter;
 
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
 import me.blvckbytes.gpeee.GPEEE;
 import me.blvckbytes.gpeee.functions.AExpressionFunction;
 
@@ -7,6 +9,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Supplier;
 
+@AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class EvaluationEnvironmentBuilder {
 
   private IValueInterpreter valueInterpreter;
@@ -40,6 +43,15 @@ public class EvaluationEnvironmentBuilder {
   public EvaluationEnvironmentBuilder withFunction(String identifier, AExpressionFunction function) {
     this.functions.put(identifier, function);
     return this;
+  }
+
+  public EvaluationEnvironmentBuilder duplicate() {
+    return new EvaluationEnvironmentBuilder(
+      valueInterpreter,
+      new HashMap<>(staticVariables),
+      new HashMap<>(liveVariables),
+      new HashMap<>(functions)
+    );
   }
 
   public IEvaluationEnvironment build() {
