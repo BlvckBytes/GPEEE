@@ -24,14 +24,12 @@
 
 package me.blvckbytes.gpeee;
 
+import lombok.Setter;
 import me.blvckbytes.gpeee.error.AEvaluatorError;
 import me.blvckbytes.gpeee.functions.AExpressionFunction;
 import me.blvckbytes.gpeee.functions.IStandardFunctionRegistry;
 import me.blvckbytes.gpeee.functions.std.*;
-import me.blvckbytes.gpeee.interpreter.IEvaluationEnvironment;
-import me.blvckbytes.gpeee.interpreter.IValueInterpreter;
-import me.blvckbytes.gpeee.interpreter.Interpreter;
-import me.blvckbytes.gpeee.interpreter.StandardValueInterpreter;
+import me.blvckbytes.gpeee.interpreter.*;
 import me.blvckbytes.gpeee.logging.ILogger;
 import me.blvckbytes.gpeee.logging.NullLogger;
 import me.blvckbytes.gpeee.parser.Optimizer;
@@ -61,6 +59,9 @@ public class GPEEE implements IExpressionEvaluator, IStandardFunctionRegistry {
   private final Optimizer optimizer;
   private final ILogger logger;
 
+  @Setter
+  private EvaluationEnvironmentBuilder baseEnvironment;
+
   public GPEEE(@Nullable ILogger logger) {
     this.logger = logger == null ? new NullLogger() : logger;
 
@@ -85,6 +86,8 @@ public class GPEEE implements IExpressionEvaluator, IStandardFunctionRegistry {
 
   @Override
   public Object evaluateExpression(AExpression expression, IEvaluationEnvironment environment) throws AEvaluatorError {
+    if (this.baseEnvironment != null)
+      environment = baseEnvironment.build(environment);
     return interpreter.evaluateExpression(expression, environment);
   }
 

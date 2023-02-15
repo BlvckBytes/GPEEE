@@ -4,6 +4,7 @@ import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import me.blvckbytes.gpeee.GPEEE;
 import me.blvckbytes.gpeee.functions.AExpressionFunction;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -55,21 +56,35 @@ public class EvaluationEnvironmentBuilder {
   }
 
   public IEvaluationEnvironment build() {
+    return build(null);
+  }
+
+  public IEvaluationEnvironment build(@Nullable IEvaluationEnvironment environmentToExtend) {
+    Map<String, AExpressionFunction> resultingFunctions = new HashMap<>(this.functions);
+    Map<String, Supplier<?>> resultingLiveVariables = new HashMap<>(this.liveVariables);
+    Map<String, Object> resultingStaticVariables = new HashMap<>(this.staticVariables);
+
+    if (environmentToExtend != null) {
+      resultingFunctions.putAll(environmentToExtend.getFunctions());
+      resultingLiveVariables.putAll(environmentToExtend.getLiveVariables());
+      resultingStaticVariables.putAll(environmentToExtend.getStaticVariables());
+    }
+
     return new IEvaluationEnvironment() {
 
       @Override
       public Map<String, AExpressionFunction> getFunctions() {
-        return functions;
+        return resultingFunctions;
       }
 
       @Override
       public Map<String, Supplier<?>> getLiveVariables() {
-        return liveVariables;
+        return resultingLiveVariables;
       }
 
       @Override
       public Map<String, Object> getStaticVariables() {
-        return staticVariables;
+        return resultingStaticVariables;
       }
 
       @Override
