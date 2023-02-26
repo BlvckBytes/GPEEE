@@ -91,6 +91,7 @@
     <properties>
         <maven.compiler.source>11</maven.compiler.source>
         <maven.compiler.target>11</maven.compiler.target>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
         <!-- Always fall back to true (safe) -->
         <!-- Request non-production with "-Dproduction=false" -->
