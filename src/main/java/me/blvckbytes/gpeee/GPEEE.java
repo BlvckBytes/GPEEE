@@ -119,6 +119,9 @@ public class GPEEE implements IExpressionEvaluator, IStandardFunctionRegistry {
     new TitleCaseFunction().registerSelf(this);
     new IterMapFunction().registerSelf(this);
     new DateFormatFunction().registerSelf(this);
+    new LIndexFunction().registerSelf(this);
+    new RIndexFunction().registerSelf(this);
+    new SubstringFunction().registerSelf(this);
   }
 
   private static IEvaluationEnvironment createEmptyEnvironment() {
