@@ -123,7 +123,7 @@ public class Interpreter {
       //#if mvn.project.property.production != "true"
       logger.logDebug(DebugLogSource.INTERPRETER, "Taking the immediate string value");
       //#endif
-      return ((StringExpression) expression).getValue();
+      return valueInterpreter.asString(((StringExpression) expression).getValue());
     }
 
     ////////////////////// Variable Values //////////////////////
