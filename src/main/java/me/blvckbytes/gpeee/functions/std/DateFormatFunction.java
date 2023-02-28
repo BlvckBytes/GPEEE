@@ -32,6 +32,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.time.ZoneId;
 import java.util.*;
 
 /**
@@ -41,17 +42,33 @@ import java.util.*;
  */
 public class DateFormatFunction extends AStandardFunction {
 
-  private final Map<String, DateFormat> dateFormatByStringFormat;
+  private final Map<String, Map<TimeZone, DateFormat>> dateFormatByStringFormatAndZone;
 
   public DateFormatFunction() {
-    this.dateFormatByStringFormat = new HashMap<>();
+    this.dateFormatByStringFormatAndZone = new HashMap<>();
   }
 
   @Override
   public Object apply(IEvaluationEnvironment environment, List<@Nullable Object> args) {
     Object date = nonNull(args, 0);
     String type = nonNull(args, 1);
-    DateFormat format = getDateFormat(nonNull(args, 2));
+    String formatString = nonNull(args, 2);
+    String timeZone = nullableWithFallback(args, 3, "UTC");
+
+    TimeZone formatTimeZone;
+    try {
+      ZoneId timeZoneId = ZoneId.of(timeZone);
+      formatTimeZone = TimeZone.getTimeZone(timeZoneId);
+    } catch (Exception e) {
+      return new FunctionInvocationError(3, "Invalid timezone provided: '" + timeZone + "'");
+    }
+
+    DateFormat format;
+    try {
+      format = getDateFormat(formatString, formatTimeZone);
+    } catch (Exception e) {
+      return new FunctionInvocationError(2, "Malformed date format: " + formatString);
+    }
 
     type = type.toLowerCase(Locale.ROOT);
 
@@ -78,14 +95,18 @@ public class DateFormatFunction extends AStandardFunction {
     return "invalid date type provided";
   }
 
-  private DateFormat getDateFormat(String format) {
-    DateFormat dateFormat = this.dateFormatByStringFormat.get(format);
+  private DateFormat getDateFormat(String format, TimeZone zone) {
+    Map<TimeZone, DateFormat> dateFormatByZone = this.dateFormatByStringFormatAndZone.computeIfAbsent(format, key -> new HashMap<>());
+
+    DateFormat dateFormat = dateFormatByZone.get(zone);
 
     if (dateFormat != null)
       return dateFormat;
 
     dateFormat = new SimpleDateFormat(format);
-    this.dateFormatByStringFormat.put(format, dateFormat);
+    dateFormat.setTimeZone(zone);
+    dateFormatByZone.put(zone, dateFormat);
+
     return dateFormat;
   }
 
@@ -93,8 +114,9 @@ public class DateFormatFunction extends AStandardFunction {
   public @Nullable List<ExpressionFunctionArgument> getArguments() {
     return List.of(
       new ExpressionFunctionArgument("date",     "Input date to format",                                     true),
-      new ExpressionFunctionArgument("type",     "Type of date provided (seconds, millis, date)",            true, String.class),
-      new ExpressionFunctionArgument("format",   "Date format to apply",                                     true, String.class)
+      new ExpressionFunctionArgument("type",     "Type of date provided (seconds, millis, date)",            true,  String.class),
+      new ExpressionFunctionArgument("format",   "Date format to apply",                                     true,  String.class),
+      new ExpressionFunctionArgument("timezone", "Timezone to use, defaults to UTC",                         false, String.class)
     );
   }
 

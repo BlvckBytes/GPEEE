@@ -60,6 +60,25 @@ public class DateFormatFunctionTests {
   }
 
   @Test
+  public void shouldThrowOnNonMalformedFormat() {
+    new EnvironmentBuilder()
+      .withStaticVariable("format", "hello, world")
+      .launch(validator -> {
+        validator.validateThrows("date_format(0, \"millis\", format)", InvalidFunctionInvocationError.class);
+      });
+  }
+
+  @Test
+  public void shouldThrowOnMalformedTimeZone() {
+    new EnvironmentBuilder()
+      .withStaticVariable("format", "HH:mm")
+      .withStaticVariable("zone", "hello")
+      .launch(validator -> {
+        validator.validateThrows("date_format(0, \"millis\", format, zone)", InvalidFunctionInvocationError.class);
+      });
+  }
+
+  @Test
   public void shouldFormatSeconds() {
     new EnvironmentBuilder()
       .withStaticVariable("format_a", "yyyy-MM-dd")
@@ -69,7 +88,9 @@ public class DateFormatFunctionTests {
       .launch(validator -> {
         validator.validate("date_format(stamp, \"seconds\", format_a)", "2023-02-28");
         validator.validate("date_format(stamp, \"seconds\", format_b)", "2023/02/28");
-        validator.validate("date_format(stamp, \"seconds\", format_c)", "28.02.2023 11:17:02");
+        validator.validate("date_format(stamp, \"seconds\", format_c)", "28.02.2023 10:17:02");
+
+        validator.validate("date_format(stamp, \"seconds\", format_c, \"CET\")", "28.02.2023 11:17:02");
       });
   }
 
@@ -83,7 +104,9 @@ public class DateFormatFunctionTests {
       .launch(validator -> {
         validator.validate("date_format(stamp, \"millis\", format_a)", "2023-02-28");
         validator.validate("date_format(stamp, \"millis\", format_b)", "2023/02/28");
-        validator.validate("date_format(stamp, \"millis\", format_c)", "28.02.2023 11:17:02");
+        validator.validate("date_format(stamp, \"millis\", format_c)", "28.02.2023 10:17:02");
+
+        validator.validate("date_format(stamp, \"millis\", format_c, \"CET\")", "28.02.2023 11:17:02");
       });
   }
 
@@ -97,7 +120,9 @@ public class DateFormatFunctionTests {
       .launch(validator -> {
         validator.validate("date_format(date, \"date\", format_a)", "2023-02-28");
         validator.validate("date_format(date, \"date\", format_b)", "2023/02/28");
-        validator.validate("date_format(date, \"date\", format_c)", "28.02.2023 11:17:02");
+        validator.validate("date_format(date, \"date\", format_c)", "28.02.2023 10:17:02");
+
+        validator.validate("date_format(date, \"date\", format_c, \"CET\")", "28.02.2023 11:17:02");
       });
   }
 }
