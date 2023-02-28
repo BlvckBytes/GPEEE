@@ -254,7 +254,7 @@ public class EnvironmentBuilder {
       if (resultValue instanceof Collection && result instanceof Collection) {
         Collection<?> collectionA = (Collection<?>) resultValue, collectionB = (Collection<?>) result;
 
-        assertEquals(collectionA.size(), collectionB.size());
+        assertEquals(collectionB.size(), collectionA.size());
 
         Iterator<?> iterA = collectionA.iterator(), iterB = collectionB.iterator();
 
