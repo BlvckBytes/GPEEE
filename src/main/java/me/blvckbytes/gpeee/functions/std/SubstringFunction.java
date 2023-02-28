@@ -24,6 +24,7 @@
 
 package me.blvckbytes.gpeee.functions.std;
 
+import me.blvckbytes.gpeee.error.FunctionInvocationError;
 import me.blvckbytes.gpeee.functions.ExpressionFunctionArgument;
 import me.blvckbytes.gpeee.functions.IStandardFunctionRegistry;
 import me.blvckbytes.gpeee.interpreter.IEvaluationEnvironment;
@@ -44,8 +45,21 @@ public class SubstringFunction extends AStandardFunction {
     Long start = nonNull(args, 1);
     Long end = nullable(args, 2);
 
-    if (end != null)
+    int inputLength = input.length();
+
+    if (start < 0 || start >= inputLength)
+      return new FunctionInvocationError(1, "Start index out of bounds");
+
+    if (end != null) {
+      if (end < 0 || end >= inputLength)
+        return new FunctionInvocationError(1, "End index out of bounds");
+
+      if (end < start)
+        return new FunctionInvocationError(1, "Start (" + start + ") cannot be larger than end");
+
       return input.substring(start.intValue(), end.intValue());
+    }
+
     return input.substring(start.intValue());
   }
 
