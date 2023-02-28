@@ -24,6 +24,7 @@
 
 package me.blvckbytes.gpeee.functions.std;
 
+import me.blvckbytes.gpeee.error.FunctionInvocationError;
 import me.blvckbytes.gpeee.functions.ExpressionFunctionArgument;
 import me.blvckbytes.gpeee.functions.IStandardFunctionRegistry;
 import me.blvckbytes.gpeee.interpreter.IEvaluationEnvironment;
@@ -54,15 +55,22 @@ public class DateFormatFunction extends AStandardFunction {
 
     type = type.toLowerCase(Locale.ROOT);
 
-    if (type.equals("date"))
+    if (type.equals("date")) {
+      if (!(date instanceof Date))
+        return new FunctionInvocationError(0, "Not an instance of Date");
+
       return format.format((Date) date);
+    }
 
     boolean isMillis = type.equals("millis");
     if (type.equals("seconds") || isMillis) {
-      long stamp = (long) date;
+      if (!(date instanceof Number))
+        return new FunctionInvocationError(0, "Not an instance of Number");
+
+      long stamp = ((Number) date).longValue();
 
       if (!isMillis)
-        stamp *= 10000;
+        stamp *= 1000;
 
       return format.format(new Date(stamp));
     }
