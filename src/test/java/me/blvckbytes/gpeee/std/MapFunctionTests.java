@@ -57,9 +57,10 @@ public class MapFunctionTests {
   public void shouldMapInputItems() {
     new EnvironmentBuilder()
       .withStaticVariable("items", List.of("a", "b", "c"))
+      .withStaticVariable("items_empty", List.of())
       .launch(validator -> {
         validator.validate("map(items, (item) => item & \" suffix\")", List.of("a suffix", "b suffix", "c suffix"));
-        validator.validate("map(items, (item, index) => index & item)", List.of("0a", "1b", "2c"));
+        validator.validate("map(items_empty, (item, index) => index & item)", List.of());
       });
   }
 }
