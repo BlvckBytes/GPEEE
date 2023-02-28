@@ -30,15 +30,15 @@ import org.junit.jupiter.api.Test;
 
 import java.util.List;
 
-public class IterMapFunctionTests {
+public class MapFunctionTests {
 
   @Test
   public void shouldRequireArguments() {
     new EnvironmentBuilder()
       .withStaticVariable("items", List.of())
       .launch(validator -> {
-        validator.validateThrows("iter_map()", InvalidFunctionArgumentTypeError.class);
-        validator.validateThrows("iter_map(items)", InvalidFunctionArgumentTypeError.class);
+        validator.validateThrows("map()", InvalidFunctionArgumentTypeError.class);
+        validator.validateThrows("map(items)", InvalidFunctionArgumentTypeError.class);
       });
   }
 
@@ -48,8 +48,8 @@ public class IterMapFunctionTests {
       .withStaticVariable("items_empty", List.of())
       .withStaticVariable("items_one", List.of(1))
       .launch(validator -> {
-        validator.validate("iter_map(items_empty, (item) => item, \"empty collection\")", List.of("empty collection"));
-        validator.validate("iter_map(items_one, (item) => item, \"empty collection\")", List.of(1));
+        validator.validate("map(items_empty, (item) => item, \"empty collection\")", List.of("empty collection"));
+        validator.validate("map(items_one, (item) => item, \"empty collection\")", List.of(1));
       });
   }
 
@@ -58,8 +58,8 @@ public class IterMapFunctionTests {
     new EnvironmentBuilder()
       .withStaticVariable("items", List.of("a", "b", "c"))
       .launch(validator -> {
-        validator.validate("iter_map(items, (item) => item & \" suffix\")", List.of("a suffix", "b suffix", "c suffix"));
-        validator.validate("iter_map(items, (item, index) => index & item)", List.of("0a", "1b", "2c"));
+        validator.validate("map(items, (item) => item & \" suffix\")", List.of("a suffix", "b suffix", "c suffix"));
+        validator.validate("map(items, (item, index) => index & item)", List.of("0a", "1b", "2c"));
       });
   }
 }

@@ -35,12 +35,12 @@ import java.util.Collection;
 import java.util.List;
 
 /**
- * Iteration mapping - iter_map
+ * Mapping collections - map
  *
  * Maps a collection of items by running each through a callback expression
  * which will map it to another value and then collects them in the resulting collection.
  */
-public class IterMapFunction extends AStandardFunction {
+public class MapFunction extends AStandardFunction {
 
   @Override
   public Object apply(IEvaluationEnvironment env, List<@Nullable Object> args) {
@@ -64,7 +64,7 @@ public class IterMapFunction extends AStandardFunction {
 
   @Override
   public @Nullable List<ExpressionFunctionArgument> getArguments() {
-    // iter_map(items, (it, ind) => (..), "empty input")
+    // map(items, (it, ind) => (..), "empty input")
     return List.of(
       new ExpressionFunctionArgument("items",     "Collection to iterate",             true,  Collection.class),
       new ExpressionFunctionArgument("mapper",    "Iteration item mapper function",    true,  AExpressionFunction.class),
@@ -74,7 +74,7 @@ public class IterMapFunction extends AStandardFunction {
 
   @Override
   public void registerSelf(IStandardFunctionRegistry registry) {
-    registry.register("iter_map", this);
+    registry.register("map", this);
   }
 
   @Override
