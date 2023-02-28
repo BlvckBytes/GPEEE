@@ -79,6 +79,25 @@ public class DateFormatFunctionTests {
   }
 
   @Test
+  public void shouldThrowOnMalformedType() {
+    new EnvironmentBuilder()
+      .withStaticVariable("format", "HH:mm")
+      .launch(validator -> {
+        validator.validateThrows("date_format(0, \"hello\", format)", InvalidFunctionInvocationError.class);
+      });
+  }
+
+  @Test
+  public void shouldThrowOnNonDateObject() {
+    new EnvironmentBuilder()
+      .withStaticVariable("format", "HH:mm")
+      .withStaticVariable("non_date", new Object())
+      .launch(validator -> {
+        validator.validateThrows("date_format(non_date, \"date\", format)", InvalidFunctionInvocationError.class);
+      });
+  }
+
+  @Test
   public void shouldFormatSeconds() {
     new EnvironmentBuilder()
       .withStaticVariable("format_a", "yyyy-MM-dd")

@@ -60,14 +60,14 @@ public class DateFormatFunction extends AStandardFunction {
       ZoneId timeZoneId = ZoneId.of(timeZone);
       formatTimeZone = TimeZone.getTimeZone(timeZoneId);
     } catch (Exception e) {
-      return new FunctionInvocationError(3, "Invalid timezone provided: '" + timeZone + "'");
+      return new FunctionInvocationError(3, "Invalid timezone provided");
     }
 
     DateFormat format;
     try {
       format = getDateFormat(formatString, formatTimeZone);
     } catch (Exception e) {
-      return new FunctionInvocationError(2, "Malformed date format: " + formatString);
+      return new FunctionInvocationError(2, "Malformed date format");
     }
 
     type = type.toLowerCase(Locale.ROOT);
@@ -92,7 +92,7 @@ public class DateFormatFunction extends AStandardFunction {
       return format.format(new Date(stamp));
     }
 
-    return "invalid date type provided";
+    return new FunctionInvocationError(1, "Invalid date type provided");
   }
 
   private DateFormat getDateFormat(String format, TimeZone zone) {
