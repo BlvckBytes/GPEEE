@@ -25,11 +25,10 @@
 package me.blvckbytes.gpeee.std;
 
 import me.blvckbytes.gpeee.EnvironmentBuilder;
-import me.blvckbytes.gpeee.error.InvalidFunctionArgumentTypeError;
 import me.blvckbytes.gpeee.error.InvalidFunctionInvocationError;
 import org.junit.jupiter.api.Test;
 
-import java.util.List;
+import java.util.HashMap;
 import java.util.Map;
 
 public class MapOfFunctionTests {
@@ -39,15 +38,19 @@ public class MapOfFunctionTests {
     EnvironmentBuilder env = new EnvironmentBuilder();
 
     env.launch(validator -> {
-      // Stringify results for ease of comparison
+      validator.validate("map_of(\"k\", 1)", Map.of("k", 1));
+      validator.validate("map_of(\"k1\", 1.2, \"k2\", -5, \"k3\", \"value 3\")", Map.of("k1", 1.2, "k2", -5, "k3", "value 3"));
+      validator.validate("map_of(\"k\", null)", nullMap("k"));
+      validator.validate("map_of()", Map.of());
 
-      validator.validate("str(map_of(\"k\", 1))", env.stringifiedPermutations(Map.of("k", 1)));
-      validator.validate("str(map_of(\"k1\", 1.2, \"k2\", -5, \"k3\", \"value 3\"))", env.stringifiedPermutations(Map.of("k1", 1.2, "k2", -5, "k3", "value 3")));
-      validator.validate("str(map_of(\"k\", null))", "[(k -> <null>)]");
-      validator.validate("str(map_of())", env.stringifiedPermutations(Map.of()));
-
-      validator.validateThrows("str(map_of(\"k\"))", InvalidFunctionInvocationError.class);
-      validator.validateThrows("str(map_of(\"k\", 1, \"k2\"))", InvalidFunctionInvocationError.class);
+      validator.validateThrows("map_of(\"k\")", InvalidFunctionInvocationError.class);
+      validator.validateThrows("map_of(\"k\", 1, \"k2\")", InvalidFunctionInvocationError.class);
     });
+  }
+
+  private Map<String, ?> nullMap(String key) {
+    Map<String, ?> result = new HashMap<>();
+    result.put(key, null);
+    return result;
   }
 }

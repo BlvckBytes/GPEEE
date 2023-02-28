@@ -32,11 +32,9 @@ import org.jetbrains.annotations.Nullable;
 
 import java.lang.reflect.Array;
 import java.util.*;
-import java.util.function.Consumer;
 import java.util.function.Supplier;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class EnvironmentBuilder {
 
@@ -122,14 +120,6 @@ public class EnvironmentBuilder {
     }
 
     return value.toString();
-  }
-
-  public Object[] stringifiedPermutations(Collection<?> collection) {
-    return stringifiedPermutations((Object) collection);
-  }
-
-  public Object[] stringifiedPermutations(Map<?, ?> map) {
-    return stringifiedPermutations((Object) map);
   }
 
   public Object[] stringifiedPermutations(String identifier) {
@@ -261,6 +251,22 @@ public class EnvironmentBuilder {
         while (iterA.hasNext()) {
           Object a = iterA.next(), b = iterB.next();
           validateResult(a, new Object[]{ b }, exact);
+        }
+
+        // Success exit
+        return;
+      }
+
+      if (resultValue instanceof Map && result instanceof Map) {
+        Map<?, ?> mapA = (Map<?, ?>) resultValue, mapB = (Map<?, ?>) result;
+
+        assertEquals(mapB.size(), mapA.size());
+
+        Set<? extends Map.Entry<?, ?>> entriesA = mapA.entrySet();
+
+        for (Map.Entry<?, ?> entry : entriesA) {
+          assertTrue(mapB.containsKey(entry.getKey()));
+          validateResult(entry.getValue(), new Object[]{ mapB.get(entry.getKey()) }, exact);
         }
 
         // Success exit
