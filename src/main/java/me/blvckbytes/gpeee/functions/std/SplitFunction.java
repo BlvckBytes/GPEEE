@@ -42,23 +42,16 @@ public class SplitFunction extends AStandardFunction {
 
   @Override
   public Object apply(IEvaluationEnvironment environment, List<@Nullable Object> args) {
-    String input = nullable(args, 0);
-    String delimiter = nullable(args, 1);
-
-    if (input == null)
-      return new ArrayList<>();
-
-    if (delimiter == null)
-      delimiter = ",";
-
+    String input = nonNull(args, 0);
+    String delimiter = nullableWithFallback(args, 1, ",");
     return Arrays.asList(input.split(delimiter));
   }
 
   @Override
   public @Nullable List<ExpressionFunctionArgument> getArguments() {
     return List.of(
-      new ExpressionFunctionArgument("input", "Input string to split", false, String.class),
-      new ExpressionFunctionArgument("delimiter", "Delimiter to split on", false, String.class)
+      new ExpressionFunctionArgument("input",     "Input string to split", true, String.class),
+      new ExpressionFunctionArgument("delimiter", "Delimiter to split on, default ','", false, String.class)
     );
   }
 
