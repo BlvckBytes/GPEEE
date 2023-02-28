@@ -137,6 +137,12 @@ public class ExpressionFunctionArgument {
    * type list in a human-readable format
    */
   public String stringifyAllowedTypes() {
+    if (allowedTypes.length == 0) {
+      if (required)
+        return "<any, non-null>";
+      return "<any, nullable>";
+    }
+
     return Arrays.stream(allowedTypes)
       .map(Class::getName)
       .collect(Collectors.joining(" | "));
