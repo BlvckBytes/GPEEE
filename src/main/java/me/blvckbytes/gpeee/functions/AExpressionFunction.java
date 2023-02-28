@@ -82,6 +82,23 @@ public abstract class AExpressionFunction {
     return (T) (index >= args.size() ? null : args.get(index));
   }
 
+  /**
+   * Get a maybe null argument from the argument list or use the provided fallback
+   * @param args Argument list to read from
+   * @param index Index of the argument
+   * @param fallback Fallback to use in the situation of an absent argument
+   * @return Argument from the list or null if the index has been out-of-range
+   */
+  @SuppressWarnings("unchecked")
+  protected<T> T nullableWithFallback(List<@Nullable Object> args, int index, T fallback) {
+    T result = (T) (index >= args.size() ? fallback : args.get(index));
+
+    if (result == null)
+      return fallback;
+
+    return result;
+  }
+
   //=========================================================================//
   //                               Internal API                              //
   //=========================================================================//
