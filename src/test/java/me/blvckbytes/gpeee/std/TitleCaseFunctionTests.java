@@ -31,11 +31,18 @@ import org.junit.jupiter.api.Test;
 public class TitleCaseFunctionTests {
 
   @Test
+  public void shouldRequireInputArgument() {
+    new EnvironmentBuilder()
+      .launch(validator -> {
+        validator.validateThrows("title_case()", InvalidFunctionArgumentTypeError.class);
+        validator.validateThrows("title_case(null)", InvalidFunctionArgumentTypeError.class);
+      });
+  }
+
+  @Test
   public void shouldTitleCaseItsInput() {
     new EnvironmentBuilder()
       .launch(validator -> {
-        validator.validate("title_case()", "<null>");
-        validator.validate("title_case(null)", "<null>");
         validator.validate("title_case(\"hello world\")", "Hello World");
         validator.validate("title_case(\"hElLo wOrlD\")", "Hello World");
         validator.validate("title_case(\"hello,world\")", "Hello,World");

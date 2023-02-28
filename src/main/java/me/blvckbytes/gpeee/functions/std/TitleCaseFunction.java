@@ -40,13 +40,13 @@ public class TitleCaseFunction extends AStandardFunction {
 
   @Override
   public Object apply(IEvaluationEnvironment environment, List<@Nullable Object> args) {
-    return toTitleCase(environment.getValueInterpreter().asString(nullable(args, 0)));
+    return toTitleCase(nonNull(args, 0));
   }
 
   @Override
   public @Nullable List<ExpressionFunctionArgument> getArguments() {
     return List.of(
-      new ExpressionFunctionArgument("input", "Input to title-case", false)
+      new ExpressionFunctionArgument("input", "Input to title-case", true, String.class)
     );
   }
 
