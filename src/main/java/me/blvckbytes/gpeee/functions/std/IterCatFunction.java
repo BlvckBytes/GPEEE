@@ -47,12 +47,8 @@ public class IterCatFunction extends AStandardFunction {
     // Retrieve arguments
     Collection<?> items = nonNull(args, 0);
     AExpressionFunction mapper = nonNull(args, 1);
-    @Nullable String separator = nullable(args, 2);
+    @Nullable String separator = nullableWithFallback(args, 2, ", ");
     @Nullable String fallback = nullable(args, 3);
-
-    // Fall back on a sensible default
-    if (separator == null)
-      separator = ", ";
 
     StringBuilder result = new StringBuilder();
 
