@@ -28,6 +28,13 @@ want to integrate into your next project.
     - [Null Coalescence](#null-coalescence)
   - [Primary Expressions](#primary-expressions)
   - [Grammar Definition](#grammar-definition)
+- [Standard Functions](#standard-functions)
+  - [bool](#bool)
+  - [date_format](#date_format)
+  - [iter_cat](#iter_cat)
+  - [key](#key)
+  - [len](#len)
+  - [l_index](#l_index)
 
 ## Mission Statement
 
@@ -234,6 +241,23 @@ public abstract class AExpressionFunction {
     return (T) (index >= args.size() ? null : args.get(index));
   }
 
+  /**
+   * Get a maybe null argument from the argument list or use the provided fallback
+   * @param args Argument list to read from
+   * @param index Index of the argument
+   * @param fallback Fallback to use in the situation of an absent argument
+   * @return Argument from the list or null if the index has been out-of-range
+   */
+  @SuppressWarnings("unchecked")
+  protected<T> T nullableWithFallback(List<@Nullable Object> args, int index, T fallback) {
+    T result = (T) (index >= args.size() ? fallback : args.get(index));
+
+    if (result == null)
+      return fallback;
+
+    return result;
+  }
+
   //=========================================================================//
   //                               Internal API                              //
   //=========================================================================//
@@ -332,6 +356,23 @@ public abstract class AExpressionFunction {
     return (T) (index >= args.size() ? null : args.get(index));
   }
 
+  /**
+   * Get a maybe null argument from the argument list or use the provided fallback
+   * @param args Argument list to read from
+   * @param index Index of the argument
+   * @param fallback Fallback to use in the situation of an absent argument
+   * @return Argument from the list or null if the index has been out-of-range
+   */
+  @SuppressWarnings("unchecked")
+  protected<T> T nullableWithFallback(List<@Nullable Object> args, int index, T fallback) {
+    T result = (T) (index >= args.size() ? fallback : args.get(index));
+
+    if (result == null)
+      return fallback;
+
+    return result;
+  }
+
   //=========================================================================//
   //                               Internal API                              //
   //=========================================================================//
@@ -393,12 +434,8 @@ public class IterCatFunction extends AStandardFunction {
     // Retrieve arguments
     Collection<?> items = nonNull(args, 0);
     AExpressionFunction mapper = nonNull(args, 1);
-    @Nullable String separator = nullable(args, 2);
+    @Nullable String separator = nullableWithFallback(args, 2, ",");
     @Nullable String fallback = nullable(args, 3);
-
-    // Fall back on a sensible default
-    if (separator == null)
-      separator = ", ";
 
     StringBuilder result = new StringBuilder();
 
@@ -420,7 +457,7 @@ public class IterCatFunction extends AStandardFunction {
 
   @Override
   public @Nullable List<ExpressionFunctionArgument> getArguments() {
-    // iter_cat(items, (it, ind) -> (..), "separator", "no items fallback")
+    // iter_cat(items, (it, ind) => (..), "separator", "no items fallback")
     return List.of(
       new ExpressionFunctionArgument("items",     "Collection to iterate",             true,  Collection.class),
       new ExpressionFunctionArgument("mapper",    "Iteration item mapper function",    true,  AExpressionFunction.class),
@@ -706,6 +743,501 @@ PrimaryExpression ::= Long | Double | String | Identifier | Literal
 
 Expression ::= NullCoalesceExpression
 ProgramExpression ::= Expression+
+```
+</details>
+
+
+## Standard Functions
+
+Standard functions are functions which are always going to be available, no matter of the current environment. They cannot be shadowed
+by environment identifiers and provide basic features which you're likely going to need if you're notating logic.
+
+For the sake of readability, functions are notated in `TypeScript` notation within this list of functions. The type follows after
+the colon (`:`) and a question mark (`?`) signals an optional input. In order to help you to understand their behaviour, their
+test cases have been added in an expandable container, which provide use-case examples.
+
+### bool
+
+Interpret the input variable as a boolean by making use of the environments value interpreter.
+
+| Argument | Description                     |
+|----------|---------------------------------|
+| input    | Value to interpret as a boolean |
+
+```
+bool(input?: Object): boolean
+```
+
+<details>
+<summary>BoolFunctionTests.java</summary>
+
+```java
+package me.blvckbytes.gpeee.std;
+
+public class BoolFunctionTests {
+
+  @Test
+  public void shouldInterpretValuesAsABoolean() {
+    new EnvironmentBuilder()
+      .withStaticVariable("my_list", List.of(1))
+      .withStaticVariable("my_list_empty", List.of())
+      .withStaticVariable("my_map", Map.of("k", "v"))
+      .withStaticVariable("my_map_empty", Map.of())
+      .launch(validator -> {
+        validator.validate("bool(0)", false);
+        validator.validate("bool(1)", true);
+        validator.validate("bool(100)", true);
+        validator.validate("bool(-1)", false);
+        validator.validate("bool(-100)", false);
+
+        validator.validate("bool(1.1)", true);
+        validator.validate("bool(100.1)", true);
+        validator.validate("bool(-1.1)", false);
+        validator.validate("bool(-100.1)", false);
+
+        validator.validate("bool(\"\")", false);
+        validator.validate("bool(\"non-empty\")", true);
+
+        validator.validate("bool(null)", false);
+        validator.validate("bool(true)", true);
+        validator.validate("bool(false)", false);
+
+        validator.validate("bool(my_list)", true);
+        validator.validate("bool(my_map)", true);
+        validator.validate("bool(my_list_empty)", false);
+        validator.validate("bool(my_map_empty)", false);
+      });
+  }
+}
+```
+</details>
+
+
+### date_format
+
+Format dates with a specified format by making use of the specified time-zone offset.
+
+| Argument | Description                      |
+|----------|----------------------------------|
+| date     | Date value to format             |
+| type     | Type of the provided date value  |
+| format   | Format to apply when formatting  |
+| timezone | Timezone to use, defaults to UTC |
+
+The following `type` variations are currently available:
+
+| type    | Description                    |
+|---------|--------------------------------|
+| seconds | Unix timestamp in seconds      |
+| millis  | Unix timestamp in milliseconds |
+| date    | Java Date Object               |
+
+```
+date_format(date: Number|Date, type: String, format: String, timezone?: String): String
+```
+
+<details>
+<summary>DateFormatFunctionTests.java</summary>
+
+```java
+package me.blvckbytes.gpeee.std;
+
+public class DateFormatFunctionTests {
+
+  @Test
+  public void shouldRequireArguments() {
+    new EnvironmentBuilder()
+      .launch(validator -> {
+        validator.validateThrows("date_format()", InvalidFunctionArgumentTypeError.class);
+        validator.validateThrows("date_format(0)", InvalidFunctionArgumentTypeError.class);
+        validator.validateThrows("date_format(0, \"\")", InvalidFunctionArgumentTypeError.class);
+      });
+  }
+
+  @Test
+  public void shouldThrowOnNonNumericValues() {
+    new EnvironmentBuilder()
+      .withStaticVariable("format_a", "yyyy-MM-dd")
+      .launch(validator -> {
+        // Required, thus non-nullable
+        validator.validateThrows("date_format(null, \"seconds\", format_a)", InvalidFunctionArgumentTypeError.class);
+        validator.validateThrows("date_format(null, \"millis\", format_a)", InvalidFunctionArgumentTypeError.class);
+
+        validator.validateThrows("date_format(\"\", \"seconds\", format_a)", InvalidFunctionInvocationError.class);
+        validator.validateThrows("date_format(true, \"seconds\", format_a)", InvalidFunctionInvocationError.class);
+        validator.validateThrows("date_format(\"\", \"millis\", format_a)", InvalidFunctionInvocationError.class);
+        validator.validateThrows("date_format(true, \"millis\", format_a)", InvalidFunctionInvocationError.class);
+      });
+  }
+
+  @Test
+  public void shouldThrowOnNonMalformedFormat() {
+    new EnvironmentBuilder()
+      .withStaticVariable("format", "hello, world")
+      .launch(validator -> {
+        validator.validateThrows("date_format(0, \"millis\", format)", InvalidFunctionInvocationError.class);
+      });
+  }
+
+  @Test
+  public void shouldThrowOnMalformedTimeZone() {
+    new EnvironmentBuilder()
+      .withStaticVariable("format", "HH:mm")
+      .withStaticVariable("zone", "hello")
+      .launch(validator -> {
+        validator.validateThrows("date_format(0, \"millis\", format, zone)", InvalidFunctionInvocationError.class);
+      });
+  }
+
+  @Test
+  public void shouldThrowOnMalformedType() {
+    new EnvironmentBuilder()
+      .withStaticVariable("format", "HH:mm")
+      .launch(validator -> {
+        validator.validateThrows("date_format(0, \"hello\", format)", InvalidFunctionInvocationError.class);
+      });
+  }
+
+  @Test
+  public void shouldThrowOnNonDateObject() {
+    new EnvironmentBuilder()
+      .withStaticVariable("format", "HH:mm")
+      .withStaticVariable("non_date", new Object())
+      .launch(validator -> {
+        validator.validateThrows("date_format(non_date, \"date\", format)", InvalidFunctionInvocationError.class);
+      });
+  }
+
+  @Test
+  public void shouldFormatSeconds() {
+    new EnvironmentBuilder()
+      .withStaticVariable("format_a", "yyyy-MM-dd")
+      .withStaticVariable("format_b", "yyyy/MM/dd")
+      .withStaticVariable("format_c", "dd.MM.yyyy HH:mm:ss")
+      .withStaticVariable("stamp", 1677579422) // Tue Feb 28 2023 10:17:02 UTC
+      .launch(validator -> {
+        validator.validate("date_format(stamp, \"seconds\", format_a)", "2023-02-28");
+        validator.validate("date_format(stamp, \"seconds\", format_b)", "2023/02/28");
+        validator.validate("date_format(stamp, \"seconds\", format_c)", "28.02.2023 10:17:02");
+
+        validator.validate("date_format(stamp, \"seconds\", format_c, \"CET\")", "28.02.2023 11:17:02");
+      });
+  }
+
+  @Test
+  public void shouldFormatMilliSeconds() {
+    new EnvironmentBuilder()
+      .withStaticVariable("format_a", "yyyy-MM-dd")
+      .withStaticVariable("format_b", "yyyy/MM/dd")
+      .withStaticVariable("format_c", "dd.MM.yyyy HH:mm:ss")
+      .withStaticVariable("stamp", 1677579422L * 1000) // Tue Feb 28 2023 10:17:02 UTC
+      .launch(validator -> {
+        validator.validate("date_format(stamp, \"millis\", format_a)", "2023-02-28");
+        validator.validate("date_format(stamp, \"millis\", format_b)", "2023/02/28");
+        validator.validate("date_format(stamp, \"millis\", format_c)", "28.02.2023 10:17:02");
+
+        validator.validate("date_format(stamp, \"millis\", format_c, \"CET\")", "28.02.2023 11:17:02");
+      });
+  }
+
+  @Test
+  public void shouldFormatDates() {
+    new EnvironmentBuilder()
+      .withStaticVariable("format_a", "yyyy-MM-dd")
+      .withStaticVariable("format_b", "yyyy/MM/dd")
+      .withStaticVariable("format_c", "dd.MM.yyyy HH:mm:ss")
+      .withStaticVariable("date", new Date(1677579422L * 1000)) // Tue Feb 28 2023 10:17:02 UTC
+      .launch(validator -> {
+        validator.validate("date_format(date, \"date\", format_a)", "2023-02-28");
+        validator.validate("date_format(date, \"date\", format_b)", "2023/02/28");
+        validator.validate("date_format(date, \"date\", format_c)", "28.02.2023 10:17:02");
+
+        validator.validate("date_format(date, \"date\", format_c, \"CET\")", "28.02.2023 11:17:02");
+      });
+  }
+}
+```
+</details>
+
+
+### iter_cat
+
+Iterate over a collection while mapping each iteration through a lambda function, who's result
+is being appended to the final result string.
+
+| Argument  | Description                                                |
+|-----------|------------------------------------------------------------|
+| items     | Collection to iterate                                      |
+| mapper    | Lambda function to map items with                          |
+| separator | Separator to use when concatenating items, defaults to "," |
+| fallback  | Value to return if the collection is empty                 |
+
+```
+iter_cat(items: Collection<?>, mapper: (item: Object, index: Number) => String, separator?: String, fallback?: Object): String
+```
+
+<details>
+<summary>IterCatFunctionTests.java</summary>
+
+```java
+package me.blvckbytes.gpeee.std;
+
+public class IterCatFunctionTests {
+
+  @Test
+  public void shouldThrowOnNonCollectionInput() {
+    createEnvironment().launch(validator -> {
+      validator.validateThrows("iter_cat(my_number, () => \"\")", InvalidFunctionArgumentTypeError.class);
+      validator.validateThrows("iter_cat(my_string, () => \"\")", InvalidFunctionArgumentTypeError.class);
+      validator.validateThrows("iter_cat(my_boolean, () => \"\")", InvalidFunctionArgumentTypeError.class);
+      validator.validateThrows("iter_cat(null, () => \"\")", InvalidFunctionArgumentTypeError.class);
+    });
+  }
+
+  @Test
+  public void shouldAcceptAMapAsInput() {
+    createEnvironment().launch(validator -> {
+      validator.validate(
+        "iter_cat(my_map, (it, ind) => \"(\" & ind & \" -> \" & key(it) & \"-\" & value(it) & \")\", \", \")",
+        "(0 -> red-#FF0000), (1 -> green-#00FF00), (2 -> blue-#0000FF)"
+      );
+    });
+  }
+
+  @Test
+  public void shouldAcceptAListAsInput() {
+    createEnvironment().launch(validator -> {
+      validator.validate(
+        "iter_cat(my_list, (it, ind) => \"(\" & ind & \" -> \" & it & \")\", \" | \")",
+        "(0 -> red) | (1 -> green) | (2 -> blue)"
+      );
+    });
+  }
+
+  @Test
+  public void shouldUseDefaultSeparator() {
+    createEnvironment().launch(validator -> {
+      validator.validate(
+        "iter_cat(my_list, (it, ind) => \"(\" & ind & \" -> \" & it & \")\")",
+        "(0 -> red), (1 -> green), (2 -> blue)"
+      );
+    });
+  }
+
+  @Test
+  public void shouldPrintEmptyIfEmptyAndNoFallbackAvailable() {
+    createEnvironment().launch(validator -> {
+      validator.validate(
+        "iter_cat(my_list_empty, (it, ind) => \"(\" & ind & \" -> \" & it & \")\")",
+        ""
+      );
+    });
+  }
+
+  @Test
+  public void shouldPrintFallbackIfEmptyAndFallbackAvailable() {
+    createEnvironment().launch(validator -> {
+      validator.validate(
+        "iter_cat(my_list_empty, (it, ind) => \"(\" & ind & \" -> \" & it & \")\", fallback=\"this is my fallback\")",
+        "this is my fallback"
+      );
+    });
+  }
+
+  private EnvironmentBuilder createEnvironment() {
+    return new EnvironmentBuilder()
+      .withStaticVariable("my_list", createColorList())
+      .withStaticVariable("my_list_empty", List.of())
+      .withStaticVariable("my_map", createColorMap())
+      .withStaticVariable("my_map_empty", Map.of())
+      .withStaticVariable("my_number", 1)
+      .withStaticVariable("my_string", "hello world")
+      .withStaticVariable("my_boolean", true);
+  }
+
+  private List<String> createColorList() {
+    return List.of("red", "green", "blue");
+  }
+
+  private Map<String, String> createColorMap() {
+    Map<String, String> map = new LinkedHashMap<>();
+    map.put("red", "#FF0000");
+    map.put("green", "#00FF00");
+    map.put("blue", "#0000FF");
+    return map;
+  }
+}
+```
+</details>
+
+
+### key
+
+Extracts the key from a Java `Map.Entry<?, ?>`.
+
+| Argument | Description           |
+|----------|-----------------------|
+| entry    | Entry to extract from |
+
+```
+key(entry: Map.Entry<?, ?>): Object
+```
+
+<details>
+<summary>KeyFunctionTests.java</summary>
+
+```java
+package me.blvckbytes.gpeee.std;
+
+public class KeyFunctionTests {
+
+  @Test
+  public void shouldThrowOnNonMapEntryInput() {
+    createEnvironment().launch(validator -> {
+      validator.validateThrows("key(my_number, () => \"\")", InvalidFunctionArgumentTypeError.class);
+      validator.validateThrows("key(my_string, () => \"\")", InvalidFunctionArgumentTypeError.class);
+      validator.validateThrows("key(my_boolean, () => \"\")", InvalidFunctionArgumentTypeError.class);
+      validator.validateThrows("key(my_list, () => \"\")", InvalidFunctionArgumentTypeError.class);
+    });
+  }
+
+  @Test
+  public void shouldReturnMapKeys() {
+    createEnvironment().launch(validator -> {
+      validator.validate("key(list(my_map)[0])", "red");
+      validator.validate("key(list(my_map)[1])", "green");
+      validator.validate("key(list(my_map)[2])", "blue");
+      validator.validate("key(null)", (Object) null);
+    });
+  }
+
+  private EnvironmentBuilder createEnvironment() {
+    return new EnvironmentBuilder()
+      .withStaticVariable("my_list", createColorList())
+      .withStaticVariable("my_list_empty", List.of())
+      .withStaticVariable("my_map", createColorMap())
+      .withStaticVariable("my_map_empty", Map.of())
+      .withStaticVariable("my_number", 1)
+      .withStaticVariable("my_string", "hello world")
+      .withStaticVariable("my_boolean", true);
+  }
+
+  private List<String> createColorList() {
+    return List.of("red", "green", "blue");
+  }
+
+  private Map<String, String> createColorMap() {
+    Map<String, String> map = new LinkedHashMap<>();
+    map.put("red", "#FF0000");
+    map.put("green", "#00FF00");
+    map.put("blue", "#0000FF");
+    return map;
+  }
+}
+```
+</details>
+
+
+### len
+
+Returns the length of the provided value, based on it's type.
+
+| Argument | Description                |
+|----------|----------------------------|
+| input    | Value to get the length of |
+
+```
+len(value: Object): Number
+```
+
+Where the following value types are supported
+
+| Input Type    | Description              |
+|---------------|--------------------------|
+| null, default | Always returns 0         |
+| String        | Length of the string     |
+| Collection<?> | Length of the collection |
+| Map<?, ?>     | Length of the map        |
+| Array         | Length of the array      |
+
+<details>
+<summary>LenFunctionTests.java</summary>
+
+```java
+package me.blvckbytes.gpeee.std;
+
+public class LenFunctionTests {
+
+  @Test
+  public void shouldRespondWithAnItemsLength() {
+    new EnvironmentBuilder()
+      .withStaticVariable("my_list", List.of(1, 2, 3, 4))
+      .withStaticVariable("my_list_empty", List.of())
+      .withStaticVariable("my_map", Map.of("k", "v", "k2", "v2"))
+      .withStaticVariable("my_map_empty", Map.of())
+      .withStaticVariable("my_array", new int[] { 1, 2, 3 })
+      .withStaticVariable("my_array_empty", new int[] {})
+      .withStaticVariable("my_string", "hello, world")
+      .launch(validator -> {
+        validator.validate("len(my_list)", 4);
+        validator.validate("len(my_list_empty)", 0);
+        validator.validate("len(my_map)", 2);
+        validator.validate("len(my_map_empty)", 0);
+        validator.validate("len(my_array)", 3);
+        validator.validate("len(my_array_empty)", 0);
+        validator.validate("len(my_string)", "hello, world".length());
+        validator.validate("len(null)", 0);
+        validator.validate("len(1)", 0);
+        validator.validate("len(1.1)", 0);
+      });
+  }
+}
+```
+</details>
+
+
+### l_index
+
+Returns the first index of the passed substring within the input string. Returns -1 if the searched
+string is not at all present in the input string.
+
+| Argument | Description          |
+|----------|----------------------|
+| input    | Input to search in   |
+| search   | String to search for |
+
+```
+l_index(input: String, search: String): Number
+```
+
+<details>
+<summary>LIndexFunctionTests.java</summary>
+
+```java
+package me.blvckbytes.gpeee.std;
+
+public class LIndexFunctionTests {
+
+  @Test
+  public void shouldRequireArguments() {
+    new EnvironmentBuilder()
+      .launch(validator -> {
+        validator.validateThrows("l_index()", InvalidFunctionArgumentTypeError.class);
+        validator.validateThrows("l_index(\"\")", InvalidFunctionArgumentTypeError.class);
+        validator.validateThrows("l_index(null, null)", InvalidFunctionArgumentTypeError.class);
+      });
+  }
+
+  @Test
+  public void shouldReturnFirstIndexOf() {
+    new EnvironmentBuilder()
+      .launch(validator -> {
+        validator.validate("l_index(\"hello, world\", \"h\")", 0);
+        validator.validate("l_index(\"hello, world\", \"l\")", 2);
+        validator.validate("l_index(\"hello, world\", \"x\")", -1);
+      });
+  }
+}
 ```
 </details>
 

@@ -247,6 +247,126 @@ The following *EBNF* describes the grammar of this small expression language pre
 
 <!-- #include src/main/resources/grammar.ebnf -->
 
+## Standard Functions
+
+Standard functions are functions which are always going to be available, no matter of the current environment. They cannot be shadowed
+by environment identifiers and provide basic features which you're likely going to need if you're notating logic.
+
+For the sake of readability, functions are notated in `TypeScript` notation within this list of functions. The type follows after
+the colon (`:`) and a question mark (`?`) signals an optional input. In order to help you to understand their behaviour, their
+test cases have been added in an expandable container, which provide use-case examples.
+
+### bool
+
+Interpret the input variable as a boolean by making use of the environments value interpreter.
+
+| Argument | Description                     |
+|----------|---------------------------------|
+| input    | Value to interpret as a boolean |
+
+```
+bool(input?: Object): boolean
+```
+
+<!-- #include src/test/java/me/blvckbytes/gpeee/std/BoolFunctionTests.java -->
+
+### date_format
+
+Format dates with a specified format by making use of the specified time-zone offset.
+
+| Argument | Description                      |
+|----------|----------------------------------|
+| date     | Date value to format             |
+| type     | Type of the provided date value  |
+| format   | Format to apply when formatting  |
+| timezone | Timezone to use, defaults to UTC |
+
+The following `type` variations are currently available:
+
+| type    | Description                    |
+|---------|--------------------------------|
+| seconds | Unix timestamp in seconds      |
+| millis  | Unix timestamp in milliseconds |
+| date    | Java Date Object               |
+
+```
+date_format(date: Number|Date, type: String, format: String, timezone?: String): String
+```
+
+<!-- #include src/test/java/me/blvckbytes/gpeee/std/DateFormatFunctionTests.java -->
+
+### iter_cat
+
+Iterate over a collection while mapping each iteration through a lambda function, who's result
+is being appended to the final result string.
+
+| Argument  | Description                                                |
+|-----------|------------------------------------------------------------|
+| items     | Collection to iterate                                      |
+| mapper    | Lambda function to map items with                          |
+| separator | Separator to use when concatenating items, defaults to "," |
+| fallback  | Value to return if the collection is empty                 |
+
+```
+iter_cat(items: Collection<?>, mapper: (item: Object, index: Number) => String, separator?: String, fallback?: Object): String
+```
+
+<!-- #include src/test/java/me/blvckbytes/gpeee/std/IterCatFunctionTests.java -->
+
+### key
+
+Extracts the key from a Java `Map.Entry<?, ?>`.
+
+| Argument | Description           |
+|----------|-----------------------|
+| entry    | Entry to extract from |
+
+```
+key(entry: Map.Entry<?, ?>): Object
+```
+
+<!-- #include src/test/java/me/blvckbytes/gpeee/std/KeyFunctionTests.java -->
+
+### len
+
+Returns the length of the provided value, based on it's type.
+
+| Argument | Description                |
+|----------|----------------------------|
+| input    | Value to get the length of |
+
+```
+len(value: Object): Number
+```
+
+Where the following value types are supported
+
+| Input Type    | Description              |
+|---------------|--------------------------|
+| null, default | Always returns 0         |
+| String        | Length of the string     |
+| Collection<?> | Length of the collection |
+| Map<?, ?>     | Length of the map        |
+| Array         | Length of the array      |
+
+<!-- #include src/test/java/me/blvckbytes/gpeee/std/LenFunctionTests.java -->
+
+### l_index
+
+Returns the first index of the passed substring within the input string. Returns -1 if the searched
+string is not at all present in the input string.
+
+| Argument | Description          |
+|----------|----------------------|
+| input    | Input to search in   |
+| search   | String to search for |
+
+```
+l_index(input: String, search: String): Number
+```
+
+<!-- #include src/test/java/me/blvckbytes/gpeee/std/LIndexFunctionTests.java -->
+
 <!-- #configure include SKIP_LEADING_COMMENTS true -->
 <!-- #configure include SKIP_LEADING_EMPTY true -->
 <!-- #configure include SKIP_LEADING_PACKAGE false -->
