@@ -178,37 +178,42 @@ public class EnvironmentBuilder {
     return returnValue;
   }
 
-  public void launch(Consumer<IExpressionResultValidator> validator) {
+  public void launch(FUnsafeConsumer<IExpressionResultValidator, Exception> validator) {
     IEvaluationEnvironment env = this.buildEnvironment();
 
-    validator.accept(new IExpressionResultValidator() {
+    try {
+      validator.accept(new IExpressionResultValidator() {
 
-      @Override
-      public void validate(String expression, Object[] results) throws AssertionError {
-        validateExpression(expression, results, env, false);
-      }
+        @Override
+        public void validate(String expression, Object[] results) throws AssertionError {
+          validateExpression(expression, results, env, false);
+        }
 
-      @Override
-      public void validate(String expression, Object result) throws AssertionError {
-        validate(expression, new Object[] { result });
-      }
+        @Override
+        public void validate(String expression, Object result) throws AssertionError {
+          validate(expression, new Object[]{result});
+        }
 
-      @Override
-      public void validateExact(String expression, Object result) throws AssertionError {
-        validateExpression(expression, new Object[] { result }, env, true);
-      }
+        @Override
+        public void validateExact(String expression, Object result) throws AssertionError {
+          validateExpression(expression, new Object[]{result}, env, true);
+        }
 
-      @Override
-      public void validateThrows(String expression, Class<? extends RuntimeException> error) throws AssertionError {
-        assertThrows(error, () -> evaluator.evaluateExpression(evaluator.parseString(expression), env));
-      }
+        @Override
+        public void validateThrows(String expression, Class<? extends RuntimeException> error) throws AssertionError {
+          assertThrows(error, () -> evaluator.evaluateExpression(evaluator.parseString(expression), env));
+        }
 
-      @Override
-      public String optimizeAndExpressionify(String expression) {
-        return evaluator.optimizeExpression(evaluator.parseString(expression)).expressionify();
-      }
-    });
-
+        @Override
+        public String optimizeAndExpressionify(String expression) {
+          return evaluator.optimizeExpression(evaluator.parseString(expression)).expressionify();
+        }
+      });
+    } catch (Exception error) {
+      IllegalStateException exception = new IllegalStateException("Test invocation threw");
+      exception.addSuppressed(error);
+      throw exception;
+    }
   }
 
   private void validateExpression(String expression, Object[] results, IEvaluationEnvironment env, boolean exact) {
