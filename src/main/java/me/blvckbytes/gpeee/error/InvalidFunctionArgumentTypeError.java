@@ -25,6 +25,7 @@
 package me.blvckbytes.gpeee.error;
 
 import me.blvckbytes.gpeee.functions.ExpressionFunctionArgument;
+import me.blvckbytes.gpeee.parser.expression.AExpression;
 import me.blvckbytes.gpeee.parser.expression.FunctionInvocationExpression;
 
 public class InvalidFunctionArgumentTypeError extends AEvaluatorError {
@@ -37,12 +38,33 @@ public class InvalidFunctionArgumentTypeError extends AEvaluatorError {
   ) {
     super(
       // Point to the position of the argument causing trouble or the function identifier if there are no arguments
-      function.getArguments().size() == 0 ? function.getHead().getRow() : function.getArguments().get(argumentIndex).getA().getHead().getRow(),
-      function.getArguments().size() == 0 ? function.getHead().getCol() : function.getArguments().get(argumentIndex).getA().getHead().getCol(),
+      decideRow(function, argumentIndex), decideCol(function, argumentIndex),
       function.getFullContainingExpression(),
       "Invalid function argument, expected value of type " + definition.stringifyAllowedTypes() +
       " but got " + (argumentValue == null ? "<null>" : argumentValue.getClass().getName()) + "\n" +
       "Argument description: " + definition.getDescription()
     );
+  }
+
+  private static int decideRow(FunctionInvocationExpression function, int argumentIndex) {
+    int row = function.getHead().getRow();
+
+    if (argumentIndex < function.getArguments().size()) {
+      AExpression argumentExpression = function.getArguments().get(argumentIndex).getA();
+      row = argumentExpression.getHead().getRow();
+    }
+
+    return row;
+  }
+
+  private static int decideCol(FunctionInvocationExpression function, int argumentIndex) {
+    int col = function.getHead().getCol();
+
+    if (argumentIndex < function.getArguments().size()) {
+      AExpression argumentExpression = function.getArguments().get(argumentIndex).getA();
+      col = argumentExpression.getHead().getCol();
+    }
+
+    return col;
   }
 }
