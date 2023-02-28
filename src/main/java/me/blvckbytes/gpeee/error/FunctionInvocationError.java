@@ -26,14 +26,12 @@ package me.blvckbytes.gpeee.error;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 @Getter
 @AllArgsConstructor
 public class FunctionInvocationError {
 
-  private final @Nullable Integer argumentIndex;
-  private final @NotNull String message;
+  private final int argumentIndex;
+  private final String message;
 
 }

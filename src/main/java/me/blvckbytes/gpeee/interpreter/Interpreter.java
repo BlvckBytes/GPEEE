@@ -238,7 +238,9 @@ public class Interpreter {
       // Throw an exception based on the error description object, now that the expression ref is available
       if (result instanceof FunctionInvocationError) {
         FunctionInvocationError error = (FunctionInvocationError) result;
-        throw new InvalidFunctionInvocationError(functionExpression, error.getArgumentIndex(), error.getMessage());
+        int index = error.getArgumentIndex();
+        Object value = arguments.size() > index ? arguments.get(index) : null;
+        throw new InvalidFunctionInvocationError(functionExpression, index, value, error.getMessage());
       }
 
       //#if mvn.project.property.production != "true"

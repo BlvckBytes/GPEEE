@@ -32,13 +32,14 @@ public class InvalidFunctionInvocationError extends AEvaluatorError {
 
   public InvalidFunctionInvocationError(
     FunctionInvocationExpression function,
-    @Nullable Integer argumentIndex,
+    int argumentIndex,
+    @Nullable Object argumentValue,
     String message
   ) {
     super(
         getMarkerTarget(function, argumentIndex).getRow(), getMarkerTarget(function, argumentIndex).getCol(),
         function.getFullContainingExpression(),
-        message
+        message + " (value=" + (argumentValue == null ? "<null>" : argumentValue) + ")"
     );
   }
 
