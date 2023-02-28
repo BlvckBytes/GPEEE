@@ -74,7 +74,7 @@ public class IterCatFunction extends AStandardFunction {
 
   @Override
   public @Nullable List<ExpressionFunctionArgument> getArguments() {
-    // iter_cat(items, (it, ind) -> (..), "separator", "no items fallback")
+    // iter_cat(items, (it, ind) => (..), "separator", "no items fallback")
     return List.of(
       new ExpressionFunctionArgument("items",     "Collection to iterate",             true,  Collection.class),
       new ExpressionFunctionArgument("mapper",    "Iteration item mapper function",    true,  AExpressionFunction.class),

@@ -64,7 +64,7 @@ public class IterMapFunction extends AStandardFunction {
 
   @Override
   public @Nullable List<ExpressionFunctionArgument> getArguments() {
-    // iter_map(items, (it, ind) -> (..), "empty input")
+    // iter_map(items, (it, ind) => (..), "empty input")
     return List.of(
       new ExpressionFunctionArgument("items",     "Collection to iterate",             true,  Collection.class),
       new ExpressionFunctionArgument("mapper",    "Iteration item mapper function",    true,  AExpressionFunction.class),
