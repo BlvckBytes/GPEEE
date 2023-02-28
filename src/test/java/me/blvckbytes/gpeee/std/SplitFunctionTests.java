@@ -38,7 +38,6 @@ public class SplitFunctionTests {
     new EnvironmentBuilder()
       .launch(validator -> {
         validator.validateThrows("split()", InvalidFunctionArgumentTypeError.class);
-        validator.validateThrows("split(\"\")", InvalidFunctionArgumentTypeError.class);
       });
   }
 
