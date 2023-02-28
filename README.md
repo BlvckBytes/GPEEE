@@ -35,6 +35,17 @@ want to integrate into your next project.
   - [key](#key)
   - [len](#len)
   - [l_index](#l_index)
+  - [list](#list)
+  - [list_of](#list_of)
+  - [map](#map)
+  - [map_of](#map_of)
+  - [print](#print)
+  - [r_index](#r_index)
+  - [split](#split)
+  - [str](#str)
+  - [substring](#substring)
+  - [title_case](#title_case)
+  - [value](#value)
 
 ## Mission Statement
 
@@ -434,7 +445,7 @@ public class IterCatFunction extends AStandardFunction {
     // Retrieve arguments
     Collection<?> items = nonNull(args, 0);
     AExpressionFunction mapper = nonNull(args, 1);
-    @Nullable String separator = nullableWithFallback(args, 2, ",");
+    @Nullable String separator = nullableWithFallback(args, 2, ", ");
     @Nullable String fallback = nullable(args, 3);
 
     StringBuilder result = new StringBuilder();
@@ -758,14 +769,14 @@ test cases have been added in an expandable container, which provide use-case ex
 
 ### bool
 
-Interpret the input variable as a boolean by making use of the environments value interpreter.
+Interpret the input value as a boolean by making use of the environments value interpreter.
 
 | Argument | Description                     |
 |----------|---------------------------------|
 | input    | Value to interpret as a boolean |
 
 ```
-bool(input?: Object): boolean
+bool(input?: Object): Boolean
 ```
 
 <details>
@@ -817,12 +828,12 @@ public class BoolFunctionTests {
 
 Format dates with a specified format by making use of the specified time-zone offset.
 
-| Argument | Description                      |
-|----------|----------------------------------|
-| date     | Date value to format             |
-| type     | Type of the provided date value  |
-| format   | Format to apply when formatting  |
-| timezone | Timezone to use, defaults to UTC |
+| Argument | Description                                                                                                  |
+|----------|--------------------------------------------------------------------------------------------------------------|
+| date     | Date value to format                                                                                         |
+| type     | Type of the provided date value                                                                              |
+| format   | [Format](https://docs.oracle.com/javase/7/docs/api/java/text/SimpleDateFormat.html) to apply when formatting |
+| timezone | Timezone to use, defaults to UTC                                                                             |
 
 The following `type` variations are currently available:
 
@@ -1236,6 +1247,566 @@ public class LIndexFunctionTests {
         validator.validate("l_index(\"hello, world\", \"l\")", 2);
         validator.validate("l_index(\"hello, world\", \"x\")", -1);
       });
+  }
+}
+```
+</details>
+
+
+### list
+
+Interpret the input value as a list. Scalar values will create singleton lists, lists will be passed through and
+maps will be converted to lists of their entry-sets.
+
+| Argument | Description                  |
+|----------|------------------------------|
+| input    | Input to interpret as a list |
+
+```
+list(input?: Object): List<?>
+```
+
+<details>
+<summary>ListFunctionTests.java</summary>
+
+```java
+package me.blvckbytes.gpeee.std;
+
+public class ListFunctionTests {
+
+  @Test
+  public void shouldInterpretValuesAsAList() {
+    EnvironmentBuilder env = new EnvironmentBuilder()
+      .withStaticVariable("my_list", createList(1))
+      .withStaticVariable("my_list_empty", createList())
+      .withStaticVariable("my_map", Map.of("k", "v"))
+      .withStaticVariable("my_map_empty", Map.of());
+
+    env.launch(validator -> {
+      validator.validate("list(0)", createList(0));
+      validator.validate("list(1)", createList(1));
+      validator.validate("list(100)", createList(100));
+      validator.validate("list(-1)", createList(-1));
+      validator.validate("list(-100)", createList(-100));
+
+      validator.validate("list(1.1)", createList(1.1));
+      validator.validate("list(100.1)", createList(100.1));
+      validator.validate("list(-1.1)", createList(-1.1));
+      validator.validate("list(-100.1)", createList(-100.1));
+
+      validator.validate("list(\"\")", createList(""));
+      validator.validate("list(\"non-empty\")", createList("non-empty"));
+
+      validator.validate("list(null)", createList());
+      validator.validate("list(true)", createList(true));
+      validator.validate("list(false)", createList(false));
+
+      // Lists should be passed through
+      validator.validate("list(my_list)", env.getVariable("my_list"));
+      validator.validate("list(my_list_empty)", env.getVariable("my_list_empty"));
+
+      // Maps should be converted to their entry-set
+      validator.validate("list(my_map)", ((Map<?, ?>) Objects.requireNonNull(env.getVariable("my_map"))).entrySet());
+      validator.validate("list(my_map_empty)", ((Map<?, ?>) Objects.requireNonNull(env.getVariable("my_map_empty"))).entrySet());
+    });
+  }
+
+  private List<Object> createList(Object... items) {
+    return new ArrayList<>(Arrays.asList(items));
+  }
+}
+```
+</details>
+
+
+### list_of
+
+Create a list from a variable amount of scalar input values.
+
+| Argument | Description                     |
+|----------|---------------------------------|
+| input... | Variable amount of input values |
+
+```
+list_of(value...?: Object): List<?>
+```
+
+<details>
+<summary>ListOfFunctionTests.java</summary>
+
+```java
+package me.blvckbytes.gpeee.std;
+
+public class ListOfFunctionTests {
+
+  @Test
+  public void shouldCollectArgumentsIntoAList() {
+    EnvironmentBuilder env = new EnvironmentBuilder();
+
+    env.launch(validator -> {
+      validator.validate("list_of(0)", List.of(0));
+      validator.validate("list_of(0, 1, 2)", List.of(0, 1, 2));
+      validator.validate("list_of(2, 3, \"String\")", List.of(2, 3, "String"));
+      validator.validate("list_of()", List.of());
+      validator.validate("list_of(null)", nullList());
+    });
+  }
+
+  private List<Object> nullList() {
+    List<Object> result = new ArrayList<>();
+    result.add(null);
+    return result;
+  }
+}
+```
+</details>
+
+
+### map
+
+Iterate over a collection while mapping each iteration through a lambda function, who's result
+is being appended to the final result list.
+
+| Argument  | Description                                                |
+|-----------|------------------------------------------------------------|
+| items     | Collection to iterate                                      |
+| mapper    | Lambda function to map items with                          |
+| fallback  | Value to return if the collection is empty                 |
+
+```
+map(items: Collection<?>, mapper: (item: Object, index: Number) => String, fallback?: Object): List<?>
+```
+
+<details>
+<summary>MapFunctionTests.java</summary>
+
+```java
+package me.blvckbytes.gpeee.std;
+
+public class MapFunctionTests {
+
+  @Test
+  public void shouldRequireArguments() {
+    new EnvironmentBuilder()
+      .withStaticVariable("items", List.of())
+      .launch(validator -> {
+        validator.validateThrows("map()", InvalidFunctionArgumentTypeError.class);
+        validator.validateThrows("map(items)", InvalidFunctionArgumentTypeError.class);
+      });
+  }
+
+  @Test
+  public void shouldReturnFallbackValueWhenEmpty() {
+    new EnvironmentBuilder()
+      .withStaticVariable("items_empty", List.of())
+      .withStaticVariable("items_one", List.of(1))
+      .launch(validator -> {
+        validator.validate("map(items_empty, (item) => item, \"empty collection\")", List.of("empty collection"));
+        validator.validate("map(items_one, (item) => item, \"empty collection\")", List.of(1));
+      });
+  }
+
+  @Test
+  public void shouldMapInputItems() {
+    new EnvironmentBuilder()
+      .withStaticVariable("items", List.of("a", "b", "c"))
+      .withStaticVariable("items_empty", List.of())
+      .launch(validator -> {
+        validator.validate("map(items, (item) => item & \" suffix\")", List.of("a suffix", "b suffix", "c suffix"));
+        validator.validate("map(items_empty, (item, index) => index & item)", List.of());
+      });
+  }
+}
+```
+</details>
+
+
+### map_of
+
+Create a list from a variable amount of scalar input value pairs.
+
+| Argument | Description                                     |
+|----------|-------------------------------------------------|
+| input... | Variable amount of input values, taken in pairs |
+
+```
+map_of(value...?: Object): Map<?, ?>
+```
+
+<details>
+<summary>MapOfFunctionTests.java</summary>
+
+```java
+package me.blvckbytes.gpeee.std;
+
+public class MapOfFunctionTests {
+
+  @Test
+  public void shouldCollectArgumentsIntoAMap() {
+    EnvironmentBuilder env = new EnvironmentBuilder();
+
+    env.launch(validator -> {
+      validator.validate("map_of(\"k\", 1)", Map.of("k", 1));
+      validator.validate("map_of(\"k1\", 1.2, \"k2\", -5, \"k3\", \"value 3\")", Map.of("k1", 1.2, "k2", -5, "k3", "value 3"));
+      validator.validate("map_of(\"k\", null)", nullMap("k"));
+      validator.validate("map_of()", Map.of());
+
+      validator.validateThrows("map_of(\"k\")", InvalidFunctionInvocationError.class);
+      validator.validateThrows("map_of(\"k\", 1, \"k2\")", InvalidFunctionInvocationError.class);
+    });
+  }
+
+  private Map<String, ?> nullMap(String key) {
+    Map<String, ?> result = new HashMap<>();
+    result.put(key, null);
+    return result;
+  }
+}
+```
+</details>
+
+
+### print
+
+Print the input values to STDOUT.
+
+| Argument | Description                     |
+|----------|---------------------------------|
+| input... | Variable amount of input values |
+
+```
+print(input...? Object): void
+```
+
+<details>
+<summary>PrintFunctionTests.java</summary>
+
+```java
+package me.blvckbytes.gpeee.std;
+
+public class PrintFunctionTests {
+
+  @Test
+  public void shouldPrintToStdOutAndReturnNull() {
+    Object testObject = new Object();
+
+    new EnvironmentBuilder()
+      .withStaticVariable("object", testObject)
+      .launch(validator -> {
+        validatePrinting(validator, "print()", "\n");
+        validatePrinting(validator, "print(object)", testObject + "\n");
+        validatePrinting(validator, "print(\"Hello\")", "Hello\n");
+        validatePrinting(validator, "print(\"Hello\", 25)", "Hello, 25\n");
+        validatePrinting(validator, "print(\"Hello\", 25, true)", "Hello, 25, true\n");
+      });
+  }
+
+  private void validatePrinting(IExpressionResultValidator validator, String expression, String expected) throws Exception {
+    PrintStream vanillaOut = System.out;
+
+    try (
+      ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+      PrintStream printStream = new PrintStream(outputStream);
+    ) {
+      System.setOut(printStream);
+      validator.validate(expression, (Object) null);
+
+      String printed = outputStream.toString(StandardCharsets.UTF_8);
+
+      // NOTE: All calls to validate() create two invocations under the hood, to validate the
+      // vanilla- as well as the optimized expression, thus we need to cut off the second half
+
+      int printedLength = printed.length();
+      if (printedLength % 2 != 0)
+        throw new IllegalStateException("2*n has to be always even");
+
+      assertEquals(expected, printed.substring(0, printedLength / 2));
+    } finally {
+      System.setOut(vanillaOut);
+    }
+  }
+}
+```
+</details>
+
+
+### r_index
+
+Returns the last index of the passed substring within the input string. Returns -1 if the searched
+string is not at all present in the input string.
+
+| Argument | Description          |
+|----------|----------------------|
+| input    | Input to search in   |
+| search   | String to search for |
+
+```
+r_index(input: String, search: String): Number
+```
+
+<details>
+<summary>RIndexFunctionTests.java</summary>
+
+```java
+package me.blvckbytes.gpeee.std;
+
+public class RIndexFunctionTests {
+
+  @Test
+  public void shouldRequireArguments() {
+    new EnvironmentBuilder()
+      .launch(validator -> {
+        validator.validateThrows("r_index()", InvalidFunctionArgumentTypeError.class);
+        validator.validateThrows("r_index(\"\")", InvalidFunctionArgumentTypeError.class);
+        validator.validateThrows("r_index(null, null)", InvalidFunctionArgumentTypeError.class);
+      });
+  }
+
+  @Test
+  public void shouldReturnFirstIndexOf() {
+    new EnvironmentBuilder()
+      .launch(validator -> {
+        validator.validate("r_index(\"hello, world\", \"o\")", 8);
+        validator.validate("r_index(\"hello, world\", \"l\")", 10);
+        validator.validate("r_index(\"hello, world\", \"x\")", -1);
+      });
+  }
+}
+```
+</details>
+
+
+### split
+
+Returns a list of resulting substrings based on splitting the input string based on the delimiter.
+
+| Argument  | Description                       |
+|-----------|-----------------------------------|
+| input     | Input string to split             |
+| delimiter | Delimiter to split on, default "," |
+
+```
+split(input: String, delimiter?: String): List<String>
+```
+
+<details>
+<summary>SplitFunctionTests.java</summary>
+
+```java
+package me.blvckbytes.gpeee.std;
+
+public class SplitFunctionTests {
+
+  @Test
+  public void shouldRequireArguments() {
+    new EnvironmentBuilder()
+      .launch(validator -> {
+        validator.validateThrows("split()", InvalidFunctionArgumentTypeError.class);
+      });
+  }
+
+  @Test
+  public void shouldSplitOnDefaultString() {
+    new EnvironmentBuilder()
+      .launch(validator -> {
+        validator.validate("split(\"hello,world,test\")", List.of("hello", "world", "test"));
+        validator.validate("split(\"another , weird,ex am ple\")", List.of("another ", " weird", "ex am ple"));
+      });
+  }
+
+  @Test
+  public void shouldSplitOnCustomString() {
+    new EnvironmentBuilder()
+      .launch(validator -> {
+        validator.validate("split(\"hello|world|test\", \"\\|\")", List.of("hello", "world", "test"));
+        validator.validate("split(\"hello|world,test\", \"\\|\")", List.of("hello", "world,test"));
+        validator.validate("split(\"another , weird|ex am ple\", \"\\|\")", List.of("another , weird", "ex am ple"));
+        validator.validate("split(\"myhelloworldhellotext\", \"hello\")", List.of("my", "world", "text"));
+      });
+  }
+}
+```
+</details>
+
+
+### str
+
+Interpret the input value as a string by making use of the environments value interpreter.
+
+| Argument | Description                    |
+|----------|--------------------------------|
+| input    | Value to interpret as a string |
+
+```
+str(input?: Object): String
+```
+
+<!-- #include src/test/java/me/blvckbytes/gpeee/std/StringFunctionTests.java -->
+
+### substring
+
+Returns a substring of the input, based on the start- and end indices.
+
+| Argument | Description                                                  |
+|----------|--------------------------------------------------------------|
+| input    | Input string to compute a substring of                       |
+| start    | Start index, inclusive, zero-based                           |
+| end      | End index, exclusive, zero-based, defaults to input's length |
+
+```
+substring(input: String, start: Number, end?: Number): String
+```
+
+<details>
+<summary>SubstringFunctionTests.java</summary>
+
+```java
+package me.blvckbytes.gpeee.std;
+
+public class SubStringFunctionTests {
+
+  @Test
+  public void shouldRequireArguments() {
+    new EnvironmentBuilder()
+      .launch(validator -> {
+        validator.validateThrows("substring()", InvalidFunctionArgumentTypeError.class);
+        validator.validateThrows("substring(\"\")", InvalidFunctionArgumentTypeError.class);
+      });
+  }
+
+  @Test
+  public void shouldThrowOnOutOfRangeIndices() {
+    new EnvironmentBuilder()
+      .launch(validator -> {
+        validator.validateThrows("substring(\"\", 1)", InvalidFunctionInvocationError.class);
+        validator.validateThrows("substring(\"hello\", 1, 20)", InvalidFunctionInvocationError.class);
+        validator.validateThrows("substring(\"hello\", -1, 20)", InvalidFunctionInvocationError.class);
+        validator.validateThrows("substring(\"hello\", 1, -2)", InvalidFunctionInvocationError.class);
+        validator.validateThrows("substring(\"hello\", 4, 2)", InvalidFunctionInvocationError.class);
+      });
+  }
+
+  @Test
+  public void shouldReturnSubstrings() {
+    new EnvironmentBuilder()
+      .launch(validator -> {
+        validator.validate("substring(\"Hello, world\", 0, 0)", "");
+        validator.validate("substring(\"Hello, world\", 5, 5)", "");
+        validator.validate("substring(\"Hello, world\", 1, 5)", "ello");
+        validator.validate("substring(\"Hello, world\", 2)", "llo, world");
+        validator.validate("substring(\"Hello, world\", 0, 8)", "Hello, w");
+      });
+  }
+}
+```
+</details>
+
+
+### title_case
+
+Transform the input string to title case (capitalize every word).
+
+| Argument | Description                               |
+|----------|-------------------------------------------|
+| input    | Input string to transform into title case |
+
+```
+title_case(input: String): String
+```
+
+<details>
+<summary>TitleCaseFunctionTests.java</summary>
+
+```java
+package me.blvckbytes.gpeee.std;
+
+public class TitleCaseFunctionTests {
+
+  @Test
+  public void shouldRequireInputArgument() {
+    new EnvironmentBuilder()
+      .launch(validator -> {
+        validator.validateThrows("title_case()", InvalidFunctionArgumentTypeError.class);
+        validator.validateThrows("title_case(null)", InvalidFunctionArgumentTypeError.class);
+      });
+  }
+
+  @Test
+  public void shouldTitleCaseItsInput() {
+    new EnvironmentBuilder()
+      .launch(validator -> {
+        validator.validate("title_case(\"hello world\")", "Hello World");
+        validator.validate("title_case(\"hElLo wOrlD\")", "Hello World");
+        validator.validate("title_case(\"hello,world\")", "Hello,World");
+        validator.validate("title_case(\"hello_world\")", "Hello_World");
+      });
+  }
+}
+```
+</details>
+
+
+### value
+
+Extracts the value from a Java `Map.Entry<?, ?>`.
+
+| Argument | Description           |
+|----------|-----------------------|
+| entry    | Entry to extract from |
+
+```
+value(entry: Map.Entry<?, ?>): Object
+```
+
+<details>
+<summary>ValueFunctionTests.java</summary>
+
+```java
+package me.blvckbytes.gpeee.std;
+
+public class ValueFunctionTests {
+
+  @Test
+  public void shouldThrowOnNonMapEntryInput() {
+    createEnvironment().launch(validator -> {
+      validator.validateThrows("value(my_number, () => \"\")", InvalidFunctionArgumentTypeError.class);
+      validator.validateThrows("value(my_string, () => \"\")", InvalidFunctionArgumentTypeError.class);
+      validator.validateThrows("value(my_boolean, () => \"\")", InvalidFunctionArgumentTypeError.class);
+      validator.validateThrows("value(my_list, () => \"\")", InvalidFunctionArgumentTypeError.class);
+    });
+  }
+
+  @Test
+  public void shouldReturnMapKeys() {
+    createEnvironment().launch(validator -> {
+      validator.validate("value(list(my_map)[0])", "#FF0000");
+      validator.validate("value(list(my_map)[1])", "#00FF00");
+      validator.validate("value(list(my_map)[2])", "#0000FF");
+      validator.validate("value(null)", (Object) null);
+    });
+  }
+
+  private EnvironmentBuilder createEnvironment() {
+    return new EnvironmentBuilder()
+      .withStaticVariable("my_list", createColorList())
+      .withStaticVariable("my_list_empty", List.of())
+      .withStaticVariable("my_map", createColorMap())
+      .withStaticVariable("my_map_empty", Map.of())
+      .withStaticVariable("my_number", 1)
+      .withStaticVariable("my_string", "hello world")
+      .withStaticVariable("my_boolean", true);
+  }
+
+  private List<String> createColorList() {
+    return List.of("red", "green", "blue");
+  }
+
+  private Map<String, String> createColorMap() {
+    Map<String, String> map = new LinkedHashMap<>();
+    map.put("red", "#FF0000");
+    map.put("green", "#00FF00");
+    map.put("blue", "#0000FF");
+    return map;
   }
 }
 ```

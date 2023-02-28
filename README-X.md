@@ -258,14 +258,14 @@ test cases have been added in an expandable container, which provide use-case ex
 
 ### bool
 
-Interpret the input variable as a boolean by making use of the environments value interpreter.
+Interpret the input value as a boolean by making use of the environments value interpreter.
 
 | Argument | Description                     |
 |----------|---------------------------------|
 | input    | Value to interpret as a boolean |
 
 ```
-bool(input?: Object): boolean
+bool(input?: Object): Boolean
 ```
 
 <!-- #include src/test/java/me/blvckbytes/gpeee/std/BoolFunctionTests.java -->
@@ -274,12 +274,12 @@ bool(input?: Object): boolean
 
 Format dates with a specified format by making use of the specified time-zone offset.
 
-| Argument | Description                      |
-|----------|----------------------------------|
-| date     | Date value to format             |
-| type     | Type of the provided date value  |
-| format   | Format to apply when formatting  |
-| timezone | Timezone to use, defaults to UTC |
+| Argument | Description                                                                                                  |
+|----------|--------------------------------------------------------------------------------------------------------------|
+| date     | Date value to format                                                                                         |
+| type     | Type of the provided date value                                                                              |
+| format   | [Format](https://docs.oracle.com/javase/7/docs/api/java/text/SimpleDateFormat.html) to apply when formatting |
+| timezone | Timezone to use, defaults to UTC                                                                             |
 
 The following `type` variations are currently available:
 
@@ -366,6 +366,169 @@ l_index(input: String, search: String): Number
 ```
 
 <!-- #include src/test/java/me/blvckbytes/gpeee/std/LIndexFunctionTests.java -->
+
+### list
+
+Interpret the input value as a list. Scalar values will create singleton lists, lists will be passed through and
+maps will be converted to lists of their entry-sets.
+
+| Argument | Description                  |
+|----------|------------------------------|
+| input    | Input to interpret as a list |
+
+```
+list(input?: Object): List<?>
+```
+
+<!-- #include src/test/java/me/blvckbytes/gpeee/std/ListFunctionTests.java -->
+
+### list_of
+
+Create a list from a variable amount of scalar input values.
+
+| Argument | Description                     |
+|----------|---------------------------------|
+| input... | Variable amount of input values |
+
+```
+list_of(value...?: Object): List<?>
+```
+
+<!-- #include src/test/java/me/blvckbytes/gpeee/std/ListOfFunctionTests.java -->
+
+### map
+
+Iterate over a collection while mapping each iteration through a lambda function, who's result
+is being appended to the final result list.
+
+| Argument  | Description                                                |
+|-----------|------------------------------------------------------------|
+| items     | Collection to iterate                                      |
+| mapper    | Lambda function to map items with                          |
+| fallback  | Value to return if the collection is empty                 |
+
+```
+map(items: Collection<?>, mapper: (item: Object, index: Number) => String, fallback?: Object): List<?>
+```
+
+<!-- #include src/test/java/me/blvckbytes/gpeee/std/MapFunctionTests.java -->
+
+### map_of
+
+Create a list from a variable amount of scalar input value pairs.
+
+| Argument | Description                                     |
+|----------|-------------------------------------------------|
+| input... | Variable amount of input values, taken in pairs |
+
+```
+map_of(value...?: Object): Map<?, ?>
+```
+
+<!-- #include src/test/java/me/blvckbytes/gpeee/std/MapOfFunctionTests.java -->
+
+### print
+
+Print the input values to STDOUT.
+
+| Argument | Description                     |
+|----------|---------------------------------|
+| input... | Variable amount of input values |
+
+```
+print(input...? Object): void
+```
+
+<!-- #include src/test/java/me/blvckbytes/gpeee/std/PrintFunctionTests.java -->
+
+### r_index
+
+Returns the last index of the passed substring within the input string. Returns -1 if the searched
+string is not at all present in the input string.
+
+| Argument | Description          |
+|----------|----------------------|
+| input    | Input to search in   |
+| search   | String to search for |
+
+```
+r_index(input: String, search: String): Number
+```
+
+<!-- #include src/test/java/me/blvckbytes/gpeee/std/RIndexFunctionTests.java -->
+
+### split
+
+Returns a list of resulting substrings based on splitting the input string based on the delimiter.
+
+| Argument  | Description                       |
+|-----------|-----------------------------------|
+| input     | Input string to split             |
+| delimiter | Delimiter to split on, default "," |
+
+```
+split(input: String, delimiter?: String): List<String>
+```
+
+<!-- #include src/test/java/me/blvckbytes/gpeee/std/SplitFunctionTests.java -->
+
+### str
+
+Interpret the input value as a string by making use of the environments value interpreter.
+
+| Argument | Description                    |
+|----------|--------------------------------|
+| input    | Value to interpret as a string |
+
+```
+str(input?: Object): String
+```
+
+<!-- #include src/test/java/me/blvckbytes/gpeee/std/StringFunctionTests.java -->
+
+### substring
+
+Returns a substring of the input, based on the start- and end indices.
+
+| Argument | Description                                                  |
+|----------|--------------------------------------------------------------|
+| input    | Input string to compute a substring of                       |
+| start    | Start index, inclusive, zero-based                           |
+| end      | End index, exclusive, zero-based, defaults to input's length |
+
+```
+substring(input: String, start: Number, end?: Number): String
+```
+
+<!-- #include src/test/java/me/blvckbytes/gpeee/std/SubstringFunctionTests.java -->
+
+### title_case
+
+Transform the input string to title case (capitalize every word).
+
+| Argument | Description                               |
+|----------|-------------------------------------------|
+| input    | Input string to transform into title case |
+
+```
+title_case(input: String): String
+```
+
+<!-- #include src/test/java/me/blvckbytes/gpeee/std/TitleCaseFunctionTests.java -->
+
+### value
+
+Extracts the value from a Java `Map.Entry<?, ?>`.
+
+| Argument | Description           |
+|----------|-----------------------|
+| entry    | Entry to extract from |
+
+```
+value(entry: Map.Entry<?, ?>): Object
+```
+
+<!-- #include src/test/java/me/blvckbytes/gpeee/std/ValueFunctionTests.java -->
 
 <!-- #configure include SKIP_LEADING_COMMENTS true -->
 <!-- #configure include SKIP_LEADING_EMPTY true -->
