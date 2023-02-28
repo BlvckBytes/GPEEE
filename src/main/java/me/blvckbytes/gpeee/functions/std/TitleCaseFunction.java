@@ -65,7 +65,9 @@ public class TitleCaseFunction extends AStandardFunction {
     boolean nextTitleCase = true;
 
     for (char c : input.toCharArray()) {
-      if (Character.isSpaceChar(c)) {
+      c = Character.toLowerCase(c);
+
+      if (isTitleCaseResetChar(c)) {
         nextTitleCase = true;
       } else if (nextTitleCase) {
         c = Character.toTitleCase(c);
@@ -76,5 +78,9 @@ public class TitleCaseFunction extends AStandardFunction {
     }
 
     return titleCase.toString();
+  }
+
+  private boolean isTitleCaseResetChar(char c) {
+    return Character.isSpaceChar(c) || c == ',' || c == '_';
   }
 }
