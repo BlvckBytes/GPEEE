@@ -436,7 +436,7 @@ Print the input values to STDOUT.
 | input... | Variable amount of input values |
 
 ```
-print(input...? Object): void
+print(input...?: Object): void
 ```
 
 <!-- #include src/test/java/me/blvckbytes/gpeee/std/PrintFunctionTests.java -->
@@ -529,6 +529,35 @@ value(entry: Map.Entry<?, ?>): Object
 ```
 
 <!-- #include src/test/java/me/blvckbytes/gpeee/std/ValueFunctionTests.java -->
+
+### range
+
+Returns a list containing all the numbers included in the range.
+
+| Argument | Description            |
+|----------|------------------------|
+| start    | Start index, inclusive |
+| end      | End index, inclusive   |
+
+```
+range(start: Number, end: Number): List<Number>
+```
+
+<!-- #include src/test/java/me/blvckbytes/gpeee/std/RangeFunctionTests.java -->
+
+### flatten
+
+Returns a list containing all parameters provided, where collection items are flattened into the result.
+
+| Argument | Description                     |
+|----------|---------------------------------|
+| input... | Variable amount of input values |
+
+```
+flatten(input...?: Object): List<Object>
+```
+
+<!-- #include src/test/java/me/blvckbytes/gpeee/std/FlattenFunctionTests.java -->
 
 <!-- #configure include SKIP_LEADING_COMMENTS true -->
 <!-- #configure include SKIP_LEADING_EMPTY true -->

@@ -46,6 +46,8 @@ want to integrate into your next project.
   - [substring](#substring)
   - [title_case](#title_case)
   - [value](#value)
+  - [range](#range)
+  - [flatten](#flatten)
 
 ## Mission Statement
 
@@ -1475,7 +1477,7 @@ Print the input values to STDOUT.
 | input... | Variable amount of input values |
 
 ```
-print(input...? Object): void
+print(input...?: Object): void
 ```
 
 <details>
@@ -1807,6 +1809,97 @@ public class ValueFunctionTests {
     map.put("green", "#00FF00");
     map.put("blue", "#0000FF");
     return map;
+  }
+}
+```
+</details>
+
+
+### range
+
+Returns a list containing all the numbers included in the range.
+
+| Argument | Description            |
+|----------|------------------------|
+| start    | Start index, inclusive |
+| end      | End index, inclusive   |
+
+```
+range(start: Number, end: Number): List<Number>
+```
+
+<details>
+<summary>RangeFunctionTests.java</summary>
+
+```java
+package me.blvckbytes.gpeee.std;
+
+public class RangeFunctionTests {
+
+  @Test
+  public void shouldRequireArguments() {
+    new EnvironmentBuilder()
+      .launch(validator -> {
+        validator.validateThrows("range()", InvalidFunctionArgumentTypeError.class);
+        validator.validateThrows("range(0)", InvalidFunctionArgumentTypeError.class);
+      });
+  }
+
+  @Test
+  public void shouldReturnEmptyListsOnMalformedRanges() {
+    new EnvironmentBuilder()
+      .launch(validator -> {
+        validator.validate("range(1, 0)", List.of());
+        validator.validate("range(3, -5)", List.of());
+      });
+  }
+
+  @Test
+  public void shouldReturnRangeLists() {
+    new EnvironmentBuilder()
+      .launch(validator -> {
+        validator.validate("range(0, 0)", List.of(0));
+        validator.validate("range(0, 1)", List.of(0, 1));
+        validator.validate("range(8, 12)", List.of(8, 9, 10, 11, 12));
+        validator.validate("range(-2, 3)", List.of(-2, -1, 0, 1, 2, 3));
+        validator.validate("range(-5, -3)", List.of(-5, -4, -3));
+      });
+  }
+}
+```
+</details>
+
+
+### flatten
+
+Returns a list containing all parameters provided, where collection items are flattened into the result.
+
+| Argument | Description                     |
+|----------|---------------------------------|
+| input... | Variable amount of input values |
+
+```
+flatten(input...?: Object): List<Object>
+```
+
+<details>
+<summary>FlattenFunctionTests.java</summary>
+
+```java
+package me.blvckbytes.gpeee.std;
+
+public class FlattenFunctionTests {
+
+  @Test
+  public void shouldFlattenCollectionsAndOtherValues() {
+    new EnvironmentBuilder()
+      .withStaticVariable("list_a", List.of(1, 2, 3))
+      .withStaticVariable("list_b", List.of(4, 5, 6))
+      .withStaticVariable("list_complex", List.of(List.of(7, 8), List.of(9, 10)))
+      .launch(validator -> {
+        validator.validate("flatten(list_a, list_b, list_complex)", List.of(1, 2, 3, 4, 5, 6, 7, 8, 9, 10));
+        validator.validate("flatten(\"Hello\", list_a, list_b, true, list_complex)", List.of("Hello", 1, 2, 3, 4, 5, 6, true, 7, 8, 9, 10));
+      });
   }
 }
 ```
