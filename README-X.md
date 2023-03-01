@@ -559,6 +559,36 @@ flatten(input...?: Object): List<Object>
 
 <!-- #include src/test/java/me/blvckbytes/gpeee/std/FlattenFunctionTests.java -->
 
+### min
+
+Returns the smaller of two values.
+
+| Argument | Description |
+|----------|-------------|
+| a        | Value A     |
+| b        | Value B     |
+
+```
+min(a: Object, b: Object): Object
+```
+
+<!-- #include src/test/java/me/blvckbytes/gpeee/std/MinFunctionTests.java -->
+
+### max
+
+Returns the bigger of two values.
+
+| Argument | Description |
+|----------|-------------|
+| a        | Value A     |
+| b        | Value B     |
+
+```
+max(a: Object, b: Object): Object
+```
+
+<!-- #include src/test/java/me/blvckbytes/gpeee/std/MaxFunctionTests.java -->
+
 <!-- #configure include SKIP_LEADING_COMMENTS true -->
 <!-- #configure include SKIP_LEADING_EMPTY true -->
 <!-- #configure include SKIP_LEADING_PACKAGE false -->

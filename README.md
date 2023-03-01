@@ -48,6 +48,8 @@ want to integrate into your next project.
   - [value](#value)
   - [range](#range)
   - [flatten](#flatten)
+  - [min](#min)
+  - [max](#max)
 
 ## Mission Statement
 
@@ -1899,6 +1901,98 @@ public class FlattenFunctionTests {
       .launch(validator -> {
         validator.validate("flatten(list_a, list_b, list_complex)", List.of(1, 2, 3, 4, 5, 6, 7, 8, 9, 10));
         validator.validate("flatten(\"Hello\", list_a, list_b, true, list_complex)", List.of("Hello", 1, 2, 3, 4, 5, 6, true, 7, 8, 9, 10));
+      });
+  }
+}
+```
+</details>
+
+
+### min
+
+Returns the smaller of two values.
+
+| Argument | Description |
+|----------|-------------|
+| a        | Value A     |
+| b        | Value B     |
+
+```
+min(a: Object, b: Object): Object
+```
+
+<details>
+<summary>MinFunctionTests.java</summary>
+
+```java
+package me.blvckbytes.gpeee.std;
+
+public class MinFunctionTests {
+
+  @Test
+  public void shouldRequireArguments() {
+    new EnvironmentBuilder()
+      .launch(validator -> {
+        validator.validateThrows("min()", InvalidFunctionArgumentTypeError.class);
+        validator.validateThrows("min(0)", InvalidFunctionArgumentTypeError.class);
+      });
+  }
+
+  @Test
+  public void shouldReturnTheSmallerValue() {
+    new EnvironmentBuilder()
+      .withStaticVariable("my_list", List.of(1))
+      .withStaticVariable("my_list_empty", List.of())
+      .launch(validator -> {
+        validator.validate("min(0, 5)", 0);
+        validator.validate("min(-3, -8)", -8);
+        validator.validate("min(my_list, my_list_empty)", List.of());
+      });
+  }
+}
+```
+</details>
+
+
+### max
+
+Returns the bigger of two values.
+
+| Argument | Description |
+|----------|-------------|
+| a        | Value A     |
+| b        | Value B     |
+
+```
+max(a: Object, b: Object): Object
+```
+
+<details>
+<summary>MaxFunctionTests.java</summary>
+
+```java
+package me.blvckbytes.gpeee.std;
+
+public class MaxFunctionTests {
+
+  @Test
+  public void shouldRequireArguments() {
+    new EnvironmentBuilder()
+      .launch(validator -> {
+        validator.validateThrows("max()", InvalidFunctionArgumentTypeError.class);
+        validator.validateThrows("max(0)", InvalidFunctionArgumentTypeError.class);
+      });
+  }
+
+  @Test
+  public void shouldReturnTheBiggerValue() {
+    new EnvironmentBuilder()
+      .withStaticVariable("my_list", List.of(1))
+      .withStaticVariable("my_list_empty", List.of())
+      .launch(validator -> {
+        validator.validate("max(0, 5)", 5);
+        validator.validate("max(-3, -8)", -3);
+        validator.validate("max(my_list, my_list_empty)", List.of(1));
       });
   }
 }
