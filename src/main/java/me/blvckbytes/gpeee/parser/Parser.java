@@ -199,7 +199,17 @@ public class Parser {
         tokenizer.consumeToken();
       }
 
-      AExpression identifier = parsePrimaryExpression(tokenizer);
+      AExpression identifier;
+      try {
+        identifier = parsePrimaryExpression(tokenizer);
+      }
+
+      // This expression clashed with parentheses expressions
+      // Some day, I'm sure I'll revisit this quick and dirty solution
+      // Checking for identifiers, if there was no identifier, it's not a callback expression
+      catch (UnexpectedTokenError e) {
+        identifier = null;
+      }
 
       // Anything else than an identifier cannot be within a callback's parentheses
       if (!(identifier instanceof IdentifierExpression)) {

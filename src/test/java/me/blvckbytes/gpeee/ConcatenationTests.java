@@ -71,4 +71,13 @@ public class ConcatenationTests {
         );
       });
   }
+
+  @Test
+  public void shouldConcatenateKeywordExpressions() {
+    new EnvironmentBuilder()
+      .launch(validator -> {
+        validator.validate("\">\" & (if true then \"A\" else \"B\") & \"<\"", ">A<");
+        validator.validate("\">\" & (if false then \"A\" else \"B\") & \"<\"", ">B<");
+      });
+  }
 }
