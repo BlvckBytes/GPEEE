@@ -24,12 +24,10 @@
 
 package me.blvckbytes.gpeee.parser.expression;
 
-import lombok.Getter;
 import me.blvckbytes.gpeee.tokenizer.Token;
 import me.blvckbytes.gpeee.tokenizer.TokenType;
 import org.jetbrains.annotations.Nullable;
 
-@Getter
 public class IndexExpression extends ABinaryExpression {
 
   private final boolean optional;
@@ -38,6 +36,10 @@ public class IndexExpression extends ABinaryExpression {
     super(target, input, head, tail, fullContainingExpression);
 
     this.optional = optional;
+  }
+
+  public boolean isOptional() {
+    return optional;
   }
 
   @Override

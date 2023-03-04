@@ -50,6 +50,6 @@ public class InvalidFunctionInvocationError extends AEvaluatorError {
     if (expression.getArguments().size() <= argumentIndex)
       return expression.getHead();
 
-    return expression.getArguments().get(argumentIndex).getA().getHead();
+    return expression.getArguments().get(argumentIndex).a.getHead();
   }
 }

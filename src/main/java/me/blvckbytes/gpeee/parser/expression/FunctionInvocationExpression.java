@@ -24,7 +24,6 @@
 
 package me.blvckbytes.gpeee.parser.expression;
 
-import lombok.Getter;
 import me.blvckbytes.gpeee.Tuple;
 import me.blvckbytes.gpeee.tokenizer.Token;
 import me.blvckbytes.gpeee.tokenizer.TokenType;
@@ -32,7 +31,6 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 
-@Getter
 public class FunctionInvocationExpression extends AExpression {
 
   private final IdentifierExpression name;
@@ -50,6 +48,18 @@ public class FunctionInvocationExpression extends AExpression {
     this.optional = optional;
   }
 
+  public IdentifierExpression getName() {
+    return name;
+  }
+
+  public List<Tuple<AExpression, IdentifierExpression>> getArguments() {
+    return arguments;
+  }
+
+  public boolean isOptional() {
+    return optional;
+  }
+
   @Override
   public String expressionify() {
     StringBuilder argExpression = new StringBuilder();
@@ -60,10 +70,10 @@ public class FunctionInvocationExpression extends AExpression {
       argExpression.append(i == 0 ? "" : ", ");
 
       // Prepend the named argument expression, if available
-      if (argument.getB() != null)
-        argExpression.append(argument.getB().expressionify()).append(TokenType.ASSIGN.getRepresentation());
+      if (argument.b != null)
+        argExpression.append(argument.b.expressionify()).append(TokenType.ASSIGN.getRepresentation());
 
-      argExpression.append(argument.getA().expressionify());
+      argExpression.append(argument.a.expressionify());
     }
 
     return (

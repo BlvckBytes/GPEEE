@@ -24,12 +24,10 @@
 
 package me.blvckbytes.gpeee.parser.expression;
 
-import lombok.Getter;
 import me.blvckbytes.gpeee.tokenizer.Token;
 import me.blvckbytes.gpeee.tokenizer.TokenType;
 import org.jetbrains.annotations.Nullable;
 
-@Getter
 public class ConjunctionExpression extends ABinaryExpression {
 
   public ConjunctionExpression(AExpression lhs, AExpression rhs, Token head, Token tail, String fullContainingExpression) {

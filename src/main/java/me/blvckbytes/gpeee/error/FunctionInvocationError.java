@@ -24,14 +24,21 @@
 
 package me.blvckbytes.gpeee.error;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-
-@Getter
-@AllArgsConstructor
 public class FunctionInvocationError {
 
   private final int argumentIndex;
   private final String message;
 
+  public FunctionInvocationError(int argumentIndex, String message) {
+    this.argumentIndex = argumentIndex;
+    this.message = message;
+  }
+
+  public int getArgumentIndex() {
+    return argumentIndex;
+  }
+
+  public String getMessage() {
+    return message;
+  }
 }

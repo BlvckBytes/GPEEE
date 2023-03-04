@@ -24,14 +24,10 @@
 
 package me.blvckbytes.gpeee.parser.expression;
 
-import lombok.Getter;
-import lombok.Setter;
 import me.blvckbytes.gpeee.tokenizer.Token;
 import me.blvckbytes.gpeee.tokenizer.TokenType;
 import org.jetbrains.annotations.Nullable;
 
-@Setter
-@Getter
 public abstract class ABinaryExpression extends AExpression {
 
   protected AExpression lhs;
@@ -41,6 +37,22 @@ public abstract class ABinaryExpression extends AExpression {
     super(head, tail, fullContainingExpression);
 
     this.lhs = lhs;
+    this.rhs = rhs;
+  }
+
+  public AExpression getLhs() {
+    return lhs;
+  }
+
+  public AExpression getRhs() {
+    return rhs;
+  }
+
+  public void setLhs(AExpression lhs) {
+    this.lhs = lhs;
+  }
+
+  public void setRhs(AExpression rhs) {
     this.rhs = rhs;
   }
 

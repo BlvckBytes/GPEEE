@@ -175,17 +175,17 @@ public class Interpreter {
         logger.logDebug(DebugLogSource.INTERPRETER, "Evaluating argument " + (++debugArgCounter));
         //#endif
 
-        Object argumentValue = evaluateExpressionSub(argument.getA(), evaluationEnvironment, interpretationEnvironment);
+        Object argumentValue = evaluateExpressionSub(argument.a, evaluationEnvironment, interpretationEnvironment);
 
         // Argument definitions are available and this argument has a name attached
-        if (argDefinitions != null && argument.getB() != null) {
+        if (argDefinitions != null && argument.b != null) {
           encounteredNamedArgument = true;
 
           // Look through all definitions to find a match
           boolean foundMatch = false;
           for (int i = 0; i < argDefinitions.size(); i++) {
             ExpressionFunctionArgument argDefinition = argDefinitions.get(i);
-            String argName = argument.getB().getSymbol();
+            String argName = argument.b.getSymbol();
 
             // Argument's identifier is not matching the arg definition name
             if (!argDefinition.getName().equalsIgnoreCase(argName))
@@ -205,19 +205,19 @@ public class Interpreter {
             continue;
 
           // Could not find a match for this named argument
-          throw new UndefinedFunctionArgumentNameError(function, argument.getB());
+          throw new UndefinedFunctionArgumentNameError(function, argument.b);
         }
 
         // Encountered a non-named argument after encountering a named argument
         if (encounteredNamedArgument)
-          throw new NonNamedFunctionArgumentError(argument.getA());
+          throw new NonNamedFunctionArgumentError(argument.a);
 
         // No definitions provided, just add to the list (variadic of unchecked type)
         if (argDefinitions == null) {
 
           // If there are no definitions provided by the function, named arguments should throw
           // as they cannot be possibly matched with anything and should thus be omitted
-          IdentifierExpression argNameExpression = argument.getB();
+          IdentifierExpression argNameExpression = argument.b;
           if (argNameExpression != null)
             throw new UndefinedFunctionArgumentNameError(function, argNameExpression);
 

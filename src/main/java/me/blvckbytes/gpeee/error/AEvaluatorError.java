@@ -24,9 +24,6 @@
 
 package me.blvckbytes.gpeee.error;
 
-import lombok.Getter;
-
-@Getter
 public abstract class AEvaluatorError extends RuntimeException {
 
   public AEvaluatorError(int row, int col, String rawInput, String text) {

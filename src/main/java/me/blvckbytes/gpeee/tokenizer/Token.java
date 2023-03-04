@@ -24,16 +24,34 @@
 
 package me.blvckbytes.gpeee.tokenizer;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-
-@Getter
-@AllArgsConstructor
 public class Token {
 
   private final TokenType type;
   private final int row, col;
   private final String value;
+
+  public Token(TokenType type, int row, int col, String value) {
+    this.type = type;
+    this.row = row;
+    this.col = col;
+    this.value = value;
+  }
+
+  public TokenType getType() {
+    return type;
+  }
+
+  public int getRow() {
+    return row;
+  }
+
+  public int getCol() {
+    return col;
+  }
+
+  public String getValue() {
+    return value;
+  }
 
   @Override
   public String toString() {

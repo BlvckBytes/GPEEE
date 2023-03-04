@@ -50,7 +50,7 @@ public class InvalidFunctionArgumentTypeError extends AEvaluatorError {
     int row = function.getHead().getRow();
 
     if (argumentIndex < function.getArguments().size()) {
-      AExpression argumentExpression = function.getArguments().get(argumentIndex).getA();
+      AExpression argumentExpression = function.getArguments().get(argumentIndex).a;
       row = argumentExpression.getHead().getRow();
     }
 
@@ -61,7 +61,7 @@ public class InvalidFunctionArgumentTypeError extends AEvaluatorError {
     int col = function.getHead().getCol();
 
     if (argumentIndex < function.getArguments().size()) {
-      AExpression argumentExpression = function.getArguments().get(argumentIndex).getA();
+      AExpression argumentExpression = function.getArguments().get(argumentIndex).a;
       col = argumentExpression.getHead().getCol();
     }
 

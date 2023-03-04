@@ -24,10 +24,8 @@
 
 package me.blvckbytes.gpeee.parser.expression;
 
-import lombok.Getter;
 import me.blvckbytes.gpeee.tokenizer.Token;
 
-@Getter
 public class IdentifierExpression extends AExpression {
 
   private final String symbol;
@@ -36,6 +34,10 @@ public class IdentifierExpression extends AExpression {
     super(head, tail, fullContainingExpression);
 
     this.symbol = symbol;
+  }
+
+  public String getSymbol() {
+    return symbol;
   }
 
   @Override

@@ -24,7 +24,6 @@
 
 package me.blvckbytes.gpeee;
 
-import lombok.AllArgsConstructor;
 import me.blvckbytes.gpeee.error.UnknownMemberError;
 import me.blvckbytes.gpeee.functions.AExpressionFunction;
 import me.blvckbytes.gpeee.functions.ExpressionFunctionArgument;
@@ -37,11 +36,16 @@ import java.util.List;
 
 public class MemberAccessTests {
 
-  @AllArgsConstructor
   private static class TestObject {
     private String text;
     private long number;
     private TestObject self;
+
+    private TestObject(String text, long number, TestObject self) {
+      this.text = text;
+      this.number = number;
+      this.self = self;
+    }
   }
 
   private TestObject testObject;

@@ -328,7 +328,7 @@ public class Parser {
         }
       }
 
-      arguments.add(Tuple.of(
+      arguments.add(new Tuple<>(
         invokeLowestPrecedenceParser(tokenizer),
         identifier == null ? null : new IdentifierExpression(identifier.getValue(), identifier, identifier, tokenizer.getRawText())
       ));

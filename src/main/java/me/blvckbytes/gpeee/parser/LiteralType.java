@@ -24,11 +24,6 @@
 
 package me.blvckbytes.gpeee.parser;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-
-@Getter
-@AllArgsConstructor
 public enum LiteralType {
 
   TRUE(true),
@@ -37,4 +32,12 @@ public enum LiteralType {
   ;
 
   private final Object value;
+
+  LiteralType(Object value) {
+    this.value = value;
+  }
+
+  public Object getValue() {
+    return value;
+  }
 }

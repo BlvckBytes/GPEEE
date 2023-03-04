@@ -24,8 +24,6 @@
 
 package me.blvckbytes.gpeee.parser.expression;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
 import me.blvckbytes.gpeee.Tuple;
 import me.blvckbytes.gpeee.tokenizer.Token;
 import org.jetbrains.annotations.Nullable;
@@ -34,8 +32,6 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.List;
 
-@Getter
-@AllArgsConstructor
 public abstract class AExpression {
 
   @StringifyExclude
@@ -43,6 +39,24 @@ public abstract class AExpression {
 
   @StringifyExclude
   private final String fullContainingExpression;
+
+  public AExpression(Token head, Token tail, String fullContainingExpression) {
+    this.head = head;
+    this.tail = tail;
+    this.fullContainingExpression = fullContainingExpression;
+  }
+
+  public Token getHead() {
+    return head;
+  }
+
+  public Token getTail() {
+    return tail;
+  }
+
+  public String getFullContainingExpression() {
+    return fullContainingExpression;
+  }
 
   public abstract String expressionify();
 
@@ -114,8 +128,8 @@ public abstract class AExpression {
     if (object instanceof Tuple) {
       Tuple<?, ?> tuple = (Tuple<?, ?>) object;
       return (
-        "Tuple(a=" + stringifyObject(tuple.getA(), indent, indentWidth, indentLevel - 1) +
-        ", b=" + stringifyObject(tuple.getB(), indent, indentWidth, indentLevel - 1) + ")"
+        "Tuple(a=" + stringifyObject(tuple.a, indent, indentWidth, indentLevel - 1) +
+        ", b=" + stringifyObject(tuple.b, indent, indentWidth, indentLevel - 1) + ")"
       );
     }
 

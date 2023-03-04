@@ -125,12 +125,12 @@ public abstract class AExpressionFunction {
       Tuple<Boolean, @Nullable Object> result = definition.checkDescriptionAndPossiblyConvert(argument, valueInterpreter);
 
       // Value did not pass all checks and could not be auto-converted either
-      if (!result.getA())
+      if (!result.a)
         throw new InvalidFunctionArgumentTypeError(expression, definition, i, argument);
 
       // Update the value within the list to the possibly converted value
       if (i < args.size())
-        args.set(i, result.getB());
+        args.set(i, result.b);
     }
   }
 }

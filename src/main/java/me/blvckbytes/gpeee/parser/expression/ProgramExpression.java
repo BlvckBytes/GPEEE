@@ -24,15 +24,10 @@
 
 package me.blvckbytes.gpeee.parser.expression;
 
-import lombok.Getter;
-import me.blvckbytes.gpeee.Tuple;
 import me.blvckbytes.gpeee.tokenizer.Token;
-import me.blvckbytes.gpeee.tokenizer.TokenType;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 
-@Getter
 public class ProgramExpression extends AExpression {
 
   private final List<AExpression> lines;
@@ -44,6 +39,10 @@ public class ProgramExpression extends AExpression {
     super(head, tail, fullContainingExpression);
 
     this.lines = lines;
+  }
+
+  public List<AExpression> getLines() {
+    return lines;
   }
 
   @Override

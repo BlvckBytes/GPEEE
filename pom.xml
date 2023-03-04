@@ -6,7 +6,7 @@
 
     <groupId>me.blvckbytes</groupId>
     <artifactId>GPEEE</artifactId>
-    <version>0.1-SNAPSHOT</version>
+    <version>0.1</version>
 
     <build>
         <plugins>
@@ -100,19 +100,12 @@
 
     <dependencies>
 
-        <!-- Lombok: Used for @AllArgsConstructor, @Getter, @Setter, etc. -->
-        <dependency>
-            <groupId>org.projectlombok</groupId>
-            <artifactId>lombok</artifactId>
-            <version>1.18.24</version>
-            <scope>provided</scope>
-        </dependency>
-
         <!-- JetBrains-Annotations: Used for @Nullable, @NotNull, etc. -->
         <dependency>
             <groupId>org.jetbrains</groupId>
             <artifactId>annotations</artifactId>
             <version>23.1.0</version>
+            <scope>provided</scope>
         </dependency>
 
         <!-- JUnit: Used for testing -->

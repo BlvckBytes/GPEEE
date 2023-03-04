@@ -24,13 +24,10 @@
 
 package me.blvckbytes.gpeee.parser.expression;
 
-import lombok.Getter;
-import me.blvckbytes.gpeee.parser.MathOperation;
 import me.blvckbytes.gpeee.tokenizer.Token;
 import me.blvckbytes.gpeee.tokenizer.TokenType;
 import org.jetbrains.annotations.Nullable;
 
-@Getter
 public class NullCoalesceExpression extends ABinaryExpression {
 
   public NullCoalesceExpression(AExpression lhs, AExpression rhs, Token head, Token tail, String fullContainingExpression) {

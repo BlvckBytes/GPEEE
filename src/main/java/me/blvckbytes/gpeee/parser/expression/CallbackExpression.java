@@ -24,25 +24,33 @@
 
 package me.blvckbytes.gpeee.parser.expression;
 
-import lombok.Getter;
-import lombok.Setter;
 import me.blvckbytes.gpeee.tokenizer.Token;
 import me.blvckbytes.gpeee.tokenizer.TokenType;
 
 import java.util.List;
 
-@Getter
 public class CallbackExpression extends AExpression {
 
   private final List<IdentifierExpression> signature;
 
-  @Setter
   private AExpression body;
 
   public CallbackExpression(List<IdentifierExpression> signature, AExpression body, Token head, Token tail, String fullContainingExpression) {
     super(head, tail, fullContainingExpression);
 
     this.signature = signature;
+    this.body = body;
+  }
+
+  public List<IdentifierExpression> getSignature() {
+    return signature;
+  }
+
+  public AExpression getBody() {
+    return body;
+  }
+
+  public void setBody(AExpression body) {
     this.body = body;
   }
 

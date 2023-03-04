@@ -24,19 +24,12 @@
 
 package me.blvckbytes.gpeee;
 
-import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.Setter;
-
-@Setter
-@Getter
-@AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class Tuple<A, B> {
-  private A a;
-  private B b;
+  public A a;
+  public B b;
 
-  public static<A, B> Tuple<A, B> of(A a, B b) {
-    return new Tuple<>(a, b);
+  public Tuple(A a, B b) {
+    this.a = a;
+    this.b = b;
   }
 }

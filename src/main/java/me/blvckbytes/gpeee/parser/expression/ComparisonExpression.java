@@ -24,13 +24,11 @@
 
 package me.blvckbytes.gpeee.parser.expression;
 
-import lombok.Getter;
 import me.blvckbytes.gpeee.parser.ComparisonOperation;
 import me.blvckbytes.gpeee.tokenizer.Token;
 import me.blvckbytes.gpeee.tokenizer.TokenType;
 import org.jetbrains.annotations.Nullable;
 
-@Getter
 public class ComparisonExpression extends ABinaryExpression {
 
   private final ComparisonOperation operation;
@@ -39,6 +37,10 @@ public class ComparisonExpression extends ABinaryExpression {
     super(lhs, rhs, head, tail, fullContainingExpression);
 
     this.operation = operation;
+  }
+
+  public ComparisonOperation getOperation() {
+    return operation;
   }
 
   @Override

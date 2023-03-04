@@ -24,7 +24,6 @@
 
 package me.blvckbytes.gpeee.functions;
 
-import lombok.Getter;
 import me.blvckbytes.gpeee.Tuple;
 import me.blvckbytes.gpeee.interpreter.IValueInterpreter;
 import org.jetbrains.annotations.NotNull;
@@ -36,7 +35,6 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-@Getter
 public class ExpressionFunctionArgument {
 
   private final String name, description;
@@ -57,6 +55,22 @@ public class ExpressionFunctionArgument {
     this.allowedTypes = allowedTypes;
   }
 
+  public String getName() {
+    return name;
+  }
+
+  public String getDescription() {
+    return description;
+  }
+
+  public boolean isRequired() {
+    return required;
+  }
+
+  public Class<?>[] getAllowedTypes() {
+    return allowedTypes;
+  }
+
   /**
    * Checks whether the passed object matches the argument description embodied by this
    * instance and tries to convert mismatching values using the value interpreter, if possible.
@@ -67,15 +81,15 @@ public class ExpressionFunctionArgument {
   public Tuple<Boolean, @Nullable Object> checkDescriptionAndPossiblyConvert(@Nullable Object o, IValueInterpreter valueInterpreter) {
     // Argument value is not present but has been required to be
     if (required && o == null)
-      return Tuple.of(false, null);
+      return new Tuple<>(false, null);
 
     // No argument types specified, allow everything
     if (allowedTypes.length == 0)
-      return Tuple.of(true, o);
+      return new Tuple<>(true, o);
 
     // Argument value is not present but also not required
     if (!required && o == null)
-      return Tuple.of(true, null);
+      return new Tuple<>(true, null);
 
     Class<?> type = o.getClass();
 
@@ -101,7 +115,7 @@ public class ExpressionFunctionArgument {
       break;
     }
 
-    return Tuple.of(anyAllowedMatches, o);
+    return new Tuple<>(anyAllowedMatches, o);
   }
 
   /**

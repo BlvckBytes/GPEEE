@@ -24,13 +24,9 @@
 
 package me.blvckbytes.gpeee.parser.expression;
 
-import lombok.Getter;
-import lombok.Setter;
 import me.blvckbytes.gpeee.tokenizer.Token;
 import me.blvckbytes.gpeee.tokenizer.TokenType;
 
-@Setter
-@Getter
 public class IfThenElseExpression extends AExpression {
 
   private AExpression condition;
@@ -43,6 +39,22 @@ public class IfThenElseExpression extends AExpression {
     this.condition = condition;
     this.positiveBody = positiveBody;
     this.negativeBody = negativeBody;
+  }
+
+  public void setCondition(AExpression condition) {
+    this.condition = condition;
+  }
+
+  public AExpression getCondition() {
+    return condition;
+  }
+
+  public AExpression getPositiveBody() {
+    return positiveBody;
+  }
+
+  public AExpression getNegativeBody() {
+    return negativeBody;
   }
 
   @Override

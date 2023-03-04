@@ -24,7 +24,6 @@
 
 package me.blvckbytes.gpeee.tokenizer;
 
-import lombok.Getter;
 import me.blvckbytes.gpeee.error.UnterminatedStringError;
 import org.jetbrains.annotations.Nullable;
 
@@ -32,7 +31,6 @@ import java.util.Arrays;
 import java.util.Comparator;
 import java.util.function.Function;
 
-@Getter
 public enum TokenType {
 
   //=========================================================================//
@@ -258,6 +256,18 @@ public enum TokenType {
 
       return tokenReader.apply(tokenizer);
     };
+  }
+
+  public TokenCategory getCategory() {
+    return category;
+  }
+
+  public String getRepresentation() {
+    return representation;
+  }
+
+  public FTokenReader getTokenReader() {
+    return tokenReader;
   }
 
   private static CollectorResult collectDigits(ITokenizer tokenizer, StringBuilder result, boolean stopBeforeDot) {

@@ -1,7 +1,5 @@
 package me.blvckbytes.gpeee.interpreter;
 
-import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
 import me.blvckbytes.gpeee.GPEEE;
 import me.blvckbytes.gpeee.functions.AExpressionFunction;
 import org.jetbrains.annotations.Nullable;
@@ -10,13 +8,24 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Supplier;
 
-@AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class EvaluationEnvironmentBuilder {
 
   private IValueInterpreter valueInterpreter;
   private final Map<String, Object> staticVariables;
   private final Map<String, Supplier<?>> liveVariables;
   private final Map<String, AExpressionFunction> functions;
+
+  private EvaluationEnvironmentBuilder(
+    IValueInterpreter valueInterpreter,
+    Map<String, Object> staticVariables,
+    Map<String, Supplier<?>> liveVariables,
+    Map<String, AExpressionFunction> functions
+  ) {
+    this.valueInterpreter = valueInterpreter;
+    this.staticVariables = staticVariables;
+    this.liveVariables = liveVariables;
+    this.functions = functions;
+  }
 
   public EvaluationEnvironmentBuilder() {
     this.valueInterpreter = GPEEE.STD_VALUE_INTERPRETER;

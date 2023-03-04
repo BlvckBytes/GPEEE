@@ -24,11 +24,9 @@
 
 package me.blvckbytes.gpeee.parser.expression;
 
-import lombok.Getter;
 import me.blvckbytes.gpeee.parser.LiteralType;
 import me.blvckbytes.gpeee.tokenizer.Token;
 
-@Getter
 public class LiteralExpression extends AExpression {
 
   private final LiteralType type;
@@ -50,6 +48,14 @@ public class LiteralExpression extends AExpression {
         this.value = type == LiteralType.TRUE;
         break;
     }
+  }
+
+  public LiteralType getType() {
+    return type;
+  }
+
+  public Object getValue() {
+    return value;
   }
 
   @Override

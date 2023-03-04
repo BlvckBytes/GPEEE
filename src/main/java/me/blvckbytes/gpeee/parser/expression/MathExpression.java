@@ -24,13 +24,11 @@
 
 package me.blvckbytes.gpeee.parser.expression;
 
-import lombok.Getter;
 import me.blvckbytes.gpeee.parser.MathOperation;
 import me.blvckbytes.gpeee.tokenizer.Token;
 import me.blvckbytes.gpeee.tokenizer.TokenType;
 import org.jetbrains.annotations.Nullable;
 
-@Getter
 public class MathExpression extends ABinaryExpression {
 
   private final MathOperation operation;
@@ -38,6 +36,10 @@ public class MathExpression extends ABinaryExpression {
   public MathExpression(AExpression lhs, AExpression rhs, MathOperation operation, Token head, Token tail, String fullContainingExpression) {
     super(lhs, rhs, head, tail, fullContainingExpression);
     this.operation = operation;
+  }
+
+  public MathOperation getOperation() {
+    return operation;
   }
 
   @Override

@@ -24,10 +24,8 @@
 
 package me.blvckbytes.gpeee.parser.expression;
 
-import lombok.Getter;
 import me.blvckbytes.gpeee.tokenizer.Token;
 
-@Getter
 public class LongExpression extends AExpression {
 
   private final long number;
@@ -36,6 +34,10 @@ public class LongExpression extends AExpression {
     super(head, tail, fullContainingExpression);
 
     this.number = number;
+  }
+
+  public long getNumber() {
+    return number;
   }
 
   @Override

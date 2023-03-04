@@ -1,12 +1,10 @@
 package me.blvckbytes.gpeee.interpreter;
 
-import lombok.Getter;
 import me.blvckbytes.gpeee.functions.AExpressionFunction;
 
 import java.util.HashMap;
 import java.util.Map;
 
-@Getter
 public class InterpretationEnvironment {
 
   private final Map<String, AExpressionFunction> functions;
@@ -15,5 +13,13 @@ public class InterpretationEnvironment {
   public InterpretationEnvironment() {
     this.functions = new HashMap<>();
     this.variables = new HashMap<>();
+  }
+
+  public Map<String, AExpressionFunction> getFunctions() {
+    return functions;
+  }
+
+  public Map<String, Object> getVariables() {
+    return variables;
   }
 }

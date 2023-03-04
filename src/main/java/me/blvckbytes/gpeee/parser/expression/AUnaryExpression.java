@@ -24,13 +24,9 @@
 
 package me.blvckbytes.gpeee.parser.expression;
 
-import lombok.Getter;
-import lombok.Setter;
 import me.blvckbytes.gpeee.tokenizer.Token;
 import org.jetbrains.annotations.Nullable;
 
-@Setter
-@Getter
 public abstract class AUnaryExpression extends AExpression {
 
   protected AExpression input;
@@ -38,6 +34,14 @@ public abstract class AUnaryExpression extends AExpression {
   public AUnaryExpression(AExpression input, Token head, Token tail, String fullContainingExpression) {
     super(head, tail, fullContainingExpression);
 
+    this.input = input;
+  }
+
+  public AExpression getInput() {
+    return input;
+  }
+
+  public void setInput(AExpression input) {
     this.input = input;
   }
 

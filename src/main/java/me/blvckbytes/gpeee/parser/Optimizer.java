@@ -24,7 +24,6 @@
 
 package me.blvckbytes.gpeee.parser;
 
-import lombok.AllArgsConstructor;
 import me.blvckbytes.gpeee.GPEEE;
 import me.blvckbytes.gpeee.Tuple;
 import me.blvckbytes.gpeee.error.AEvaluatorError;
@@ -38,12 +37,17 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.function.Consumer;
 
-@AllArgsConstructor
 public class Optimizer {
 
   private final ILogger logger;
   private final Interpreter interpreter;
   private final IStandardFunctionRegistry standardFunctionRegistry;
+
+  public Optimizer(ILogger logger, Interpreter interpreter, IStandardFunctionRegistry standardFunctionRegistry) {
+    this.logger = logger;
+    this.interpreter = interpreter;
+    this.standardFunctionRegistry = standardFunctionRegistry;
+  }
 
   /**
    * Optimizes an AST by evaluating static expressions ahead of time
@@ -259,10 +263,10 @@ public class Optimizer {
         logger.logDebug(DebugLogSource.OPTIMIZER, "Trying to optimize function argument " + (i + 1));
         //#endif
         Tuple<AExpression, @Nullable IdentifierExpression> argument = invocation.getArguments().get(i);
-        optimizeASTSub(argument.getA(), argument::setA);
+        optimizeASTSub(argument.a, v -> argument.a = v);
 
         // Argument cannot be resolved, even after optimization
-        if (!isImmediatelyResolvable(argument.getA()))
+        if (!isImmediatelyResolvable(argument.a))
           allArgsResolvable = false;
       }
 
