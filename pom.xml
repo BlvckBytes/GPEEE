@@ -105,7 +105,6 @@
             <groupId>org.jetbrains</groupId>
             <artifactId>annotations</artifactId>
             <version>23.1.0</version>
-            <scope>provided</scope>
         </dependency>
 
         <!-- JUnit: Used for testing -->
