@@ -299,12 +299,12 @@ public abstract class AExpressionFunction {
       Tuple<Boolean, @Nullable Object> result = definition.checkDescriptionAndPossiblyConvert(argument, valueInterpreter);
 
       // Value did not pass all checks and could not be auto-converted either
-      if (!result.getA())
+      if (!result.a)
         throw new InvalidFunctionArgumentTypeError(expression, definition, i, argument);
 
       // Update the value within the list to the possibly converted value
       if (i < args.size())
-        args.set(i, result.getB());
+        args.set(i, result.b);
     }
   }
 }
@@ -414,12 +414,12 @@ public abstract class AExpressionFunction {
       Tuple<Boolean, @Nullable Object> result = definition.checkDescriptionAndPossiblyConvert(argument, valueInterpreter);
 
       // Value did not pass all checks and could not be auto-converted either
-      if (!result.getA())
+      if (!result.a)
         throw new InvalidFunctionArgumentTypeError(expression, definition, i, argument);
 
       // Update the value within the list to the possibly converted value
       if (i < args.size())
-        args.set(i, result.getB());
+        args.set(i, result.b);
     }
   }
 }
@@ -514,22 +514,7 @@ public class FullUseExample {
 
   public static void main(String[] args) {
     try {
-
-      ILogger logger = new ILogger() {
-        @Override
-        public void logDebug(ILogSourceType source, String message) {
-          System.out.println("[DEBUG] [" + source.name() + "]: " + message);
-        }
-
-        @Override
-        public void logError(String message, @Nullable Exception error) {
-          System.err.println(message);
-
-          if (error != null)
-            error.printStackTrace();
-        }
-      };
-
+      Logger logger = Logger.getGlobal();
       GPEEE evaluator = new GPEEE(logger);
 
       AExpression expr = evaluator.parseString("5 * 3 - 2 & \" Hello, world! \" & current_time");
