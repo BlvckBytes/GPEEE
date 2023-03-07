@@ -24,9 +24,15 @@
 
 package me.blvckbytes.gpeee.logging;
 
-public enum DebugLogSource implements ILogSourceType {
+public enum DebugLogSource {
   TOKENIZER,
   PARSER,
   INTERPRETER,
   OPTIMIZER
+  ;
+
+  @Override
+  public String toString() {
+    return "[" + name() + "] ";
+  }
 }

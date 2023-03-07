@@ -273,7 +273,7 @@ public class StandardValueInterpreter implements IValueInterpreter {
    * @return Iterable which operates on the passed array
    */
   private Iterable<Object> wrapArrayInIterable(Object array) {
-    return () -> new Iterator<>() {
+    return () -> new Iterator<Object>() {
 
       int i = 0;
 

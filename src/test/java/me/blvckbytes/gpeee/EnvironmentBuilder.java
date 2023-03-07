@@ -33,6 +33,7 @@ import org.jetbrains.annotations.Nullable;
 import java.lang.reflect.Array;
 import java.util.*;
 import java.util.function.Supplier;
+import java.util.logging.Logger;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -46,7 +47,7 @@ public class EnvironmentBuilder {
   private final GPEEE evaluator;
 
   public EnvironmentBuilder() {
-    this.evaluator = new GPEEE(null);
+    this.evaluator = new GPEEE(Logger.getGlobal());
     this.staticVariables = new HashMap<>();
     this.liveVariables = new HashMap<>();
     this.functions = new HashMap<>();

@@ -29,8 +29,6 @@ import me.blvckbytes.gpeee.functions.AExpressionFunction;
 import me.blvckbytes.gpeee.functions.IStandardFunctionRegistry;
 import me.blvckbytes.gpeee.functions.std.*;
 import me.blvckbytes.gpeee.interpreter.*;
-import me.blvckbytes.gpeee.logging.ILogger;
-import me.blvckbytes.gpeee.logging.NullLogger;
 import me.blvckbytes.gpeee.parser.Optimizer;
 import me.blvckbytes.gpeee.parser.Parser;
 import me.blvckbytes.gpeee.parser.expression.AExpression;
@@ -40,6 +38,7 @@ import org.jetbrains.annotations.Nullable;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Supplier;
+import java.util.logging.Logger;
 
 public class GPEEE implements IExpressionEvaluator, IStandardFunctionRegistry {
 
@@ -56,13 +55,12 @@ public class GPEEE implements IExpressionEvaluator, IStandardFunctionRegistry {
   private final Parser parser;
   private final Interpreter interpreter;
   private final Optimizer optimizer;
-  private final ILogger logger;
+  private final Logger logger;
 
   private EvaluationEnvironmentBuilder baseEnvironment;
 
-  public GPEEE(@Nullable ILogger logger) {
-    this.logger = logger == null ? new NullLogger() : logger;
-
+  public GPEEE(Logger logger) {
+    this.logger = logger;
     this.parser = new Parser(this.logger);
     this.interpreter = new Interpreter(this.logger, this);
     this.optimizer = new Optimizer(this.logger, this.interpreter, this);
@@ -134,17 +132,17 @@ public class GPEEE implements IExpressionEvaluator, IStandardFunctionRegistry {
     return new IEvaluationEnvironment() {
       @Override
       public Map<String, AExpressionFunction> getFunctions() {
-        return Map.of();
+        return new HashMap<>();
       }
 
       @Override
       public Map<String, Supplier<?>> getLiveVariables() {
-        return Map.of();
+        return new HashMap<>();
       }
 
       @Override
       public Map<String, ?> getStaticVariables() {
-        return Map.of();
+        return new HashMap<>();
       }
 
       @Override

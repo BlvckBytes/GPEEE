@@ -25,22 +25,23 @@
 package me.blvckbytes.gpeee.tokenizer;
 
 import me.blvckbytes.gpeee.logging.DebugLogSource;
-import me.blvckbytes.gpeee.logging.ILogger;
 import me.blvckbytes.gpeee.error.AEvaluatorError;
 import me.blvckbytes.gpeee.error.UnknownTokenError;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Stack;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class Tokenizer implements ITokenizer {
 
   private final String rawText;
-  private final ILogger logger;
+  private final Logger logger;
   private final char[] text;
   private final Stack<TokenizerState> saveStates;
   private TokenizerState state;
 
-  public Tokenizer(ILogger logger, String text) {
+  public Tokenizer(Logger logger, String text) {
     this.rawText = text;
     this.logger = logger;
     this.text = text.toCharArray();
@@ -71,10 +72,8 @@ public class Tokenizer implements ITokenizer {
   public void saveState(boolean debugLog) {
     this.saveStates.push(this.state.copy());
 
-    //#if mvn.project.property.production != "true"
     if (debugLog)
-      logger.logDebug(DebugLogSource.TOKENIZER, "Saved state " + this.saveStates.size() + " (charIndex=" + state.charIndex + ")");
-    //#endif
+      logger.log(Level.FINEST, () -> DebugLogSource.TOKENIZER + "Saved state " + this.saveStates.size() + " (charIndex=" + state.charIndex + ")");
   }
 
   @Override
@@ -82,10 +81,8 @@ public class Tokenizer implements ITokenizer {
     int sizeBefore = this.saveStates.size();
     this.state = this.saveStates.pop();
 
-    //#if mvn.project.property.production != "true"
     if (debugLog)
-      logger.logDebug(DebugLogSource.TOKENIZER, "Restored state " + sizeBefore + " (charIndex=" + state.charIndex + ")");
-    //#endif
+      logger.log(Level.FINEST, () -> DebugLogSource.TOKENIZER + "Restored state " + sizeBefore + " (charIndex=" + state.charIndex + ")");
   }
 
   @Override
@@ -93,10 +90,8 @@ public class Tokenizer implements ITokenizer {
     int sizeBefore = this.saveStates.size();
     TokenizerState state = this.saveStates.pop();
 
-    //#if mvn.project.property.production != "true"
     if (debugLog)
-      logger.logDebug(DebugLogSource.TOKENIZER, "Discarded state " + sizeBefore + " (charIndex=" + state.charIndex + ")");
-    //#endif
+      logger.log(Level.FINEST, () -> DebugLogSource.TOKENIZER + "Discarded state " + sizeBefore + " (charIndex=" + state.charIndex + ")");
 
     return state;
   }
@@ -141,9 +136,7 @@ public class Tokenizer implements ITokenizer {
     if (state.currentToken == null)
       readNextToken();
 
-    //#if mvn.project.property.production != "true"
-    logger.logDebug(DebugLogSource.TOKENIZER, "Peeked token " + state.currentToken);
-    //#endif
+    logger.log(Level.FINEST, () -> DebugLogSource.TOKENIZER + "Peeked token " + state.currentToken);
 
     return state.currentToken;
   }
@@ -158,9 +151,7 @@ public class Tokenizer implements ITokenizer {
     Token result = state.currentToken;
     readNextToken();
 
-    //#if mvn.project.property.production != "true"
-    logger.logDebug(DebugLogSource.TOKENIZER, "Consumed token " + result);
-    //#endif
+    logger.log(Level.FINEST, () -> DebugLogSource.TOKENIZER + "Consumed token " + result);
 
     return result;
   }
@@ -192,10 +183,10 @@ public class Tokenizer implements ITokenizer {
       nextChar();
     }
 
-    //#if mvn.project.property.production != "true"
-    if (ate > 0)
-      logger.logDebug(DebugLogSource.TOKENIZER, "Ate " + ate + " character(s) of whitespace");
-    //#endif
+    if (ate > 0) {
+      int ateFinal = ate;
+      logger.log(Level.FINEST, () -> DebugLogSource.TOKENIZER + "Ate " + ateFinal + " character(s) of whitespace");
+    }
   }
 
   /**
@@ -216,9 +207,7 @@ public class Tokenizer implements ITokenizer {
     // Try to eat a following comment
     String comment;
     if ((comment = TokenType.COMMENT.getTokenReader().apply(this)) != null) {
-      //#if mvn.project.property.production != "true"
-      logger.logDebug(DebugLogSource.TOKENIZER, "Ate comment: " + comment);
-      //#endif
+      logger.log(Level.FINEST, () -> DebugLogSource.TOKENIZER + "Ate comment: " + comment);
 
       // No longer needing to revert
       discardState(false);
@@ -250,9 +239,7 @@ public class Tokenizer implements ITokenizer {
       TokenizerState previousState = discardState(false);
       state.currentToken = new Token(tryType, previousState.row, previousState.col, result);
 
-      //#if mvn.project.property.production != "true"
-      logger.logDebug(DebugLogSource.TOKENIZER, "Reader for " + tryType + " was successful");
-      //#endif
+      logger.log(Level.FINEST, () -> DebugLogSource.TOKENIZER + "Reader for " + tryType + " was successful");
       return;
     }
 

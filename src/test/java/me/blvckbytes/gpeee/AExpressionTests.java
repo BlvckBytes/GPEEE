@@ -26,6 +26,8 @@ package me.blvckbytes.gpeee;
 
 import org.junit.jupiter.api.Test;
 
+import java.util.logging.Logger;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 public class AExpressionTests {
@@ -36,7 +38,7 @@ public class AExpressionTests {
     String resultText = "";
 
     try {
-      resultText = new GPEEE(null).parseString(
+      resultText = new GPEEE(Logger.getGlobal()).parseString(
         "\"my prefix: \" & iter_cat(my_object.map[\"colormap\"], (it, ind) => \"(\" & ind & \" -> \" & value(it) & \")\", \", \")"
       ).stringify("  ", 0);
     } catch (Exception e) {

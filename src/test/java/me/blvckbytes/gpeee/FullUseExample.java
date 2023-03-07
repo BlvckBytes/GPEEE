@@ -28,15 +28,13 @@ import me.blvckbytes.gpeee.error.AEvaluatorError;
 import me.blvckbytes.gpeee.functions.AExpressionFunction;
 import me.blvckbytes.gpeee.interpreter.IEvaluationEnvironment;
 import me.blvckbytes.gpeee.interpreter.IValueInterpreter;
-import me.blvckbytes.gpeee.logging.ILogSourceType;
-import me.blvckbytes.gpeee.logging.ILogger;
 import me.blvckbytes.gpeee.parser.expression.AExpression;
-import org.jetbrains.annotations.Nullable;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Map;
 import java.util.function.Supplier;
+import java.util.logging.Logger;
 
 public class FullUseExample {
 
@@ -44,22 +42,7 @@ public class FullUseExample {
 
   public static void main(String[] args) {
     try {
-
-      ILogger logger = new ILogger() {
-        @Override
-        public void logDebug(ILogSourceType source, String message) {
-          System.out.println("[DEBUG] [" + source.name() + "]: " + message);
-        }
-
-        @Override
-        public void logError(String message, @Nullable Exception error) {
-          System.err.println(message);
-
-          if (error != null)
-            error.printStackTrace();
-        }
-      };
-
+      Logger logger = Logger.getGlobal();
       GPEEE evaluator = new GPEEE(logger);
 
       AExpression expr = evaluator.parseString("5 * 3 - 2 & \" Hello, world! \" & current_time");

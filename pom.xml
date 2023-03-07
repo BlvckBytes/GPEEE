@@ -8,6 +8,12 @@
     <artifactId>GPEEE</artifactId>
     <version>0.1</version>
 
+    <properties>
+        <maven.compiler.source>11</maven.compiler.source>
+        <maven.compiler.target>11</maven.compiler.target>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    </properties>
+
     <build>
         <plugins>
 
@@ -26,37 +32,6 @@
                     </archive>
                 </configuration>
             </plugin>
-
-            <!-- Compiler-Plugin: Used to invoke the source code compiler at the preprocessed path -->
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <configuration>
-                    <source>11</source>
-                    <target>11</target>
-<!--                    <compileSourceRoots>target/generated-sources/preprocessed</compileSourceRoots>-->
-                </configuration>
-                <version>3.10.1</version>
-            </plugin>
-
-            <!-- JCP: Used for preprocessor comments -->
-<!--            <plugin>-->
-<!--                <groupId>com.igormaznitsa</groupId>-->
-<!--                <artifactId>jcp</artifactId>-->
-<!--                <version>7.0.5</version>-->
-<!--                <executions>-->
-<!--                    <execution>-->
-<!--                        <id>preprocessSources</id>-->
-<!--                        <phase>generate-sources</phase>-->
-<!--                        <goals>-->
-<!--                            <goal>preprocess</goal>-->
-<!--                        </goals>-->
-<!--                        <configuration>-->
-<!--                            <replaceSources>false</replaceSources>-->
-<!--                        </configuration>-->
-<!--                    </execution>-->
-<!--                </executions>-->
-<!--            </plugin>-->
 
             <!-- Surefire: Used to launch tests -->
             <plugin>
@@ -87,16 +62,6 @@
             </plugin>
         </plugins>
     </build>
-
-    <properties>
-        <maven.compiler.source>11</maven.compiler.source>
-        <maven.compiler.target>11</maven.compiler.target>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-
-        <!-- Always fall back to true (safe) -->
-        <!-- Request non-production with "-Dproduction=false" -->
-        <production>true</production>
-    </properties>
 
     <dependencies>
 
