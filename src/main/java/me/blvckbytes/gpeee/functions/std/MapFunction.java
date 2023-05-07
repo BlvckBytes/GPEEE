@@ -31,6 +31,7 @@ import me.blvckbytes.gpeee.interpreter.IEvaluationEnvironment;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
@@ -54,7 +55,7 @@ public class MapFunction extends AStandardFunction {
     // Loop all items with their indices
     int c = 0;
     for (Object item : items)
-      result.add(mapper.apply(env, List.of(item, c++)));
+      result.add(mapper.apply(env, Arrays.asList(item, c++)));
 
     if (result.size() == 0 && fallback != null)
       result.add(fallback);
@@ -65,7 +66,7 @@ public class MapFunction extends AStandardFunction {
   @Override
   public @Nullable List<ExpressionFunctionArgument> getArguments() {
     // map(items, (it, ind) => (..), "empty input")
-    return List.of(
+    return Arrays.asList(
       new ExpressionFunctionArgument("items",     "Collection to iterate",             true,  Collection.class),
       new ExpressionFunctionArgument("mapper",    "Iteration item mapper function",    true,  AExpressionFunction.class),
       new ExpressionFunctionArgument("fallback",  "Fallback when collection is empty", false, String.class)

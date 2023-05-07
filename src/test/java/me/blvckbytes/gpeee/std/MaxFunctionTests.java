@@ -28,7 +28,7 @@ import me.blvckbytes.gpeee.EnvironmentBuilder;
 import me.blvckbytes.gpeee.error.InvalidFunctionArgumentTypeError;
 import org.junit.jupiter.api.Test;
 
-import java.util.List;
+import java.util.Collections;
 
 public class MaxFunctionTests {
 
@@ -44,12 +44,12 @@ public class MaxFunctionTests {
   @Test
   public void shouldReturnTheBiggerValue() {
     new EnvironmentBuilder()
-      .withStaticVariable("my_list", List.of(1))
-      .withStaticVariable("my_list_empty", List.of())
+      .withStaticVariable("my_list", Collections.singletonList(1))
+      .withStaticVariable("my_list_empty", Collections.emptyList())
       .launch(validator -> {
         validator.validate("max(0, 5)", 5);
         validator.validate("max(-3, -8)", -3);
-        validator.validate("max(my_list, my_list_empty)", List.of(1));
+        validator.validate("max(my_list, my_list_empty)", Collections.singletonList(1));
       });
   }
 }

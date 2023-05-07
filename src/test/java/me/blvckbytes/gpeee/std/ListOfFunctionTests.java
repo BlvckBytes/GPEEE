@@ -27,9 +27,7 @@ package me.blvckbytes.gpeee.std;
 import me.blvckbytes.gpeee.EnvironmentBuilder;
 import org.junit.jupiter.api.Test;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class ListOfFunctionTests {
 
@@ -38,10 +36,10 @@ public class ListOfFunctionTests {
     EnvironmentBuilder env = new EnvironmentBuilder();
 
     env.launch(validator -> {
-      validator.validate("list_of(0)", List.of(0));
-      validator.validate("list_of(0, 1, 2)", List.of(0, 1, 2));
-      validator.validate("list_of(2, 3, \"String\")", List.of(2, 3, "String"));
-      validator.validate("list_of()", List.of());
+      validator.validate("list_of(0)", Collections.singletonList(0));
+      validator.validate("list_of(0, 1, 2)", Arrays.asList(0, 1, 2));
+      validator.validate("list_of(2, 3, \"String\")", Arrays.asList(2, 3, "String"));
+      validator.validate("list_of()", Collections.emptyList());
       validator.validate("list_of(null)", nullList());
     });
   }

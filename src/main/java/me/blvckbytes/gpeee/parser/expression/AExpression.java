@@ -30,6 +30,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
+import java.util.Collections;
 import java.util.List;
 
 public abstract class AExpression {
@@ -61,7 +62,7 @@ public abstract class AExpression {
   public abstract String expressionify();
 
   public String stringify(String indentWidth, int indentLevel) throws Exception {
-    String indent = indentWidth.repeat(indentLevel);
+    String indent = String.join("", Collections.nCopies(indentLevel, indentWidth));
     StringBuilder result = new StringBuilder(getClass().getSimpleName() + " {\n");
 
     Class<?> currentClass = getClass();
@@ -72,8 +73,11 @@ public abstract class AExpression {
         if (Modifier.isStatic(f.getModifiers()) || f.isAnnotationPresent(StringifyExclude.class))
           continue;
 
-        if (!f.trySetAccessible())
+        try {
+          f.setAccessible(true);
+        } catch (Exception e) {
           continue;
+        }
 
         if (!firstField)
           result.append(",\n");
@@ -116,7 +120,7 @@ public abstract class AExpression {
 
       for (Object item : valueList) {
         listBuilder.append(indent)
-          .append(indentWidth.repeat(2))
+          .append(String.join("", Collections.nCopies(2, indentWidth)))
           .append(stringifyObject(item, indent, indentWidth, indentLevel + 2))
           .append('\n');
       }

@@ -49,7 +49,7 @@ public class SplitFunction extends AStandardFunction {
 
   @Override
   public @Nullable List<ExpressionFunctionArgument> getArguments() {
-    return List.of(
+    return Arrays.asList(
       new ExpressionFunctionArgument("input",     "Input string to split", true, String.class),
       new ExpressionFunctionArgument("delimiter", "Delimiter to split on, default ','", false, String.class)
     );

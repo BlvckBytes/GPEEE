@@ -24,12 +24,12 @@
 
 package me.blvckbytes.gpeee.functions.std;
 
-import me.blvckbytes.gpeee.functions.AExpressionFunction;
 import me.blvckbytes.gpeee.functions.ExpressionFunctionArgument;
 import me.blvckbytes.gpeee.functions.IStandardFunctionRegistry;
 import me.blvckbytes.gpeee.interpreter.IEvaluationEnvironment;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -48,7 +48,7 @@ public class KeyFunction extends AStandardFunction {
 
   @Override
   public @Nullable List<ExpressionFunctionArgument> getArguments() {
-    return List.of(
+    return Collections.singletonList(
       new ExpressionFunctionArgument("entry", "Map entry to extract from", false, Map.Entry.class)
     );
   }

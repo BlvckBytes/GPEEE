@@ -34,15 +34,17 @@ import me.blvckbytes.gpeee.interpreter.IEvaluationEnvironment;
 import org.jetbrains.annotations.Nullable;
 import org.junit.jupiter.api.Test;
 
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 public class IndexingTests {
 
   @Test
   public void shouldIndexLists() {
     EnvironmentBuilder env = new EnvironmentBuilder()
-      .withStaticVariable("my_list", List.of(1, 2, 3));
+      .withStaticVariable("my_list", Arrays.asList(1, 2, 3));
 
     env.launch(validator -> {
       validator.validate("my_list[0]", 1);
@@ -72,16 +74,16 @@ public class IndexingTests {
   @Test
   public void shouldIndexMaps() {
     EnvironmentBuilder env = new EnvironmentBuilder()
-      .withStaticVariable("my_map", Map.of(
-        "One", 1,
-        "Two", 2,
-        "Three", 3,
-        "AnotherMap", Map.of(
-          "One", 1,
-          "Two", 2,
-          "Three", 3
-        )
-      ));
+      .withStaticVariable("my_map", new HashMap<Object, Object>() {{
+          put("One", 1);
+          put("Two", 2);
+          put("Three", 3);
+          put("AnotherMap", new HashMap<Object, Object>() {{
+            put("One", 1);
+            put("Two", 2);
+            put("Three", 3);
+          }});
+        }});
 
     env.launch(validator -> {
       validator.validate("my_map[\"One\"]", 1);
@@ -104,11 +106,11 @@ public class IndexingTests {
         new AExpressionFunction() {
           @Override
           public Object apply(IEvaluationEnvironment environment, List<@Nullable Object> args) {
-            return Map.of(
-              "One", 1,
-              "Two", 2,
-              "Three", 3
-            );
+            return new HashMap<Object, Object>() {{
+              put("One", 1);
+              put("Two", 2);
+              put("Three", 3);
+            }};
           }
 
           @Override
@@ -146,7 +148,7 @@ public class IndexingTests {
   @Test
   public void shouldThrowIfMalformed() {
     new EnvironmentBuilder()
-      .withStaticVariable("my_map", Map.of())
+      .withStaticVariable("my_map", Collections.emptyMap())
       .launch(validator -> {
         // Expected terminator token ]
         validator.validateThrows("my_map[\"test\"", UnexpectedTokenError.class);

@@ -67,7 +67,7 @@ public class FunctionInvocationTests {
 
           @Override
           public List<ExpressionFunctionArgument> getArguments() {
-            return List.of(
+            return Collections.singletonList(
               new ExpressionFunctionArgument("number", "number appended to the hello string", true)
             );
           }
@@ -81,7 +81,7 @@ public class FunctionInvocationTests {
 
             if (args.get(1) != null) {
               AExpressionFunction callback = nonNull(args, 1);
-              result += environment.getValueInterpreter().asString(callback.apply(environment, List.of(result)));
+              result += environment.getValueInterpreter().asString(callback.apply(environment, Collections.singletonList(result)));
             }
 
             if (args.get(2) != null)
@@ -92,7 +92,7 @@ public class FunctionInvocationTests {
 
           @Override
           public List<ExpressionFunctionArgument> getArguments() {
-            return List.of(
+            return Arrays.asList(
               new ExpressionFunctionArgument("number", "number to prepend to the callback's result", true, Long.class),
               new ExpressionFunctionArgument("cb", "callback to evaluate", false, AExpressionFunction.class),
               new ExpressionFunctionArgument("number2", "number to append to the callback result", false, Long.class)
@@ -142,7 +142,7 @@ public class FunctionInvocationTests {
 
           @Override
           public List<ExpressionFunctionArgument> getArguments() {
-            return List.of(
+            return Arrays.asList(
               new ExpressionFunctionArgument("a", "Input A", true),
               new ExpressionFunctionArgument("b", "Input B", false),
               new ExpressionFunctionArgument("c", "Input C", false),
@@ -184,7 +184,7 @@ public class FunctionInvocationTests {
 
           @Override
           public List<ExpressionFunctionArgument> getArguments() {
-            return List.of(new ExpressionFunctionArgument("a", "Input A", true, Long.class));
+            return Collections.singletonList(new ExpressionFunctionArgument("a", "Input A", true, Long.class));
           }
         })
       .launch(validator -> {
@@ -235,7 +235,7 @@ public class FunctionInvocationTests {
 
       @Override
       public List<ExpressionFunctionArgument> getArguments() {
-        return List.of(new ExpressionFunctionArgument("a", "Input A", true, type));
+        return Collections.singletonList(new ExpressionFunctionArgument("a", "Input A", true, type));
       }
     };
   }
@@ -268,7 +268,7 @@ public class FunctionInvocationTests {
 
           @Override
           public List<ExpressionFunctionArgument> getArguments() {
-            return List.of(new ExpressionFunctionArgument("a", "test parameter", false));
+            return Collections.singletonList(new ExpressionFunctionArgument("a", "test parameter", false));
           }
         })
       .launch(validator -> {
@@ -286,10 +286,13 @@ public class FunctionInvocationTests {
   @Test
   public void shouldAutoConvertArgs() {
     EnvironmentBuilder env = new EnvironmentBuilder()
-      .withStaticVariable("my_map", Map.of("k1", "v1", "k2", "v2"))
-      .withStaticVariable("my_list", List.of("v1", "v2", "v3"))
-      .withStaticVariable("my_map_empty", Map.of())
-      .withStaticVariable("my_list_empty", List.of())
+      .withStaticVariable("my_map", new HashMap<Object, Object>() {{
+        put("k1", "v1");
+        put("k2", "v2");
+      }})
+      .withStaticVariable("my_list", Arrays.asList("v1", "v2", "v3"))
+      .withStaticVariable("my_map_empty", Collections.emptyMap())
+      .withStaticVariable("my_list_empty", Collections.emptyList())
       .withFunction("list_func", buildTypeValidatorFunction(Collection.class))
       .withFunction("string_func", buildTypeValidatorFunction(String.class))
       .withFunction("long_func", buildTypeValidatorFunction(Long.class))

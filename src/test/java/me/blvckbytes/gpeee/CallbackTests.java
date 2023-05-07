@@ -71,12 +71,12 @@ public class CallbackTests {
       @Override
       public Object apply(IEvaluationEnvironment environment, List<@Nullable Object> args) {
         AExpressionFunction func = nonNull(args, 0);
-        return func.apply(environment, List.of(1, 2, 3));
+        return func.apply(environment, Arrays.asList(1, 2, 3));
       }
 
       @Override
       public List<ExpressionFunctionArgument> getArguments() {
-        return List.of(
+        return Collections.singletonList(
           new ExpressionFunctionArgument("cb", "callback expression", true, AExpressionFunction.class)
         );
       }

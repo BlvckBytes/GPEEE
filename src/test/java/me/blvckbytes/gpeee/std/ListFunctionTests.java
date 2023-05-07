@@ -34,29 +34,29 @@ public class ListFunctionTests {
   @Test
   public void shouldInterpretValuesAsAList() {
     EnvironmentBuilder env = new EnvironmentBuilder()
-      .withStaticVariable("my_list", createList(1))
-      .withStaticVariable("my_list_empty", createList())
-      .withStaticVariable("my_map", Map.of("k", "v"))
-      .withStaticVariable("my_map_empty", Map.of());
+      .withStaticVariable("my_list", Collections.singletonList(1))
+      .withStaticVariable("my_list_empty", Collections.emptyList())
+      .withStaticVariable("my_map", Collections.singletonMap("k", "v"))
+      .withStaticVariable("my_map_empty", Collections.emptyMap());
 
     env.launch(validator -> {
-      validator.validate("list(0)", createList(0));
-      validator.validate("list(1)", createList(1));
-      validator.validate("list(100)", createList(100));
-      validator.validate("list(-1)", createList(-1));
-      validator.validate("list(-100)", createList(-100));
+      validator.validate("list(0)", Collections.singletonList(0));
+      validator.validate("list(1)", Collections.singletonList(1));
+      validator.validate("list(100)", Collections.singletonList(100));
+      validator.validate("list(-1)", Collections.singletonList(-1));
+      validator.validate("list(-100)", Collections.singletonList(-100));
 
-      validator.validate("list(1.1)", createList(1.1));
-      validator.validate("list(100.1)", createList(100.1));
-      validator.validate("list(-1.1)", createList(-1.1));
-      validator.validate("list(-100.1)", createList(-100.1));
+      validator.validate("list(1.1)", Collections.singletonList(1.1));
+      validator.validate("list(100.1)", Collections.singletonList(100.1));
+      validator.validate("list(-1.1)", Collections.singletonList(-1.1));
+      validator.validate("list(-100.1)", Collections.singletonList(-100.1));
 
-      validator.validate("list(\"\")", createList(""));
-      validator.validate("list(\"non-empty\")", createList("non-empty"));
+      validator.validate("list(\"\")", Collections.singletonList(""));
+      validator.validate("list(\"non-empty\")", Collections.singletonList("non-empty"));
 
-      validator.validate("list(null)", createList());
-      validator.validate("list(true)", createList(true));
-      validator.validate("list(false)", createList(false));
+      validator.validate("list(null)", Collections.emptyList());
+      validator.validate("list(true)", Collections.singletonList(true));
+      validator.validate("list(false)", Collections.singletonList(false));
 
       // Lists should be passed through
       validator.validate("list(my_list)", env.getVariable("my_list"));
@@ -66,9 +66,5 @@ public class ListFunctionTests {
       validator.validate("list(my_map)", ((Map<?, ?>) Objects.requireNonNull(env.getVariable("my_map"))).entrySet());
       validator.validate("list(my_map_empty)", ((Map<?, ?>) Objects.requireNonNull(env.getVariable("my_map_empty"))).entrySet());
     });
-  }
-
-  private List<Object> createList(Object... items) {
-    return new ArrayList<>(Arrays.asList(items));
   }
 }

@@ -26,11 +26,9 @@ package me.blvckbytes.gpeee.std;
 
 import me.blvckbytes.gpeee.EnvironmentBuilder;
 import me.blvckbytes.gpeee.IExpressionResultValidator;
-import me.blvckbytes.gpeee.error.InvalidFunctionArgumentTypeError;
 import org.junit.jupiter.api.Test;
 
 import java.io.ByteArrayOutputStream;
-import java.io.OutputStream;
 import java.io.PrintStream;
 import java.nio.charset.StandardCharsets;
 
@@ -63,7 +61,7 @@ public class PrintFunctionTests {
       System.setOut(printStream);
       validator.validate(expression, (Object) null);
 
-      String printed = outputStream.toString(StandardCharsets.UTF_8);
+      String printed = new String(outputStream.toByteArray(), StandardCharsets.UTF_8);
 
       // NOTE: All calls to validate() create two invocations under the hood, to validate the
       // vanilla- as well as the optimized expression, thus we need to cut off the second half

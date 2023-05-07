@@ -26,10 +26,9 @@ package me.blvckbytes.gpeee.std;
 
 import me.blvckbytes.gpeee.EnvironmentBuilder;
 import me.blvckbytes.gpeee.error.InvalidFunctionArgumentTypeError;
-import me.blvckbytes.gpeee.error.InvalidFunctionInvocationError;
 import org.junit.jupiter.api.Test;
 
-import java.util.List;
+import java.util.Arrays;
 
 public class SplitFunctionTests {
 
@@ -45,8 +44,8 @@ public class SplitFunctionTests {
   public void shouldSplitOnDefaultString() {
     new EnvironmentBuilder()
       .launch(validator -> {
-        validator.validate("split(\"hello,world,test\")", List.of("hello", "world", "test"));
-        validator.validate("split(\"another , weird,ex am ple\")", List.of("another ", " weird", "ex am ple"));
+        validator.validate("split(\"hello,world,test\")", Arrays.asList("hello", "world", "test"));
+        validator.validate("split(\"another , weird,ex am ple\")", Arrays.asList("another ", " weird", "ex am ple"));
       });
   }
 
@@ -54,10 +53,10 @@ public class SplitFunctionTests {
   public void shouldSplitOnCustomString() {
     new EnvironmentBuilder()
       .launch(validator -> {
-        validator.validate("split(\"hello|world|test\", \"\\|\")", List.of("hello", "world", "test"));
-        validator.validate("split(\"hello|world,test\", \"\\|\")", List.of("hello", "world,test"));
-        validator.validate("split(\"another , weird|ex am ple\", \"\\|\")", List.of("another , weird", "ex am ple"));
-        validator.validate("split(\"myhelloworldhellotext\", \"hello\")", List.of("my", "world", "text"));
+        validator.validate("split(\"hello|world|test\", \"\\|\")", Arrays.asList("hello", "world", "test"));
+        validator.validate("split(\"hello|world,test\", \"\\|\")", Arrays.asList("hello", "world,test"));
+        validator.validate("split(\"another , weird|ex am ple\", \"\\|\")", Arrays.asList("another , weird", "ex am ple"));
+        validator.validate("split(\"myhelloworldhellotext\", \"hello\")", Arrays.asList("my", "world", "text"));
       });
   }
 }

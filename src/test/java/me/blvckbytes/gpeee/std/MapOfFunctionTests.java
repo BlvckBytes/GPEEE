@@ -28,6 +28,7 @@ import me.blvckbytes.gpeee.EnvironmentBuilder;
 import me.blvckbytes.gpeee.error.InvalidFunctionInvocationError;
 import org.junit.jupiter.api.Test;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -38,10 +39,14 @@ public class MapOfFunctionTests {
     EnvironmentBuilder env = new EnvironmentBuilder();
 
     env.launch(validator -> {
-      validator.validate("map_of(\"k\", 1)", Map.of("k", 1));
-      validator.validate("map_of(\"k1\", 1.2, \"k2\", -5, \"k3\", \"value 3\")", Map.of("k1", 1.2, "k2", -5, "k3", "value 3"));
+      validator.validate("map_of(\"k\", 1)", Collections.singletonMap("k", 1));
+      validator.validate("map_of(\"k1\", 1.2, \"k2\", -5, \"k3\", \"value 3\")", new HashMap<Object, Object>() {{
+        put("k1", 1.2);
+        put("k2", -5);
+        put("k3", "value 3");
+      }});
       validator.validate("map_of(\"k\", null)", nullMap("k"));
-      validator.validate("map_of()", Map.of());
+      validator.validate("map_of()", Collections.emptyMap());
 
       validator.validateThrows("map_of(\"k\")", InvalidFunctionInvocationError.class);
       validator.validateThrows("map_of(\"k\", 1, \"k2\")", InvalidFunctionInvocationError.class);

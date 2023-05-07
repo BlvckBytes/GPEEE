@@ -28,9 +28,7 @@ import me.blvckbytes.gpeee.EnvironmentBuilder;
 import me.blvckbytes.gpeee.error.InvalidFunctionArgumentTypeError;
 import org.junit.jupiter.api.Test;
 
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class IterCatFunctionTests {
 
@@ -97,16 +95,16 @@ public class IterCatFunctionTests {
   private EnvironmentBuilder createEnvironment() {
     return new EnvironmentBuilder()
       .withStaticVariable("my_list", createColorList())
-      .withStaticVariable("my_list_empty", List.of())
+      .withStaticVariable("my_list_empty", Collections.emptyList())
       .withStaticVariable("my_map", createColorMap())
-      .withStaticVariable("my_map_empty", Map.of())
+      .withStaticVariable("my_map_empty", Collections.emptyMap())
       .withStaticVariable("my_number", 1)
       .withStaticVariable("my_string", "hello world")
       .withStaticVariable("my_boolean", true);
   }
 
   private List<String> createColorList() {
-    return List.of("red", "green", "blue");
+    return Arrays.asList("red", "green", "blue");
   }
 
   private Map<String, String> createColorMap() {

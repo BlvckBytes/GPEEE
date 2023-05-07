@@ -26,7 +26,7 @@ package me.blvckbytes.gpeee;
 
 import org.junit.jupiter.api.Test;
 
-import java.util.List;
+import java.util.Arrays;
 
 public class ConcatenationTests {
 
@@ -37,7 +37,7 @@ public class ConcatenationTests {
       .withStaticVariable("my_double", 2.34)
       .withStaticVariable("my_bool", true)
       .withStaticVariable("my_string", "hello, world")
-      .withStaticVariable("my_list", List.of(1, 2, 3));
+      .withStaticVariable("my_list", Arrays.asList(1, 2, 3));
 
     env.launch(validator -> {
       validator.validate(

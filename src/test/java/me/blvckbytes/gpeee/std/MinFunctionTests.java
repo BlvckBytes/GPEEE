@@ -28,7 +28,7 @@ import me.blvckbytes.gpeee.EnvironmentBuilder;
 import me.blvckbytes.gpeee.error.InvalidFunctionArgumentTypeError;
 import org.junit.jupiter.api.Test;
 
-import java.util.List;
+import java.util.Collections;
 
 public class MinFunctionTests {
 
@@ -44,12 +44,12 @@ public class MinFunctionTests {
   @Test
   public void shouldReturnTheSmallerValue() {
     new EnvironmentBuilder()
-      .withStaticVariable("my_list", List.of(1))
-      .withStaticVariable("my_list_empty", List.of())
+      .withStaticVariable("my_list", Collections.singletonList(1))
+      .withStaticVariable("my_list_empty", Collections.emptyList())
       .launch(validator -> {
         validator.validate("min(0, 5)", 0);
         validator.validate("min(-3, -8)", -8);
-        validator.validate("min(my_list, my_list_empty)", List.of());
+        validator.validate("min(my_list, my_list_empty)", Collections.emptyList());
       });
   }
 }

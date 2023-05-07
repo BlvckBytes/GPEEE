@@ -112,7 +112,7 @@ public class DateFormatFunction extends AStandardFunction {
 
   @Override
   public @Nullable List<ExpressionFunctionArgument> getArguments() {
-    return List.of(
+    return Arrays.asList(
       new ExpressionFunctionArgument("date",     "Input date to format",                                     true),
       new ExpressionFunctionArgument("type",     "Type of date provided (seconds, millis, date)",            true,  String.class),
       new ExpressionFunctionArgument("format",   "Date format to apply",                                     true,  String.class),

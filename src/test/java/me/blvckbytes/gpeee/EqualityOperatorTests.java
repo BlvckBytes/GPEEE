@@ -26,9 +26,7 @@ package me.blvckbytes.gpeee;
 
 import org.junit.jupiter.api.Test;
 
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class EqualityOperatorTests {
 
@@ -145,10 +143,10 @@ public class EqualityOperatorTests {
   @Test
   public void shouldEqualLongCollectionAndMap() {
     new EnvironmentBuilder()
-      .withStaticVariable("my_map", Map.of("k", "v"))
-      .withStaticVariable("my_list", List.of(1))
-      .withStaticVariable("my_empty_map", Map.of())
-      .withStaticVariable("my_empty_list", List.of())
+      .withStaticVariable("my_map", Collections.singletonMap("k", "v"))
+      .withStaticVariable("my_list", Collections.singletonList(1))
+      .withStaticVariable("my_empty_map", Collections.emptyMap())
+      .withStaticVariable("my_empty_list", Collections.emptyList())
       .launch(validator -> {
         // Maps and Collections should have their equivalent long value
         validator.validate("my_map == 1", true);
@@ -204,10 +202,10 @@ public class EqualityOperatorTests {
   @Test
   public void shouldEqualListListContents() {
     new EnvironmentBuilder()
-      .withStaticVariable("my_list_a", List.of(1, 2, 3, 4, 5))
-      .withStaticVariable("my_list_b", List.of(1, 2, 3, 4, 5))
-      .withStaticVariable("my_list_b_2", List.of(5, 4, 3, 2, 1))
-      .withStaticVariable("my_list_empty", List.of())
+      .withStaticVariable("my_list_a", Arrays.asList(1, 2, 3, 4, 5))
+      .withStaticVariable("my_list_b", Arrays.asList(1, 2, 3, 4, 5))
+      .withStaticVariable("my_list_b_2", Arrays.asList(5, 4, 3, 2, 1))
+      .withStaticVariable("my_list_empty", Collections.emptyList())
       .launch(validator -> {
         // List contents equal, so no matter if exact or not, the lists equal
         validator.validate("my_list_a == my_list_b", true);
@@ -277,7 +275,7 @@ public class EqualityOperatorTests {
       .withStaticVariable("my_map_a", generateOrderedMap(false))
       .withStaticVariable("my_map_b", generateOrderedMap(false))
       .withStaticVariable("my_map_b_2", generateOrderedMap(true))
-      .withStaticVariable("my_map_empty", Map.of())
+      .withStaticVariable("my_map_empty", Collections.emptyMap())
       .launch(validator -> {
         // Map contents equal, so no matter if exact or not, the maps equal
         validator.validate("my_map_a == my_map_b", true);

@@ -30,9 +30,7 @@ import me.blvckbytes.gpeee.interpreter.IEvaluationEnvironment;
 import org.jetbrains.annotations.Nullable;
 
 import java.lang.reflect.Array;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Length of - len
@@ -65,7 +63,7 @@ public class LenFunction extends AStandardFunction {
 
   @Override
   public @Nullable List<ExpressionFunctionArgument> getArguments() {
-    return List.of(
+    return Collections.singletonList(
       new ExpressionFunctionArgument("input", "Input to get the length of", false)
     );
   }

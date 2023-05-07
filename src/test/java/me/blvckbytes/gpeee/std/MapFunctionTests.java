@@ -28,14 +28,16 @@ import me.blvckbytes.gpeee.EnvironmentBuilder;
 import me.blvckbytes.gpeee.error.InvalidFunctionArgumentTypeError;
 import org.junit.jupiter.api.Test;
 
-import java.util.List;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 
 public class MapFunctionTests {
 
   @Test
   public void shouldRequireArguments() {
     new EnvironmentBuilder()
-      .withStaticVariable("items", List.of())
+      .withStaticVariable("items", Collections.emptyList())
       .launch(validator -> {
         validator.validateThrows("map()", InvalidFunctionArgumentTypeError.class);
         validator.validateThrows("map(items)", InvalidFunctionArgumentTypeError.class);
@@ -45,22 +47,22 @@ public class MapFunctionTests {
   @Test
   public void shouldReturnFallbackValueWhenEmpty() {
     new EnvironmentBuilder()
-      .withStaticVariable("items_empty", List.of())
-      .withStaticVariable("items_one", List.of(1))
+      .withStaticVariable("items_empty", Collections.emptyList())
+      .withStaticVariable("items_one", Collections.singletonList(1))
       .launch(validator -> {
-        validator.validate("map(items_empty, (item) => item, \"empty collection\")", List.of("empty collection"));
-        validator.validate("map(items_one, (item) => item, \"empty collection\")", List.of(1));
+        validator.validate("map(items_empty, (item) => item, \"empty collection\")", Collections.singletonList("empty collection"));
+        validator.validate("map(items_one, (item) => item, \"empty collection\")", Collections.singletonList(1));
       });
   }
 
   @Test
   public void shouldMapInputItems() {
     new EnvironmentBuilder()
-      .withStaticVariable("items", List.of("a", "b", "c"))
-      .withStaticVariable("items_empty", List.of())
+      .withStaticVariable("items", Arrays.asList("a", "b", "c"))
+      .withStaticVariable("items_empty", new ArrayList<>())
       .launch(validator -> {
-        validator.validate("map(items, (item) => item & \" suffix\")", List.of("a suffix", "b suffix", "c suffix"));
-        validator.validate("map(items_empty, (item, index) => index & item)", List.of());
+        validator.validate("map(items, (item) => item & \" suffix\")", Arrays.asList("a suffix", "b suffix", "c suffix"));
+        validator.validate("map(items_empty, (item, index) => index & item)", Collections.emptyList());
       });
   }
 }

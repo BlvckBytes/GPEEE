@@ -24,6 +24,8 @@
 
 package me.blvckbytes.gpeee.error;
 
+import java.util.Collections;
+
 public abstract class AEvaluatorError extends RuntimeException {
 
   public AEvaluatorError(int row, int col, String rawInput, String text) {
@@ -44,11 +46,11 @@ public abstract class AEvaluatorError extends RuntimeException {
       // Show the target line with it's line number
       .append(lineNumber).append(targetLine).append("\n")
       // Draw an indicator under the target column and print the text next to it
-      .append(" ".repeat(col + lineNumber.length())).append("^").append(" ").append(textLines[0]).append("\n");
+      .append(String.join("", Collections.nCopies(col + lineNumber.length(), " "))).append("^").append(" ").append(textLines[0]).append("\n");
 
     // Append remaining lines (if any) right below the text next to the marker
     for (int i = 1; i < textLines.length; i++)
-      result.append(" ".repeat(col + lineNumber.length() + 2)).append(textLines[i]).append("\n");
+      result.append(String.join("", Collections.nCopies(col + lineNumber.length() + 2, " "))).append(textLines[i]).append("\n");
 
     return result.toString();
   }

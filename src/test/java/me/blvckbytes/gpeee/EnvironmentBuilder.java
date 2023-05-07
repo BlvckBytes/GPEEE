@@ -152,7 +152,7 @@ public class EnvironmentBuilder {
 
   public List<List<Object>> generatePerm(List<?> original) {
     if (original.isEmpty())
-      return List.of(List.of());
+      return Collections.singletonList(Collections.emptyList());
 
     Object firstElement = original.remove(0);
     List<List<Object>> returnValue = new ArrayList<>();

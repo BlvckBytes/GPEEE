@@ -27,18 +27,20 @@ package me.blvckbytes.gpeee.std;
 import me.blvckbytes.gpeee.EnvironmentBuilder;
 import org.junit.jupiter.api.Test;
 
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class LenFunctionTests {
 
   @Test
   public void shouldRespondWithAnItemsLength() {
     new EnvironmentBuilder()
-      .withStaticVariable("my_list", List.of(1, 2, 3, 4))
-      .withStaticVariable("my_list_empty", List.of())
-      .withStaticVariable("my_map", Map.of("k", "v", "k2", "v2"))
-      .withStaticVariable("my_map_empty", Map.of())
+      .withStaticVariable("my_list", Arrays.asList(1, 2, 3, 4))
+      .withStaticVariable("my_list_empty", Collections.emptyList())
+      .withStaticVariable("my_map", new HashMap<Object, Object>() {{
+        put("k", "v");
+        put("k2", "v2");
+      }})
+      .withStaticVariable("my_map_empty", Collections.emptyMap())
       .withStaticVariable("my_array", new int[] { 1, 2, 3 })
       .withStaticVariable("my_array_empty", new int[] {})
       .withStaticVariable("my_string", "hello, world")

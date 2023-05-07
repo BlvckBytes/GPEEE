@@ -25,23 +25,21 @@
 package me.blvckbytes.gpeee.std;
 
 import me.blvckbytes.gpeee.EnvironmentBuilder;
-import me.blvckbytes.gpeee.error.InvalidFunctionArgumentTypeError;
-import me.blvckbytes.gpeee.parser.expression.FunctionInvocationExpression;
 import org.junit.jupiter.api.Test;
 
-import java.util.List;
+import java.util.Arrays;
 
 public class FlattenFunctionTests {
 
   @Test
   public void shouldFlattenCollectionsAndOtherValues() {
     new EnvironmentBuilder()
-      .withStaticVariable("list_a", List.of(1, 2, 3))
-      .withStaticVariable("list_b", List.of(4, 5, 6))
-      .withStaticVariable("list_complex", List.of(List.of(7, 8), List.of(9, 10)))
+      .withStaticVariable("list_a", Arrays.asList(1, 2, 3))
+      .withStaticVariable("list_b", Arrays.asList(4, 5, 6))
+      .withStaticVariable("list_complex", Arrays.asList(Arrays.asList(7, 8), Arrays.asList(9, 10)))
       .launch(validator -> {
-        validator.validate("flatten(list_a, list_b, list_complex)", List.of(1, 2, 3, 4, 5, 6, 7, 8, 9, 10));
-        validator.validate("flatten(\"Hello\", list_a, list_b, true, list_complex)", List.of("Hello", 1, 2, 3, 4, 5, 6, true, 7, 8, 9, 10));
+        validator.validate("flatten(list_a, list_b, list_complex)", Arrays.asList(1, 2, 3, 4, 5, 6, 7, 8, 9, 10));
+        validator.validate("flatten(\"Hello\", list_a, list_b, true, list_complex)", Arrays.asList("Hello", 1, 2, 3, 4, 5, 6, true, 7, 8, 9, 10));
       });
   }
 }

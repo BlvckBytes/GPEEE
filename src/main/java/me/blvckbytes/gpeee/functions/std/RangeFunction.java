@@ -30,6 +30,7 @@ import me.blvckbytes.gpeee.interpreter.IEvaluationEnvironment;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -52,7 +53,7 @@ public class RangeFunction extends AStandardFunction {
 
   @Override
   public @Nullable List<ExpressionFunctionArgument> getArguments() {
-    return List.of(
+    return Arrays.asList(
       new ExpressionFunctionArgument("start", "Start index (inclusive)", true, Long.class),
       new ExpressionFunctionArgument("end", "End index (inclusive)", true, Long.class)
     );

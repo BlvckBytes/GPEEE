@@ -31,6 +31,7 @@ import me.blvckbytes.gpeee.interpreter.IValueInterpreter;
 import me.blvckbytes.gpeee.parser.expression.AExpression;
 
 import java.text.SimpleDateFormat;
+import java.util.Collections;
 import java.util.Date;
 import java.util.Map;
 import java.util.function.Supplier;
@@ -58,13 +59,13 @@ public class FullUseExample {
         @Override
         public Map<String, AExpressionFunction> getFunctions() {
           // Register your functions here
-          return Map.of();
+          return Collections.emptyMap();
         }
 
         @Override
         public Map<String, Supplier<?>> getLiveVariables() {
           // Register your live variables here
-          return Map.of(
+          return Collections.singletonMap(
             "current_time", () -> DATE_FORMAT.format(new Date())
           );
         }
@@ -72,7 +73,7 @@ public class FullUseExample {
         @Override
         public Map<String, Object> getStaticVariables() {
           // Register your static variables here
-          return Map.of();
+          return Collections.emptyMap();
         }
 
         @Override

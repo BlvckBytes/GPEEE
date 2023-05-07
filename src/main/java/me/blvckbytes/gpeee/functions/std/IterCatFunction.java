@@ -30,6 +30,7 @@ import me.blvckbytes.gpeee.functions.IStandardFunctionRegistry;
 import me.blvckbytes.gpeee.interpreter.IEvaluationEnvironment;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
@@ -56,7 +57,7 @@ public class IterCatFunction extends AStandardFunction {
     int c = 0;
     for (Object item : items) {
       result.append(result.length() == 0 ? "" : separator).append(
-        mapper.apply(env, List.of(item, c++))
+        mapper.apply(env, Arrays.asList(item, c++))
       );
     }
 
@@ -71,11 +72,11 @@ public class IterCatFunction extends AStandardFunction {
   @Override
   public @Nullable List<ExpressionFunctionArgument> getArguments() {
     // iter_cat(items, (it, ind) => (..), "separator", "no items fallback")
-    return List.of(
-      new ExpressionFunctionArgument("items",     "Collection to iterate",             true,  Collection.class),
-      new ExpressionFunctionArgument("mapper",    "Iteration item mapper function",    true,  AExpressionFunction.class),
-      new ExpressionFunctionArgument("separator", "Item separator",                    false, String.class),
-      new ExpressionFunctionArgument("fallback",  "Fallback when collection is empty", false, String.class)
+    return Arrays.asList(
+      new ExpressionFunctionArgument("items", "Collection to iterate", true, Collection.class),
+      new ExpressionFunctionArgument("mapper", "Iteration item mapper function", true, AExpressionFunction.class),
+      new ExpressionFunctionArgument("separator", "Item separator", false, String.class),
+      new ExpressionFunctionArgument("fallback", "Fallback when collection is empty", false, String.class)
     );
   }
 

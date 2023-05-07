@@ -27,7 +27,7 @@ package me.blvckbytes.gpeee.std;
 import me.blvckbytes.gpeee.EnvironmentBuilder;
 import org.junit.jupiter.api.Test;
 
-import java.util.List;
+import java.util.Collections;
 import java.util.Map;
 
 public class BoolFunctionTests {
@@ -35,10 +35,10 @@ public class BoolFunctionTests {
   @Test
   public void shouldInterpretValuesAsABoolean() {
     new EnvironmentBuilder()
-      .withStaticVariable("my_list", List.of(1))
-      .withStaticVariable("my_list_empty", List.of())
-      .withStaticVariable("my_map", Map.of("k", "v"))
-      .withStaticVariable("my_map_empty", Map.of())
+      .withStaticVariable("my_list", Collections.singletonList(1))
+      .withStaticVariable("my_list_empty", Collections.emptyList())
+      .withStaticVariable("my_map", Collections.singletonMap("k", "v"))
+      .withStaticVariable("my_map_empty", Collections.emptyMap())
       .launch(validator -> {
         validator.validate("bool(0)", false);
         validator.validate("bool(1)", true);

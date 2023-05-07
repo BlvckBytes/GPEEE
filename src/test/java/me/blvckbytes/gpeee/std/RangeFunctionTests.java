@@ -26,10 +26,10 @@ package me.blvckbytes.gpeee.std;
 
 import me.blvckbytes.gpeee.EnvironmentBuilder;
 import me.blvckbytes.gpeee.error.InvalidFunctionArgumentTypeError;
-import me.blvckbytes.gpeee.error.InvalidFunctionInvocationError;
 import org.junit.jupiter.api.Test;
 
-import java.util.List;
+import java.util.Arrays;
+import java.util.Collections;
 
 public class RangeFunctionTests {
 
@@ -46,8 +46,8 @@ public class RangeFunctionTests {
   public void shouldReturnEmptyListsOnMalformedRanges() {
     new EnvironmentBuilder()
       .launch(validator -> {
-        validator.validate("range(1, 0)", List.of());
-        validator.validate("range(3, -5)", List.of());
+        validator.validate("range(1, 0)", Collections.emptyList());
+        validator.validate("range(3, -5)", Collections.emptyList());
       });
   }
 
@@ -55,11 +55,11 @@ public class RangeFunctionTests {
   public void shouldReturnRangeLists() {
     new EnvironmentBuilder()
       .launch(validator -> {
-        validator.validate("range(0, 0)", List.of(0));
-        validator.validate("range(0, 1)", List.of(0, 1));
-        validator.validate("range(8, 12)", List.of(8, 9, 10, 11, 12));
-        validator.validate("range(-2, 3)", List.of(-2, -1, 0, 1, 2, 3));
-        validator.validate("range(-5, -3)", List.of(-5, -4, -3));
+        validator.validate("range(0, 0)", Collections.singletonList(0));
+        validator.validate("range(0, 1)", Arrays.asList(0, 1));
+        validator.validate("range(8, 12)", Arrays.asList(8, 9, 10, 11, 12));
+        validator.validate("range(-2, 3)", Arrays.asList(-2, -1, 0, 1, 2, 3));
+        validator.validate("range(-5, -3)", Arrays.asList(-5, -4, -3));
       });
   }
 }

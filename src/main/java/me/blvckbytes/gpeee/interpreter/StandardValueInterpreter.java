@@ -75,10 +75,17 @@ public class StandardValueInterpreter implements IValueInterpreter {
 
     // A string will be zero if blank and one otherwise
     if (value instanceof String)
-      return ((String) value).isBlank() ? 0 : 1;
+      return isBlank((String) value) ? 0 : 1;
 
     // Unknown other value, interpret as zero
     return 0;
+  }
+
+  private boolean isBlank(String input) {
+    for (char c : input.toCharArray())
+      if (c != ' ')
+        return false;
+    return true;
   }
 
   @Override
