@@ -26,6 +26,7 @@ want to integrate into your next project.
     - [Indexing](#indexing)
     - [Function Calls](#function-calls)
     - [Null Coalescence](#null-coalescence)
+    - [Comments](#comments)
   - [Primary Expressions](#primary-expressions)
   - [Grammar Definition](#grammar-definition)
 - [Standard Functions](#standard-functions)
@@ -784,6 +785,16 @@ the left-hand-side value will be just passed through without any modifications.
 
 ```
 my_maybe_null ?? "Fallback value"
+```
+
+#### Comments
+
+Comments are defined as a pound symbol (`#`), followed by any character sequence, except a newline (`\n`). Newlines break comments,
+but comments can either span across the full line, or live at the end of a line.
+
+```
+# This is a line-comment
+5 + 10 * 2 # This is an inline comment
 ```
 
 ### Primary Expressions

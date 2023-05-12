@@ -230,6 +230,16 @@ the left-hand-side value will be just passed through without any modifications.
 my_maybe_null ?? "Fallback value"
 ```
 
+#### Comments
+
+Comments are defined as a pound symbol (`#`), followed by any character sequence, except a newline (`\n`). Newlines break comments,
+but comments can either span across the full line, or live at the end of a line.
+
+```
+# This is a line-comment
+5 + 10 * 2 # This is an inline comment
+```
+
 ### Primary Expressions
 
 A primary expression is an immediate value and the most simple type of expression possible. These types of primary expressions are
