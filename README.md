@@ -199,6 +199,113 @@ The *value interpreter* is used to define how different data-types can be interp
 operations. Implementing such an instance can take a lot of time and is prone to errors, which is why there's a very
 sensible default implementation which' use is recommended, as described in the comment inside the above interface.
 
+There's a builder to concisely create custom environments:
+
+<details>
+<summary>EvaluationEnvironmentBuilder.java</summary>
+
+```java
+package me.blvckbytes.gpeee.interpreter;
+
+public class EvaluationEnvironmentBuilder {
+
+  private IValueInterpreter valueInterpreter;
+  private final Map<String, Object> staticVariables;
+  private final Map<String, Supplier<?>> liveVariables;
+  private final Map<String, AExpressionFunction> functions;
+
+  private EvaluationEnvironmentBuilder(
+    IValueInterpreter valueInterpreter,
+    Map<String, Object> staticVariables,
+    Map<String, Supplier<?>> liveVariables,
+    Map<String, AExpressionFunction> functions
+  ) {
+    this.valueInterpreter = valueInterpreter;
+    this.staticVariables = staticVariables;
+    this.liveVariables = liveVariables;
+    this.functions = functions;
+  }
+
+  public EvaluationEnvironmentBuilder() {
+    this.valueInterpreter = GPEEE.STD_VALUE_INTERPRETER;
+
+    this.staticVariables = new HashMap<>();
+    this.liveVariables = new HashMap<>();
+    this.functions = new HashMap<>();
+  }
+
+  public EvaluationEnvironmentBuilder withValueInterpreter(IValueInterpreter valueInterpreter) {
+    this.valueInterpreter = valueInterpreter;
+    return this;
+  }
+
+  public EvaluationEnvironmentBuilder withStaticVariable(String identifier, Object value) {
+    this.staticVariables.put(identifier, value);
+    return this;
+  }
+
+  public EvaluationEnvironmentBuilder withLiveVariable(String identifier, Supplier<?> value) {
+    this.liveVariables.put(identifier, value);
+    return this;
+  }
+
+  public EvaluationEnvironmentBuilder withFunction(String identifier, AExpressionFunction function) {
+    this.functions.put(identifier, function);
+    return this;
+  }
+
+  public EvaluationEnvironmentBuilder duplicate() {
+    return new EvaluationEnvironmentBuilder(
+      valueInterpreter,
+      new HashMap<>(staticVariables),
+      new HashMap<>(liveVariables),
+      new HashMap<>(functions)
+    );
+  }
+
+  public IEvaluationEnvironment build() {
+    return build(null);
+  }
+
+  public IEvaluationEnvironment build(@Nullable IEvaluationEnvironment environmentToExtend) {
+    Map<String, AExpressionFunction> resultingFunctions = new HashMap<>(this.functions);
+    Map<String, Supplier<?>> resultingLiveVariables = new HashMap<>(this.liveVariables);
+    Map<String, Object> resultingStaticVariables = new HashMap<>(this.staticVariables);
+
+    if (environmentToExtend != null) {
+      resultingFunctions.putAll(environmentToExtend.getFunctions());
+      resultingLiveVariables.putAll(environmentToExtend.getLiveVariables());
+      resultingStaticVariables.putAll(environmentToExtend.getStaticVariables());
+    }
+
+    return new IEvaluationEnvironment() {
+
+      @Override
+      public Map<String, AExpressionFunction> getFunctions() {
+        return resultingFunctions;
+      }
+
+      @Override
+      public Map<String, Supplier<?>> getLiveVariables() {
+        return resultingLiveVariables;
+      }
+
+      @Override
+      public Map<String, Object> getStaticVariables() {
+        return resultingStaticVariables;
+      }
+
+      @Override
+      public IValueInterpreter getValueInterpreter() {
+        return valueInterpreter;
+      }
+    };
+  }
+}
+```
+</details>
+
+
 In order to create a new expression function, it's best practice to create a separate class which inherits the
 following abstract base class:
 
@@ -458,7 +565,7 @@ public class IterCatFunction extends AStandardFunction {
     int c = 0;
     for (Object item : items) {
       result.append(result.length() == 0 ? "" : separator).append(
-        mapper.apply(env, List.of(item, c++))
+        mapper.apply(env, Arrays.asList(item, c++))
       );
     }
 
@@ -473,11 +580,11 @@ public class IterCatFunction extends AStandardFunction {
   @Override
   public @Nullable List<ExpressionFunctionArgument> getArguments() {
     // iter_cat(items, (it, ind) => (..), "separator", "no items fallback")
-    return List.of(
-      new ExpressionFunctionArgument("items",     "Collection to iterate",             true,  Collection.class),
-      new ExpressionFunctionArgument("mapper",    "Iteration item mapper function",    true,  AExpressionFunction.class),
-      new ExpressionFunctionArgument("separator", "Item separator",                    false, String.class),
-      new ExpressionFunctionArgument("fallback",  "Fallback when collection is empty", false, String.class)
+    return Arrays.asList(
+      new ExpressionFunctionArgument("items", "Collection to iterate", true, Collection.class),
+      new ExpressionFunctionArgument("mapper", "Iteration item mapper function", true, AExpressionFunction.class),
+      new ExpressionFunctionArgument("separator", "Item separator", false, String.class),
+      new ExpressionFunctionArgument("fallback", "Fallback when collection is empty", false, String.class)
     );
   }
 
@@ -530,13 +637,13 @@ public class FullUseExample {
         @Override
         public Map<String, AExpressionFunction> getFunctions() {
           // Register your functions here
-          return Map.of();
+          return Collections.emptyMap();
         }
 
         @Override
         public Map<String, Supplier<?>> getLiveVariables() {
           // Register your live variables here
-          return Map.of(
+          return Collections.singletonMap(
             "current_time", () -> DATE_FORMAT.format(new Date())
           );
         }
@@ -544,7 +651,7 @@ public class FullUseExample {
         @Override
         public Map<String, Object> getStaticVariables() {
           // Register your static variables here
-          return Map.of();
+          return Collections.emptyMap();
         }
 
         @Override
@@ -779,10 +886,10 @@ public class BoolFunctionTests {
   @Test
   public void shouldInterpretValuesAsABoolean() {
     new EnvironmentBuilder()
-      .withStaticVariable("my_list", List.of(1))
-      .withStaticVariable("my_list_empty", List.of())
-      .withStaticVariable("my_map", Map.of("k", "v"))
-      .withStaticVariable("my_map_empty", Map.of())
+      .withStaticVariable("my_list", Collections.singletonList(1))
+      .withStaticVariable("my_list_empty", Collections.emptyList())
+      .withStaticVariable("my_map", Collections.singletonMap("k", "v"))
+      .withStaticVariable("my_map_empty", Collections.emptyMap())
       .launch(validator -> {
         validator.validate("bool(0)", false);
         validator.validate("bool(1)", true);
@@ -1047,16 +1154,16 @@ public class IterCatFunctionTests {
   private EnvironmentBuilder createEnvironment() {
     return new EnvironmentBuilder()
       .withStaticVariable("my_list", createColorList())
-      .withStaticVariable("my_list_empty", List.of())
+      .withStaticVariable("my_list_empty", Collections.emptyList())
       .withStaticVariable("my_map", createColorMap())
-      .withStaticVariable("my_map_empty", Map.of())
+      .withStaticVariable("my_map_empty", Collections.emptyMap())
       .withStaticVariable("my_number", 1)
       .withStaticVariable("my_string", "hello world")
       .withStaticVariable("my_boolean", true);
   }
 
   private List<String> createColorList() {
-    return List.of("red", "green", "blue");
+    return Arrays.asList("red", "green", "blue");
   }
 
   private Map<String, String> createColorMap() {
@@ -1114,16 +1221,16 @@ public class KeyFunctionTests {
   private EnvironmentBuilder createEnvironment() {
     return new EnvironmentBuilder()
       .withStaticVariable("my_list", createColorList())
-      .withStaticVariable("my_list_empty", List.of())
+      .withStaticVariable("my_list_empty", Collections.emptyList())
       .withStaticVariable("my_map", createColorMap())
-      .withStaticVariable("my_map_empty", Map.of())
+      .withStaticVariable("my_map_empty", Collections.emptyMap())
       .withStaticVariable("my_number", 1)
       .withStaticVariable("my_string", "hello world")
       .withStaticVariable("my_boolean", true);
   }
 
   private List<String> createColorList() {
-    return List.of("red", "green", "blue");
+    return Arrays.asList("red", "green", "blue");
   }
 
   private Map<String, String> createColorMap() {
@@ -1171,10 +1278,13 @@ public class LenFunctionTests {
   @Test
   public void shouldRespondWithAnItemsLength() {
     new EnvironmentBuilder()
-      .withStaticVariable("my_list", List.of(1, 2, 3, 4))
-      .withStaticVariable("my_list_empty", List.of())
-      .withStaticVariable("my_map", Map.of("k", "v", "k2", "v2"))
-      .withStaticVariable("my_map_empty", Map.of())
+      .withStaticVariable("my_list", Arrays.asList(1, 2, 3, 4))
+      .withStaticVariable("my_list_empty", Collections.emptyList())
+      .withStaticVariable("my_map", new HashMap<Object, Object>() {{
+        put("k", "v");
+        put("k2", "v2");
+      }})
+      .withStaticVariable("my_map_empty", Collections.emptyMap())
       .withStaticVariable("my_array", new int[] { 1, 2, 3 })
       .withStaticVariable("my_array_empty", new int[] {})
       .withStaticVariable("my_string", "hello, world")
@@ -1266,29 +1376,29 @@ public class ListFunctionTests {
   @Test
   public void shouldInterpretValuesAsAList() {
     EnvironmentBuilder env = new EnvironmentBuilder()
-      .withStaticVariable("my_list", createList(1))
-      .withStaticVariable("my_list_empty", createList())
-      .withStaticVariable("my_map", Map.of("k", "v"))
-      .withStaticVariable("my_map_empty", Map.of());
+      .withStaticVariable("my_list", Collections.singletonList(1))
+      .withStaticVariable("my_list_empty", Collections.emptyList())
+      .withStaticVariable("my_map", Collections.singletonMap("k", "v"))
+      .withStaticVariable("my_map_empty", Collections.emptyMap());
 
     env.launch(validator -> {
-      validator.validate("list(0)", createList(0));
-      validator.validate("list(1)", createList(1));
-      validator.validate("list(100)", createList(100));
-      validator.validate("list(-1)", createList(-1));
-      validator.validate("list(-100)", createList(-100));
+      validator.validate("list(0)", Collections.singletonList(0));
+      validator.validate("list(1)", Collections.singletonList(1));
+      validator.validate("list(100)", Collections.singletonList(100));
+      validator.validate("list(-1)", Collections.singletonList(-1));
+      validator.validate("list(-100)", Collections.singletonList(-100));
 
-      validator.validate("list(1.1)", createList(1.1));
-      validator.validate("list(100.1)", createList(100.1));
-      validator.validate("list(-1.1)", createList(-1.1));
-      validator.validate("list(-100.1)", createList(-100.1));
+      validator.validate("list(1.1)", Collections.singletonList(1.1));
+      validator.validate("list(100.1)", Collections.singletonList(100.1));
+      validator.validate("list(-1.1)", Collections.singletonList(-1.1));
+      validator.validate("list(-100.1)", Collections.singletonList(-100.1));
 
-      validator.validate("list(\"\")", createList(""));
-      validator.validate("list(\"non-empty\")", createList("non-empty"));
+      validator.validate("list(\"\")", Collections.singletonList(""));
+      validator.validate("list(\"non-empty\")", Collections.singletonList("non-empty"));
 
-      validator.validate("list(null)", createList());
-      validator.validate("list(true)", createList(true));
-      validator.validate("list(false)", createList(false));
+      validator.validate("list(null)", Collections.emptyList());
+      validator.validate("list(true)", Collections.singletonList(true));
+      validator.validate("list(false)", Collections.singletonList(false));
 
       // Lists should be passed through
       validator.validate("list(my_list)", env.getVariable("my_list"));
@@ -1298,10 +1408,6 @@ public class ListFunctionTests {
       validator.validate("list(my_map)", ((Map<?, ?>) Objects.requireNonNull(env.getVariable("my_map"))).entrySet());
       validator.validate("list(my_map_empty)", ((Map<?, ?>) Objects.requireNonNull(env.getVariable("my_map_empty"))).entrySet());
     });
-  }
-
-  private List<Object> createList(Object... items) {
-    return new ArrayList<>(Arrays.asList(items));
   }
 }
 ```
@@ -1333,10 +1439,10 @@ public class ListOfFunctionTests {
     EnvironmentBuilder env = new EnvironmentBuilder();
 
     env.launch(validator -> {
-      validator.validate("list_of(0)", List.of(0));
-      validator.validate("list_of(0, 1, 2)", List.of(0, 1, 2));
-      validator.validate("list_of(2, 3, \"String\")", List.of(2, 3, "String"));
-      validator.validate("list_of()", List.of());
+      validator.validate("list_of(0)", Collections.singletonList(0));
+      validator.validate("list_of(0, 1, 2)", Arrays.asList(0, 1, 2));
+      validator.validate("list_of(2, 3, \"String\")", Arrays.asList(2, 3, "String"));
+      validator.validate("list_of()", Collections.emptyList());
       validator.validate("list_of(null)", nullList());
     });
   }
@@ -1377,7 +1483,7 @@ public class MapFunctionTests {
   @Test
   public void shouldRequireArguments() {
     new EnvironmentBuilder()
-      .withStaticVariable("items", List.of())
+      .withStaticVariable("items", Collections.emptyList())
       .launch(validator -> {
         validator.validateThrows("map()", InvalidFunctionArgumentTypeError.class);
         validator.validateThrows("map(items)", InvalidFunctionArgumentTypeError.class);
@@ -1387,22 +1493,22 @@ public class MapFunctionTests {
   @Test
   public void shouldReturnFallbackValueWhenEmpty() {
     new EnvironmentBuilder()
-      .withStaticVariable("items_empty", List.of())
-      .withStaticVariable("items_one", List.of(1))
+      .withStaticVariable("items_empty", Collections.emptyList())
+      .withStaticVariable("items_one", Collections.singletonList(1))
       .launch(validator -> {
-        validator.validate("map(items_empty, (item) => item, \"empty collection\")", List.of("empty collection"));
-        validator.validate("map(items_one, (item) => item, \"empty collection\")", List.of(1));
+        validator.validate("map(items_empty, (item) => item, \"empty collection\")", Collections.singletonList("empty collection"));
+        validator.validate("map(items_one, (item) => item, \"empty collection\")", Collections.singletonList(1));
       });
   }
 
   @Test
   public void shouldMapInputItems() {
     new EnvironmentBuilder()
-      .withStaticVariable("items", List.of("a", "b", "c"))
-      .withStaticVariable("items_empty", List.of())
+      .withStaticVariable("items", Arrays.asList("a", "b", "c"))
+      .withStaticVariable("items_empty", new ArrayList<>())
       .launch(validator -> {
-        validator.validate("map(items, (item) => item & \" suffix\")", List.of("a suffix", "b suffix", "c suffix"));
-        validator.validate("map(items_empty, (item, index) => index & item)", List.of());
+        validator.validate("map(items, (item) => item & \" suffix\")", Arrays.asList("a suffix", "b suffix", "c suffix"));
+        validator.validate("map(items_empty, (item, index) => index & item)", Collections.emptyList());
       });
   }
 }
@@ -1435,10 +1541,14 @@ public class MapOfFunctionTests {
     EnvironmentBuilder env = new EnvironmentBuilder();
 
     env.launch(validator -> {
-      validator.validate("map_of(\"k\", 1)", Map.of("k", 1));
-      validator.validate("map_of(\"k1\", 1.2, \"k2\", -5, \"k3\", \"value 3\")", Map.of("k1", 1.2, "k2", -5, "k3", "value 3"));
+      validator.validate("map_of(\"k\", 1)", Collections.singletonMap("k", 1));
+      validator.validate("map_of(\"k1\", 1.2, \"k2\", -5, \"k3\", \"value 3\")", new HashMap<Object, Object>() {{
+        put("k1", 1.2);
+        put("k2", -5);
+        put("k3", "value 3");
+      }});
       validator.validate("map_of(\"k\", null)", nullMap("k"));
-      validator.validate("map_of()", Map.of());
+      validator.validate("map_of()", Collections.emptyMap());
 
       validator.validateThrows("map_of(\"k\")", InvalidFunctionInvocationError.class);
       validator.validateThrows("map_of(\"k\", 1, \"k2\")", InvalidFunctionInvocationError.class);
@@ -1500,7 +1610,7 @@ public class PrintFunctionTests {
       System.setOut(printStream);
       validator.validate(expression, (Object) null);
 
-      String printed = outputStream.toString(StandardCharsets.UTF_8);
+      String printed = new String(outputStream.toByteArray(), StandardCharsets.UTF_8);
 
       // NOTE: All calls to validate() create two invocations under the hood, to validate the
       // vanilla- as well as the optimized expression, thus we need to cut off the second half
@@ -1598,8 +1708,8 @@ public class SplitFunctionTests {
   public void shouldSplitOnDefaultString() {
     new EnvironmentBuilder()
       .launch(validator -> {
-        validator.validate("split(\"hello,world,test\")", List.of("hello", "world", "test"));
-        validator.validate("split(\"another , weird,ex am ple\")", List.of("another ", " weird", "ex am ple"));
+        validator.validate("split(\"hello,world,test\")", Arrays.asList("hello", "world", "test"));
+        validator.validate("split(\"another , weird,ex am ple\")", Arrays.asList("another ", " weird", "ex am ple"));
       });
   }
 
@@ -1607,10 +1717,10 @@ public class SplitFunctionTests {
   public void shouldSplitOnCustomString() {
     new EnvironmentBuilder()
       .launch(validator -> {
-        validator.validate("split(\"hello|world|test\", \"\\|\")", List.of("hello", "world", "test"));
-        validator.validate("split(\"hello|world,test\", \"\\|\")", List.of("hello", "world,test"));
-        validator.validate("split(\"another , weird|ex am ple\", \"\\|\")", List.of("another , weird", "ex am ple"));
-        validator.validate("split(\"myhelloworldhellotext\", \"hello\")", List.of("my", "world", "text"));
+        validator.validate("split(\"hello|world|test\", \"\\|\")", Arrays.asList("hello", "world", "test"));
+        validator.validate("split(\"hello|world,test\", \"\\|\")", Arrays.asList("hello", "world,test"));
+        validator.validate("split(\"another , weird|ex am ple\", \"\\|\")", Arrays.asList("another , weird", "ex am ple"));
+        validator.validate("split(\"myhelloworldhellotext\", \"hello\")", Arrays.asList("my", "world", "text"));
       });
   }
 }
@@ -1778,16 +1888,16 @@ public class ValueFunctionTests {
   private EnvironmentBuilder createEnvironment() {
     return new EnvironmentBuilder()
       .withStaticVariable("my_list", createColorList())
-      .withStaticVariable("my_list_empty", List.of())
+      .withStaticVariable("my_list_empty", Collections.emptyList())
       .withStaticVariable("my_map", createColorMap())
-      .withStaticVariable("my_map_empty", Map.of())
+      .withStaticVariable("my_map_empty", Collections.emptyMap())
       .withStaticVariable("my_number", 1)
       .withStaticVariable("my_string", "hello world")
       .withStaticVariable("my_boolean", true);
   }
 
   private List<String> createColorList() {
-    return List.of("red", "green", "blue");
+    return Arrays.asList("red", "green", "blue");
   }
 
   private Map<String, String> createColorMap() {
@@ -1836,8 +1946,8 @@ public class RangeFunctionTests {
   public void shouldReturnEmptyListsOnMalformedRanges() {
     new EnvironmentBuilder()
       .launch(validator -> {
-        validator.validate("range(1, 0)", List.of());
-        validator.validate("range(3, -5)", List.of());
+        validator.validate("range(1, 0)", Collections.emptyList());
+        validator.validate("range(3, -5)", Collections.emptyList());
       });
   }
 
@@ -1845,11 +1955,11 @@ public class RangeFunctionTests {
   public void shouldReturnRangeLists() {
     new EnvironmentBuilder()
       .launch(validator -> {
-        validator.validate("range(0, 0)", List.of(0));
-        validator.validate("range(0, 1)", List.of(0, 1));
-        validator.validate("range(8, 12)", List.of(8, 9, 10, 11, 12));
-        validator.validate("range(-2, 3)", List.of(-2, -1, 0, 1, 2, 3));
-        validator.validate("range(-5, -3)", List.of(-5, -4, -3));
+        validator.validate("range(0, 0)", Collections.singletonList(0));
+        validator.validate("range(0, 1)", Arrays.asList(0, 1));
+        validator.validate("range(8, 12)", Arrays.asList(8, 9, 10, 11, 12));
+        validator.validate("range(-2, 3)", Arrays.asList(-2, -1, 0, 1, 2, 3));
+        validator.validate("range(-5, -3)", Arrays.asList(-5, -4, -3));
       });
   }
 }
@@ -1880,12 +1990,12 @@ public class FlattenFunctionTests {
   @Test
   public void shouldFlattenCollectionsAndOtherValues() {
     new EnvironmentBuilder()
-      .withStaticVariable("list_a", List.of(1, 2, 3))
-      .withStaticVariable("list_b", List.of(4, 5, 6))
-      .withStaticVariable("list_complex", List.of(List.of(7, 8), List.of(9, 10)))
+      .withStaticVariable("list_a", Arrays.asList(1, 2, 3))
+      .withStaticVariable("list_b", Arrays.asList(4, 5, 6))
+      .withStaticVariable("list_complex", Arrays.asList(Arrays.asList(7, 8), Arrays.asList(9, 10)))
       .launch(validator -> {
-        validator.validate("flatten(list_a, list_b, list_complex)", List.of(1, 2, 3, 4, 5, 6, 7, 8, 9, 10));
-        validator.validate("flatten(\"Hello\", list_a, list_b, true, list_complex)", List.of("Hello", 1, 2, 3, 4, 5, 6, true, 7, 8, 9, 10));
+        validator.validate("flatten(list_a, list_b, list_complex)", Arrays.asList(1, 2, 3, 4, 5, 6, 7, 8, 9, 10));
+        validator.validate("flatten(\"Hello\", list_a, list_b, true, list_complex)", Arrays.asList("Hello", 1, 2, 3, 4, 5, 6, true, 7, 8, 9, 10));
       });
   }
 }
@@ -1926,12 +2036,12 @@ public class MinFunctionTests {
   @Test
   public void shouldReturnTheSmallerValue() {
     new EnvironmentBuilder()
-      .withStaticVariable("my_list", List.of(1))
-      .withStaticVariable("my_list_empty", List.of())
+      .withStaticVariable("my_list", Collections.singletonList(1))
+      .withStaticVariable("my_list_empty", Collections.emptyList())
       .launch(validator -> {
         validator.validate("min(0, 5)", 0);
         validator.validate("min(-3, -8)", -8);
-        validator.validate("min(my_list, my_list_empty)", List.of());
+        validator.validate("min(my_list, my_list_empty)", Collections.emptyList());
       });
   }
 }
@@ -1972,12 +2082,12 @@ public class MaxFunctionTests {
   @Test
   public void shouldReturnTheBiggerValue() {
     new EnvironmentBuilder()
-      .withStaticVariable("my_list", List.of(1))
-      .withStaticVariable("my_list_empty", List.of())
+      .withStaticVariable("my_list", Collections.singletonList(1))
+      .withStaticVariable("my_list_empty", Collections.emptyList())
       .launch(validator -> {
         validator.validate("max(0, 5)", 5);
         validator.validate("max(-3, -8)", -3);
-        validator.validate("max(my_list, my_list_empty)", List.of(1));
+        validator.validate("max(my_list, my_list_empty)", Collections.singletonList(1));
       });
   }
 }

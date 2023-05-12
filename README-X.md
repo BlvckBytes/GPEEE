@@ -88,6 +88,10 @@ The *value interpreter* is used to define how different data-types can be interp
 operations. Implementing such an instance can take a lot of time and is prone to errors, which is why there's a very
 sensible default implementation which' use is recommended, as described in the comment inside the above interface.
 
+There's a builder to concisely create custom environments:
+
+<!-- #include src/main/java/me/blvckbytes/gpeee/interpreter/EvaluationEnvironmentBuilder.java -->
+
 In order to create a new expression function, it's best practice to create a separate class which inherits the
 following abstract base class:
 
