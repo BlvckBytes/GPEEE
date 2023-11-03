@@ -807,8 +807,8 @@ available:
 | Literal True  | true                        | A positive boolean value             |
 | Literal False | false                       | A negative boolean value             |
 | Literal Null  | null                        | The null value                       |
-| Double        | 12.3, .4, -.8, -1           | A non-whole number                   |
-| Long          | 123, 4, -8, -1              | A whole number                       |
+| Double        | 12.3, .4, -.8, -1, .5e-4    | A non-whole number                   |
+| Long          | 123, 4, -8, -1, 2e3         | A whole number                       |
 | String        | "my string", "my \\" quote" | An immediate string of characters    |
 | Identifier    | a, my_var, my_func          | Either a variable or a function name |
 
@@ -823,8 +823,8 @@ The following *EBNF* describes the grammar of this small expression language pre
 Digit ::= [0-9]
 Letter ::= [A-Za-z]
 
-Long ::= "-"? Digit+
-Double ::= "-"? Digit* "." Digit+
+Long ::= "-"? Digit+ ("e" Digit+)?
+Double ::= "-"? Digit* "." Digit+ ("e" "-"? Digit+)?
 String ::= '"' ('\"' | [^"] | "\s")* '"'
 Identifier ::= Letter (Digit | Letter | '_')*
 Literal ::= "true" | "false" | "null"

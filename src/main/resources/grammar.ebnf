@@ -1,8 +1,8 @@
 Digit ::= [0-9]
 Letter ::= [A-Za-z]
 
-Long ::= "-"? Digit+
-Double ::= "-"? Digit* "." Digit+
+Long ::= "-"? Digit+ ("e" Digit+)?
+Double ::= "-"? Digit* "." Digit+ ("e" "-"? Digit+)?
 String ::= '"' ('\"' | [^"] | "\s")* '"'
 Identifier ::= Letter (Digit | Letter | '_')*
 Literal ::= "true" | "false" | "null"

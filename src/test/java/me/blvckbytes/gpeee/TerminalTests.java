@@ -40,10 +40,18 @@ public class TerminalTests {
       validator.validate(".3", .3);
       validator.validate("-3", -3);
       validator.validateThrows("-3a", UndefinedVariableError.class);
+      validator.validateThrows("3e", UndefinedVariableError.class);
+      validator.validate("3e3", 3 * (int) Math.pow(10, 3));
+      validator.validate("-3e3", -3 * (int) Math.pow(10, 3));
+      validator.validateThrows("3e-3", NegativeExponentOnLongError.class);
 
       // Double
       validator.validate("3.3", 3.3);
       validator.validate("-3.3", -3.3);
+      validator.validateThrows("3.3e", UndefinedVariableError.class);
+      validator.validate("3.3e3", 3.3 * Math.pow(10, 3));
+      validator.validate("-3.3e3", -3.3 * Math.pow(10, 3));
+      validator.validate("-3.3e-3", -3.3 * Math.pow(10, -3));
 
       // Would be parsed as a member access of the member .3 on 3
       validator.validateThrows("3..3", UnknownMemberError.class);

@@ -250,8 +250,8 @@ available:
 | Literal True  | true                        | A positive boolean value             |
 | Literal False | false                       | A negative boolean value             |
 | Literal Null  | null                        | The null value                       |
-| Double        | 12.3, .4, -.8, -1           | A non-whole number                   |
-| Long          | 123, 4, -8, -1              | A whole number                       |
+| Double        | 12.3, .4, -.8, -1, .5e-4    | A non-whole number                   |
+| Long          | 123, 4, -8, -1, 2e3         | A whole number                       |
 | String        | "my string", "my \\" quote" | An immediate string of characters    |
 | Identifier    | a, my_var, my_func          | Either a variable or a function name |
 

@@ -563,7 +563,7 @@ public class Parser {
     switch (tk.getType()) {
       case LONG:
         logger.log(Level.FINEST, () -> DebugLogSource.PARSER + "Found an integer");
-        return new LongExpression(Integer.parseInt(tk.getValue()), tk, tk, tokenizer.getRawText());
+        return new LongExpression(parseIntegerWithPossibleExponent(tk), tk, tk, tokenizer.getRawText());
 
       case DOUBLE:
         logger.log(Level.FINEST, () -> DebugLogSource.PARSER + "Found a double");
@@ -739,5 +739,27 @@ public class Parser {
     }
 
     return lhs;
+  }
+
+  /**
+   * Parses an integer token which supports exponent notation, which java does not (only on doubles).
+   * @param tk Token of integer type
+   * @return Value represented by the token
+   */
+  private int parseIntegerWithPossibleExponent(Token tk) {
+    String tokenValue = tk.getValue();
+    int exponentIndicatorIndex = tokenValue.indexOf('e');
+
+    int number;
+
+    if (exponentIndicatorIndex < 0)
+      number = Integer.parseInt(tokenValue);
+    else {
+      int numberValue = Integer.parseInt(tokenValue.substring(0, exponentIndicatorIndex));
+      int exponentValue = Integer.parseInt(tokenValue.substring(exponentIndicatorIndex + 1));
+      number = numberValue * (int) Math.pow(10, exponentValue);
+    }
+
+    return number;
   }
 }

@@ -24,6 +24,7 @@
 
 package me.blvckbytes.gpeee.tokenizer;
 
+import me.blvckbytes.gpeee.error.NegativeExponentOnLongError;
 import me.blvckbytes.gpeee.error.UnterminatedStringError;
 import org.jetbrains.annotations.Nullable;
 
@@ -63,17 +64,19 @@ public enum TokenType {
     return result.toString();
   }),
 
-  // -?[0-9]+
+  // -?[0-9]+(e[0-9]+)?
   LONG(TokenCategory.VALUE, null, tokenizer -> {
     StringBuilder result = new StringBuilder();
 
     if (collectDigits(tokenizer, result, false) != CollectorResult.READ_OKAY)
       return null;
 
+    possiblyCollectExponent(tokenizer, result, false);
+
     return result.toString();
   }),
 
-  // -?[0-9]*.?[0-9]+
+  // -?[0-9]*.?[0-9]+(e-?[0-9]+)?
   DOUBLE(TokenCategory.VALUE, null, tokenizer -> {
     StringBuilder result = new StringBuilder();
 
@@ -102,6 +105,8 @@ public enum TokenType {
     // Collect as many digits as possible
     if (collectDigits(tokenizer, result, false) != CollectorResult.READ_OKAY)
       return null;
+
+    possiblyCollectExponent(tokenizer, result, true);
 
     return result.toString();
   }),
@@ -268,6 +273,48 @@ public enum TokenType {
 
   public FTokenReader getTokenReader() {
     return tokenReader;
+  }
+
+  private static void possiblyCollectExponent(ITokenizer tokenizer, StringBuilder result, boolean allowNegativeExponent) {
+    if (!tokenizer.hasNextChar() || tokenizer.peekNextChar() != 'e')
+      return;
+
+    // It could occur that an 'e' immediately follows a long or double but is not meant as an exponent.
+    // If parsing the exponent number is not successful, these characters are to be put back, as they likely
+    // carry another meaning. The initial number should still be parsed though, so a failure would not be appropriate.
+    tokenizer.saveState(true);
+
+    // Append 'e'
+    result.append(tokenizer.nextChar());
+
+    boolean hasNegativeSign = false;
+    int negativeSignRow = tokenizer.getCurrentRow();
+    int negativeSignCol = tokenizer.getCurrentCol();
+
+    // Allow a negative sign in the exponent, which is usually taken care of by the minus token for all numbers
+    if (tokenizer.hasNextChar() && tokenizer.peekNextChar() == '-') {
+      hasNegativeSign = true;
+      result.append(tokenizer.nextChar());
+    }
+
+    // Collect exponent digits
+    if (collectDigits(tokenizer, result, false) == CollectorResult.READ_OKAY) {
+      if (!allowNegativeExponent && hasNegativeSign)
+        throw new NegativeExponentOnLongError(negativeSignRow, negativeSignCol, tokenizer.getRawText());
+
+      tokenizer.discardState(true);
+      return;
+    }
+
+    // Was likely not meant as an exponent
+    tokenizer.restoreState(true);
+
+    // Remove the '-' again
+    if (hasNegativeSign)
+      result.deleteCharAt(result.length() - 1);
+
+    // Remove the 'e' again
+    result.deleteCharAt(result.length() - 1);
   }
 
   private static CollectorResult collectDigits(ITokenizer tokenizer, StringBuilder result, boolean stopBeforeDot) {
