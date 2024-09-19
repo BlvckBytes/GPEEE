@@ -25,6 +25,7 @@
 package me.blvckbytes.gpeee;
 
 import me.blvckbytes.gpeee.error.AEvaluatorError;
+import me.blvckbytes.gpeee.interpreter.EvaluationEnvironmentBuilder;
 import me.blvckbytes.gpeee.interpreter.IEvaluationEnvironment;
 import me.blvckbytes.gpeee.parser.expression.AExpression;
 
@@ -55,5 +56,10 @@ public interface IExpressionEvaluator {
    * @throws AEvaluatorError Error during the interpretation process
    */
   Object evaluateExpression(AExpression expression, IEvaluationEnvironment environment) throws AEvaluatorError;
+
+  /**
+   * Get a copy of the evaluator's base environment to be safely modified and built by the caller
+   */
+  EvaluationEnvironmentBuilder getBaseEnvironment();
 
 }

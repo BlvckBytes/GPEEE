@@ -92,6 +92,13 @@ public class GPEEE implements IExpressionEvaluator, IStandardFunctionRegistry {
   }
 
   @Override
+  public EvaluationEnvironmentBuilder getBaseEnvironment() {
+    if (this.baseEnvironment == null)
+      return new EvaluationEnvironmentBuilder();
+    return this.baseEnvironment.duplicate();
+  }
+
+  @Override
   public void register(String name, AStandardFunction function) {
     this.standardFunctions.put(name, function);
   }
