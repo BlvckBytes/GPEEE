@@ -139,7 +139,7 @@ public class ExpressionFunctionArgument {
       return valueInterpreter.asBoolean(value);
 
     // Convert a map to a list of it's entries
-    if (Collection.class.isAssignableFrom(targetType) && Map.class.isAssignableFrom(value.getClass()))
+    if (Iterable.class.isAssignableFrom(targetType) && Map.class.isAssignableFrom(value.getClass()))
       return new ArrayList<>(((Map<?, ?>) value).entrySet());
 
     // Cannot auto-convert this type

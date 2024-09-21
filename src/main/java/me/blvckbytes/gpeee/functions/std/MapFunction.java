@@ -32,7 +32,6 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.List;
 
 /**
@@ -46,7 +45,7 @@ public class MapFunction extends AStandardFunction {
   @Override
   public Object apply(IEvaluationEnvironment env, List<@Nullable Object> args) {
     // Retrieve arguments
-    Collection<?> items = nonNull(args, 0);
+    Iterable<?> items = nonNull(args, 0);
     AExpressionFunction mapper = nonNull(args, 1);
     Object fallback = nullable(args, 2);
 
@@ -67,7 +66,7 @@ public class MapFunction extends AStandardFunction {
   public @Nullable List<ExpressionFunctionArgument> getArguments() {
     // map(items, (it, ind) => (..), "empty input")
     return Arrays.asList(
-      new ExpressionFunctionArgument("items",     "Collection to iterate",             true,  Collection.class),
+      new ExpressionFunctionArgument("items",     "Items to iterate",             true,  Iterable.class),
       new ExpressionFunctionArgument("mapper",    "Iteration item mapper function",    true,  AExpressionFunction.class),
       new ExpressionFunctionArgument("fallback",  "Fallback when collection is empty", false, String.class)
     );
