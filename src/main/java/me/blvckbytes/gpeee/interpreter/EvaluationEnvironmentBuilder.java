@@ -69,15 +69,20 @@ public class EvaluationEnvironmentBuilder {
   }
 
   public IEvaluationEnvironment build(@Nullable IEvaluationEnvironment environmentToExtend) {
-    Map<String, AExpressionFunction> resultingFunctions = new HashMap<>(this.functions);
-    Map<String, Supplier<?>> resultingLiveVariables = new HashMap<>(this.liveVariables);
-    Map<String, Object> resultingStaticVariables = new HashMap<>(this.staticVariables);
+    Map<String, AExpressionFunction> resultingFunctions = new HashMap<>();
+    Map<String, Supplier<?>> resultingLiveVariables = new HashMap<>();
+    Map<String, Object> resultingStaticVariables = new HashMap<>();
 
     if (environmentToExtend != null) {
       resultingFunctions.putAll(environmentToExtend.getFunctions());
       resultingLiveVariables.putAll(environmentToExtend.getLiveVariables());
       resultingStaticVariables.putAll(environmentToExtend.getStaticVariables());
     }
+
+    // Put builder-items last, as to make them prevail over the possibly extended environment
+    resultingFunctions.putAll(this.functions);
+    resultingLiveVariables.putAll(this.liveVariables);
+    resultingStaticVariables.putAll(this.staticVariables);
 
     return new IEvaluationEnvironment() {
 
