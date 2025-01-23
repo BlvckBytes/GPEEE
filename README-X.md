@@ -412,7 +412,7 @@ list_of(value...?: Object): List<?>
 
 ### map
 
-Iterate over a collection while mapping each iteration through a lambda function, who's result
+Iterate over a collection while mapping each iteration through a lambda function, whose result
 is being appended to the final result list.
 
 | Argument  | Description                                                |
@@ -426,6 +426,22 @@ map(items: Collection<?>, mapper: (item: Object, index: Number) => String, fallb
 ```
 
 <!-- #include src/test/java/me/blvckbytes/gpeee/std/MapFunctionTests.java -->
+
+### filter
+
+Iterate over a collection while mapping each item through a lambda function, whose result
+is being interpreted as a filter predicate.
+
+| Argument  | Description                          |
+|-----------|--------------------------------------|
+| items     | Collection to iterate                |
+| mapper    | Lambda function to filter items with |
+
+```
+filter(items: Collection<?>, mapper: (item: Object, index: Number) => String): List<?>
+```
+
+<!-- #include src/test/java/me/blvckbytes/gpeee/std/FilterFunctionTests.java -->
 
 ### map_of
 

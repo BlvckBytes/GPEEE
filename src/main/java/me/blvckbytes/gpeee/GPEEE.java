@@ -125,6 +125,7 @@ public class GPEEE implements IExpressionEvaluator, IStandardFunctionRegistry {
     new PrintFunction().registerSelf(this);
     new TitleCaseFunction().registerSelf(this);
     new MapFunction().registerSelf(this);
+    new FilterFunction().registerSelf(this);
     new DateFormatFunction().registerSelf(this);
     new LIndexFunction().registerSelf(this);
     new RIndexFunction().registerSelf(this);

@@ -39,6 +39,7 @@ want to integrate into your next project.
   - [list](#list)
   - [list_of](#list_of)
   - [map](#map)
+  - [filter](#filter)
   - [map_of](#map_of)
   - [print](#print)
   - [r_index](#r_index)
@@ -135,6 +136,11 @@ public interface IExpressionEvaluator {
    * @throws AEvaluatorError Error during the interpretation process
    */
   Object evaluateExpression(AExpression expression, IEvaluationEnvironment environment) throws AEvaluatorError;
+
+  /**
+   * Get a copy of the evaluator's base environment to be safely modified and built by the caller
+   */
+  EvaluationEnvironmentBuilder getBaseEnvironment();
 
 }
 ```
@@ -269,15 +275,20 @@ public class EvaluationEnvironmentBuilder {
   }
 
   public IEvaluationEnvironment build(@Nullable IEvaluationEnvironment environmentToExtend) {
-    Map<String, AExpressionFunction> resultingFunctions = new HashMap<>(this.functions);
-    Map<String, Supplier<?>> resultingLiveVariables = new HashMap<>(this.liveVariables);
-    Map<String, Object> resultingStaticVariables = new HashMap<>(this.staticVariables);
+    Map<String, AExpressionFunction> resultingFunctions = new HashMap<>();
+    Map<String, Supplier<?>> resultingLiveVariables = new HashMap<>();
+    Map<String, Object> resultingStaticVariables = new HashMap<>();
 
     if (environmentToExtend != null) {
       resultingFunctions.putAll(environmentToExtend.getFunctions());
       resultingLiveVariables.putAll(environmentToExtend.getLiveVariables());
       resultingStaticVariables.putAll(environmentToExtend.getStaticVariables());
     }
+
+    // Put builder-items last, as to make them prevail over the possibly extended environment
+    resultingFunctions.putAll(this.functions);
+    resultingLiveVariables.putAll(this.liveVariables);
+    resultingStaticVariables.putAll(this.staticVariables);
 
     return new IEvaluationEnvironment() {
 
@@ -1470,7 +1481,7 @@ public class ListOfFunctionTests {
 
 ### map
 
-Iterate over a collection while mapping each iteration through a lambda function, who's result
+Iterate over a collection while mapping each iteration through a lambda function, whose result
 is being appended to the final result list.
 
 | Argument  | Description                                                |
@@ -1520,6 +1531,53 @@ public class MapFunctionTests {
       .launch(validator -> {
         validator.validate("map(items, (item) => item & \" suffix\")", Arrays.asList("a suffix", "b suffix", "c suffix"));
         validator.validate("map(items_empty, (item, index) => index & item)", Collections.emptyList());
+      });
+  }
+}
+```
+</details>
+
+
+### filter
+
+Iterate over a collection while mapping each item through a lambda function, whose result
+is being interpreted as a filter predicate.
+
+| Argument  | Description                          |
+|-----------|--------------------------------------|
+| items     | Collection to iterate                |
+| mapper    | Lambda function to filter items with |
+
+```
+filter(items: Collection<?>, mapper: (item: Object, index: Number) => String): List<?>
+```
+
+<details>
+<summary>FilterFunctionTests.java</summary>
+
+```java
+package me.blvckbytes.gpeee.std;
+
+public class FilterFunctionTests {
+
+  @Test
+  public void shouldRequireArguments() {
+    new EnvironmentBuilder()
+      .withStaticVariable("items", Collections.emptyList())
+      .launch(validator -> {
+        validator.validateThrows("filter()", InvalidFunctionArgumentTypeError.class);
+        validator.validateThrows("filter(items)", InvalidFunctionArgumentTypeError.class);
+      });
+  }
+
+  @Test
+  public void shouldFilterInputItems() {
+    new EnvironmentBuilder()
+      .withStaticVariable("items", Arrays.asList("a", "b", "c", null))
+      .launch(validator -> {
+        validator.validate("filter(items, (item) => item != \"a\")", Arrays.asList("b", "c", null));
+        validator.validate("filter(items, (item) => item != \"c\")", Arrays.asList("a", "b", null));
+        validator.validate("filter(items, (item) => item != null)", Arrays.asList("a", "b", "c"));
       });
   }
 }
