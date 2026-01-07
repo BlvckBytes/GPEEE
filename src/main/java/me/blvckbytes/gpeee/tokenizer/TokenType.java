@@ -184,12 +184,12 @@ public enum TokenType {
 
   CONCATENATE(TokenCategory.OPERATOR, "&", tokenizer -> tryCollectSequenceWithNextCheck(tokenizer, null, '&')),
 
-  BOOL_NOT(TokenCategory.KEYWORD, "not", tokenizer -> tryCollectSequenceWithNextCheck(tokenizer, null, "not".toCharArray())),
-  BOOL_AND(TokenCategory.KEYWORD, "and", tokenizer -> tryCollectSequenceWithNextCheck(tokenizer, null, "and".toCharArray())),
-  BOOL_OR(TokenCategory.KEYWORD, "or", tokenizer -> tryCollectSequenceWithNextCheck(tokenizer, null, "or".toCharArray())),
-  KW_IF(TokenCategory.KEYWORD, "if", tokenizer -> tryCollectSequenceWithNextCheck(tokenizer, null, "if".toCharArray())),
-  KW_THEN(TokenCategory.KEYWORD, "then", tokenizer -> tryCollectSequenceWithNextCheck(tokenizer, null, "then".toCharArray())),
-  KW_ELSE(TokenCategory.KEYWORD, "else", tokenizer -> tryCollectSequenceWithNextCheck(tokenizer, null, "else".toCharArray())),
+  BOOL_NOT(TokenCategory.KEYWORD, "not", tokenizer -> tryCollectSequenceWithNextCheck(tokenizer, c -> !Character.isWhitespace(c), "not".toCharArray())),
+  BOOL_AND(TokenCategory.KEYWORD, "and", tokenizer -> tryCollectSequenceWithNextCheck(tokenizer, c -> !Character.isWhitespace(c), "and".toCharArray())),
+  BOOL_OR(TokenCategory.KEYWORD, "or", tokenizer -> tryCollectSequenceWithNextCheck(tokenizer, c -> !Character.isWhitespace(c), "or".toCharArray())),
+  KW_IF(TokenCategory.KEYWORD, "if", tokenizer -> tryCollectSequenceWithNextCheck(tokenizer, c -> !Character.isWhitespace(c), "if".toCharArray())),
+  KW_THEN(TokenCategory.KEYWORD, "then", tokenizer -> tryCollectSequenceWithNextCheck(tokenizer, c -> !Character.isWhitespace(c), "then".toCharArray())),
+  KW_ELSE(TokenCategory.KEYWORD, "else", tokenizer -> tryCollectSequenceWithNextCheck(tokenizer, c -> !Character.isWhitespace(c), "else".toCharArray())),
 
   ARROW(TokenCategory.OPERATOR, "=>", tokenizer -> tryCollectSequenceWithNextCheck(tokenizer, null, "=>".toCharArray())),
   ASSIGN(TokenCategory.OPERATOR, "=", tokenizer -> tryCollectSequenceWithNextCheck(tokenizer, c -> c == '=', '=')),

@@ -88,4 +88,16 @@ public class BooleanOperatorTests {
         validator.validate("(true or false) and \"content\" and not (0 or \"x\")", false);
       });
   }
+
+  @Test
+  public void shouldNotMistakeVariableNamesForOperators() {
+    new EnvironmentBuilder()
+      .withStaticVariable("oryes", true)
+      .withStaticVariable("orno", false)
+      .launch(validator -> {
+        validator.validate("oryes or orno", true);
+        validator.validate("not orno or not oryes", true);
+        validator.validate("orno or not oryes", false);
+      });
+  }
 }
